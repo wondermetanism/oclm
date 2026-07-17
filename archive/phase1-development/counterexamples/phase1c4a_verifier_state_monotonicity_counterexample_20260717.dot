@@ -1,0 +1,24 @@
+digraph "trace_OCLM_Phase1C4A_Verifier_State_Monotonicity_Core_SL2-AS0-CL0-A1-C1-NB_verifier_state_never_rolls_back_without_compromise-case_1-Compromised_Rollback_e2_to_e1-Compromise_Verifier_case_1-Compromised_Rollback_e1_to_e0-Compromised_Rollback_e2_to_e1_case_1" {
+nodesep="0.3";
+ranksep="0.3";
+node[fontsize="8",fontname="Helvetica",width="0.3",height="0.2"];
+edge[fontsize="8",fontname="Helvetica"];
+n3[shape="record",label="{{<n0> VState( ~v, 'e2', CO1 )}|{<n1> #inew : Compromised_Rollback_e2_to_e1[RollbackSucceeded( ~v, 'e2', 'e1' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierState( ~v, 'e1' )]\l}|{<n2> VState( ~v, 'e1', CO1 )}}",fillcolor="#d5d897",style="filled",fontcolor="black",role="Undefined"];
+n7[shape="record",label="{{<n4> VState( ~v, 'e1', CO1 )}|{<n5> #iold : Compromised_Rollback_e1_to_e0[RollbackSucceeded( ~v, 'e1', 'e0' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierState( ~v, 'e0' )]\l}|{<n6> VState( ~v, 'e0', CO1 )}}",fillcolor="#ccd998",style="filled",fontcolor="black",role="Undefined"];
+n11[shape="record",label="{{<n8> VState( ~v, 'e2', 'honest' )}|{<n9> #vr : Compromise_Verifier[VerifierCompromised( ~v, 'e2' )]}|{<n10> VState( ~v, 'e2', CO1 )}}",fillcolor="#c3da98",style="filled",fontcolor="black",role="Undefined"];
+n15[shape="record",label="{{<n12> VState( ~v, 'e1', 'honest' )}|{<n13> #vr.1 : Advance_e1_to_e2[EpochAdvanced( ~v, 'e1', 'e2' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierCheckpoint( ~v, 'e2' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierState( ~v, 'e2' )]\l}|{<n14> VState( ~v, 'e2', 'honest' )}}",fillcolor="#badb99",style="filled",fontcolor="black",role="Undefined"];
+n19[shape="record",label="{{<n16> VState( ~v, 'e0', 'honest' )}|{<n17> #vr.2 : Advance_e0_to_e1[EpochAdvanced( ~v, 'e0', 'e1' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierCheckpoint( ~v, 'e1' ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierState( ~v, 'e1' )]\l}|{<n18> VState( ~v, 'e1', 'honest' )}}",fillcolor="#b1dc9a",style="filled",fontcolor="black",role="Undefined"];
+n23[shape="record",label="{{<n20> Fr( ~v )}|{<n21> #vr.3 : Initialize_Verifier[VerifierInitialized( ~v ),\l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VerifierState( ~v, 'e0' )]\l}|{<n22> VState( ~v, 'e0', 'honest' )}}",fillcolor="#a7dd9a",style="filled",fontcolor="black",role="Undefined"];
+n3:n2 -> n7:n4[style="bold",weight="10.0"];
+n11:n10 -> n3:n0[style="bold",weight="10.0"];
+n15:n14 -> n11:n8[style="bold",weight="10.0"];
+n19:n18 -> n15:n12[style="bold",weight="10.0"];
+n23:n22 -> n19:n16[style="bold",weight="10.0"];
+{
+rank="sink";
+n24[shape="plain",label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="3" CELLPADDING="1"><TR><TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#000000">CO1</FONT></TD> <TD ALIGN="LEFT" VALIGN="TOP">=</TD> <TD ALIGN="LEFT" VALIGN="TOP">'compromised'</TD></TR></TABLE>>];
+
+}
+n7:n5 -> n24[style="invis"];
+
+}

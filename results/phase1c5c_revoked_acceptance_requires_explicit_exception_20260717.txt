@@ -1,0 +1,660 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract] Theory loaded
+[Theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract] Theory translated
+[Theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract] Derivation checks started
+[Theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract] Derivation checks ended
+[Theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C5C_Revocation_Transparency_Lineage_Composition_Contract
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/* looping facts with injective instances: CertificateStatus/2 */
+
+rule (modulo E) Import_Verified_Component_Contracts:
+   [
+   Fr( ~verifier ), Fr( ~contract ), Fr( ~child_id ), Fr( ~certificate ),
+   Fr( ~log ), Fr( ~canonical_root )
+   ]
+  --[
+  C4BContractImported( ~verifier, ~contract, ~child_id ),
+  C5AContractImported( ~verifier, ~certificate ),
+  C5BContractImported( ~verifier, ~certificate, ~log, 's1', ~canonical_root
+  ),
+  CompositionContractInitialized( ~verifier, ~contract, ~child_id,
+                                  ~certificate, ~log, 's1', ~canonical_root
+  )
+  ]->
+   [
+   !C4BLineageContract( ~verifier, ~contract, ~child_id ),
+   !C5ARevocationContract( ~verifier, ~certificate ),
+   !C5BTransparencyContract( ~verifier, ~certificate, ~log, 's1',
+                             ~canonical_root
+   ),
+   CertificateStatus( ~certificate, 'active' ),
+   CurrentComposedAcceptancePermit( ~verifier, ~contract, ~child_id,
+                                    ~certificate, ~log, 's1', ~canonical_root
+   ),
+   TransparencyLogCompromisePermit( ~log, ~certificate, 's1',
+                                    ~canonical_root
+   ),
+   LineageVerifierCompromisePermit( ~verifier, ~contract, ~child_id ),
+   RevokeCertificatePermit( ~verifier, ~certificate )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Current_Composed_Contract:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   !C5ARevocationContract( verifier, certificate ),
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   CertificateStatus( certificate, 'active' ),
+   CurrentComposedAcceptancePermit( verifier, contract, child_id,
+                                    certificate, log, checkpoint, canonical_root
+   )
+   ]
+  --[
+  LineageComponentSatisfied( verifier, contract, child_id, 'current' ),
+  RevocationComponentSatisfied( verifier, certificate, 'active' ),
+  TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                  canonical_root, 'canonical'
+  ),
+  FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                         checkpoint, canonical_root, 'current', 'active', 'canonical'
+  )
+  ]->
+   [ CertificateStatus( certificate, 'active' ) ]
+
+  // loop breaker: [3]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Transparency_Log_Contract:
+   [
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   TransparencyLogCompromisePermit( log, certificate, checkpoint,
+                                    canonical_root
+   ),
+   Fr( ~fork_root )
+   ]
+  --[
+  TransparencyLogCompromised( log, checkpoint, canonical_root ),
+  ConflictingTransparencyContractCreated( log, certificate, checkpoint,
+                                          canonical_root, ~fork_root
+  )
+  ]->
+   [
+   !ForkedTransparencyContract( verifier, certificate, log, checkpoint,
+                                canonical_root, ~fork_root
+   ),
+   ForkedComposedAcceptancePermit( verifier, certificate, log, checkpoint,
+                                   ~fork_root
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Composed_Contract_Under_Forked_Transparency:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   !C5ARevocationContract( verifier, certificate ),
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   !ForkedTransparencyContract( verifier, certificate, log, checkpoint,
+                                canonical_root, fork_root
+   ),
+   CertificateStatus( certificate, 'active' ),
+   ForkedComposedAcceptancePermit( verifier, certificate, log, checkpoint,
+                                   fork_root
+   )
+   ]
+  --[
+  LineageComponentSatisfied( verifier, contract, child_id, 'current' ),
+  RevocationComponentSatisfied( verifier, certificate, 'active' ),
+  TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                  fork_root, 'forked'
+  ),
+  FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                         checkpoint, fork_root, 'current', 'active', 'forked'
+  )
+  ]->
+   [ CertificateStatus( certificate, 'active' ) ]
+
+  // loop breaker: [4]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Lineage_Verifier_Contract:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   LineageVerifierCompromisePermit( verifier, contract, child_id )
+   ]
+  --[ LineageVerifierCompromised( verifier, contract, child_id ) ]->
+   [
+   !StaleLineageContract( verifier, contract, child_id ),
+   StaleLineageComposedAcceptancePermit( verifier, contract, child_id )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Composed_Contract_At_Stale_Lineage:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   !StaleLineageContract( verifier, contract, child_id ),
+   !C5ARevocationContract( verifier, certificate ),
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   CertificateStatus( certificate, 'active' ),
+   StaleLineageComposedAcceptancePermit( verifier, contract, child_id )
+   ]
+  --[
+  LineageComponentSatisfied( verifier, contract, child_id, 'stale' ),
+  RevocationComponentSatisfied( verifier, certificate, 'active' ),
+  TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                  canonical_root, 'canonical'
+  ),
+  FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                         checkpoint, canonical_root, 'stale', 'active', 'canonical'
+  )
+  ]->
+   [ CertificateStatus( certificate, 'active' ) ]
+
+  // loop breaker: [4]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Revoke_Composed_Certificate:
+   [
+   !C5ARevocationContract( verifier, certificate ),
+   CertificateStatus( certificate, 'active' ),
+   RevokeCertificatePermit( verifier, certificate )
+   ]
+  --[
+  CertificateRevoked( verifier, certificate ),
+  RevocationUpdatePublished( verifier, certificate )
+  ]->
+   [
+   CertificateStatus( certificate, 'revoked' ),
+   ObserveMissingRevocationUpdatePermit( verifier, certificate ),
+   ApplyRevocationUpdatePermit( verifier, certificate )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Observe_Missing_Revocation_Update:
+   [
+   !C5ARevocationContract( verifier, certificate ),
+   CertificateStatus( certificate, 'revoked' ),
+   ObserveMissingRevocationUpdatePermit( verifier, certificate )
+   ]
+  --[ RevocationUpdateMissing( verifier, certificate ) ]->
+   [
+   CertificateStatus( certificate, 'revoked' ),
+   !MissingRevocationUpdateContract( verifier, certificate ),
+   MissingUpdateComposedAcceptancePermit( verifier, certificate )
+   ]
+
+  // loop breaker: [1]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Revoked_Composed_Contract_While_Update_Missing:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   !C5ARevocationContract( verifier, certificate ),
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   !MissingRevocationUpdateContract( verifier, certificate ),
+   CertificateStatus( certificate, 'revoked' ),
+   MissingUpdateComposedAcceptancePermit( verifier, certificate )
+   ]
+  --[
+  LineageComponentSatisfied( verifier, contract, child_id, 'current' ),
+  RevocationComponentSatisfied( verifier, certificate,
+                                'revoked-missing-update'
+  ),
+  TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                  canonical_root, 'canonical'
+  ),
+  FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                         checkpoint, canonical_root, 'current', 'revoked-missing-update',
+                         'canonical'
+  )
+  ]->
+   [ CertificateStatus( certificate, 'revoked' ) ]
+
+  // loop breaker: [4]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Apply_Current_Revocation_Update:
+   [
+   !C5ARevocationContract( verifier, certificate ),
+   CertificateStatus( certificate, 'revoked' ),
+   ApplyRevocationUpdatePermit( verifier, certificate )
+   ]
+  --[ RevocationCurrentStateApplied( verifier, certificate ) ]->
+   [
+   CertificateStatus( certificate, 'revoked' ),
+   RevocationVerifierCompromisePermit( verifier, certificate )
+   ]
+
+  // loop breaker: [1]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Revocation_Verifier_Contract:
+   [
+   !C5ARevocationContract( verifier, certificate ),
+   RevocationVerifierCompromisePermit( verifier, certificate )
+   ]
+  --[ RevocationVerifierCompromised( verifier, certificate ) ]->
+   [
+   !CompromisedRevocationVerifierContract( verifier, certificate ),
+   CompromisedRevocationComposedAcceptancePermit( verifier, certificate )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Revoked_Composed_Contract_After_Verifier_Compromise:
+   [
+   !C4BLineageContract( verifier, contract, child_id ),
+   !C5ARevocationContract( verifier, certificate ),
+   !C5BTransparencyContract( verifier, certificate, log, checkpoint,
+                             canonical_root
+   ),
+   !CompromisedRevocationVerifierContract( verifier, certificate ),
+   CertificateStatus( certificate, 'revoked' ),
+   CompromisedRevocationComposedAcceptancePermit( verifier, certificate )
+   ]
+  --[
+  LineageComponentSatisfied( verifier, contract, child_id, 'current' ),
+  RevocationComponentSatisfied( verifier, certificate,
+                                'revoked-compromised-verifier'
+  ),
+  TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                  canonical_root, 'canonical'
+  ),
+  FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                         checkpoint, canonical_root, 'current', 'revoked-compromised-verifier',
+                         'canonical'
+  )
+  ]->
+   [ CertificateStatus( certificate, 'revoked' ) ]
+
+  // loop breaker: [4]
+  /* has exactly the trivial AC variant */
+
+lemma executable_composed_security_lifecycle:
+  exists-trace
+  "∃ verifier contract child_id certificate log canonical_root fork_root
+     #i0 #i1 #il #ifork #iv #istale #ir #im #ima #ic #ica.
+    ((((((((((((((((((((CompositionContractInitialized( verifier, contract,
+                                                        child_id, certificate, log, 's1', canonical_root
+                        ) @ #i0) ∧
+                       (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                                               's1', canonical_root, 'current', 'active', 'canonical'
+                        ) @ #i1)) ∧
+                      (TransparencyLogCompromised( log, 's1', canonical_root ) @ #il)) ∧
+                     (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                                             's1', fork_root, 'current', 'active', 'forked'
+                      ) @ #ifork)) ∧
+                    (LineageVerifierCompromised( verifier, contract, child_id ) @ #iv)) ∧
+                   (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                                           's1', canonical_root, 'stale', 'active', 'canonical'
+                    ) @ #istale)) ∧
+                  (CertificateRevoked( verifier, certificate ) @ #ir)) ∧
+                 (RevocationUpdateMissing( verifier, certificate ) @ #im)) ∧
+                (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                                        's1', canonical_root, 'current', 'revoked-missing-update', 'canonical'
+                 ) @ #ima)) ∧
+               (RevocationVerifierCompromised( verifier, certificate ) @ #ic)) ∧
+              (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                                      's1', canonical_root, 'current', 'revoked-compromised-verifier',
+                                      'canonical'
+               ) @ #ica)) ∧
+             (#i0 < #i1)) ∧
+            (#i1 < #il)) ∧
+           (#il < #ifork)) ∧
+          (#ifork < #iv)) ∧
+         (#iv < #istale)) ∧
+        (#istale < #ir)) ∧
+       (#ir < #im)) ∧
+      (#im < #ima)) ∧
+     (#ima < #ic)) ∧
+    (#ic < #ica)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ verifier contract child_id certificate log canonical_root fork_root
+   #i0 #i1 #il #ifork #iv #istale #ir #im #ima #ic #ica.
+  (CompositionContractInitialized( verifier, contract, child_id,
+                                   certificate, log, 's1', canonical_root
+   ) @ #i0) ∧
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          's1', canonical_root, 'current', 'active', 'canonical'
+   ) @ #i1) ∧
+  (TransparencyLogCompromised( log, 's1', canonical_root ) @ #il) ∧
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          's1', fork_root, 'current', 'active', 'forked'
+   ) @ #ifork) ∧
+  (LineageVerifierCompromised( verifier, contract, child_id ) @ #iv) ∧
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          's1', canonical_root, 'stale', 'active', 'canonical'
+   ) @ #istale) ∧
+  (CertificateRevoked( verifier, certificate ) @ #ir) ∧
+  (RevocationUpdateMissing( verifier, certificate ) @ #im) ∧
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          's1', canonical_root, 'current', 'revoked-missing-update', 'canonical'
+   ) @ #ima) ∧
+  (RevocationVerifierCompromised( verifier, certificate ) @ #ic) ∧
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          's1', canonical_root, 'current', 'revoked-compromised-verifier',
+                          'canonical'
+   ) @ #ica)
+ ∧
+  (#i0 < #i1) ∧
+  (#i1 < #il) ∧
+  (#il < #ifork) ∧
+  (#ifork < #iv) ∧
+  (#iv < #istale) ∧
+  (#istale < #ir) ∧
+  (#ir < #im) ∧
+  (#im < #ima) ∧
+  (#ima < #ic) ∧
+  (#ic < #ica)"
+*/
+by sorry
+
+lemma composed_acceptance_requires_all_verified_component_contracts:
+  all-traces
+  "∀ verifier contract child_id certificate log checkpoint root
+     lineage_mode revocation_mode transparency_mode #ia.
+    (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                            checkpoint, root, lineage_mode, revocation_mode, transparency_mode
+     ) @ #ia) ⇒
+    (∃ canonical_root #ic4 #ic5a #ic5b.
+      (((((C4BContractImported( verifier, contract, child_id ) @ #ic4) ∧
+          (C5AContractImported( verifier, certificate ) @ #ic5a)) ∧
+         (C5BContractImported( verifier, certificate, log, checkpoint,
+                               canonical_root
+          ) @ #ic5b)) ∧
+        (#ic4 < #ia)) ∧
+       (#ic5a < #ia)) ∧
+      (#ic5b < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id certificate log checkpoint root
+   lineage_mode revocation_mode transparency_mode #ia.
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          checkpoint, root, lineage_mode, revocation_mode, transparency_mode
+   ) @ #ia)
+ ∧
+  ∀ canonical_root #ic4 #ic5a #ic5b.
+   (C4BContractImported( verifier, contract, child_id ) @ #ic4) ∧
+   (C5AContractImported( verifier, certificate ) @ #ic5a) ∧
+   (C5BContractImported( verifier, certificate, log, checkpoint,
+                         canonical_root
+    ) @ #ic5b)
+  ⇒
+   ((¬(#ic4 < #ia)) ∨ (¬(#ic5a < #ia)) ∨ (¬(#ic5b < #ia)))"
+*/
+by sorry
+
+lemma clean_composed_acceptance_has_current_component_evidence:
+  all-traces
+  "∀ verifier contract child_id certificate log checkpoint root #ia.
+    (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                            checkpoint, root, 'current', 'active', 'canonical'
+     ) @ #ia) ⇒
+    (((LineageComponentSatisfied( verifier, contract, child_id, 'current'
+       ) @ #ia) ∧
+      (RevocationComponentSatisfied( verifier, certificate, 'active'
+       ) @ #ia)) ∧
+     (TransparencyComponentSatisfied( verifier, certificate, log, checkpoint,
+                                      root, 'canonical'
+      ) @ #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id certificate log checkpoint root #ia.
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          checkpoint, root, 'current', 'active', 'canonical'
+   ) @ #ia)
+ ∧
+  ((¬(LineageComponentSatisfied( verifier, contract, child_id, 'current'
+      ) @ #ia)) ∨
+   (¬(RevocationComponentSatisfied( verifier, certificate, 'active'
+      ) @ #ia)) ∨
+   (¬(TransparencyComponentSatisfied( verifier, certificate, log,
+                                      checkpoint, root, 'canonical'
+      ) @ #ia)))"
+*/
+by sorry
+
+lemma revoked_composed_acceptance_requires_explicit_exception:
+  all-traces
+  "∀ verifier contract child_id certificate log checkpoint root
+     lineage_mode revocation_mode transparency_mode #ia.
+    ((FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                             checkpoint, root, lineage_mode, revocation_mode, transparency_mode
+      ) @ #ia) ∧
+     (¬(revocation_mode = 'active'))) ⇒
+    ((∃ #im.
+       (RevocationUpdateMissing( verifier, certificate ) @ #im) ∧ (#im < #ia)) ∨
+     (∃ #ic.
+       (RevocationVerifierCompromised( verifier, certificate ) @ #ic) ∧
+       (#ic < #ia)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id certificate log checkpoint root
+   lineage_mode revocation_mode transparency_mode #ia.
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          checkpoint, root, lineage_mode, revocation_mode, transparency_mode
+   ) @ #ia)
+ ∧
+  (¬(revocation_mode = 'active')) ∧
+  (∀ #im.
+    (RevocationUpdateMissing( verifier, certificate ) @ #im)
+   ⇒
+    ¬(#im < #ia)) ∧
+  (∀ #ic.
+    (RevocationVerifierCompromised( verifier, certificate ) @ #ic)
+   ⇒
+    ¬(#ic < #ia))"
+*/
+simplify
+solve( FinalComposedAccepted( verifier, contract, child_id, certificate,
+                              log, checkpoint, root, lineage_mode, revocation_mode, transparency_mode
+       ) @ #ia )
+  case Accept_Composed_Contract_At_Stale_Lineage
+  by contradiction /* from formulas */
+next
+  case Accept_Composed_Contract_Under_Forked_Transparency
+  by contradiction /* from formulas */
+next
+  case Accept_Current_Composed_Contract
+  by contradiction /* from formulas */
+next
+  case Accept_Revoked_Composed_Contract_After_Verifier_Compromise
+  solve( !C4BLineageContract( verifier, contract, child_id ) ▶₀ #ia )
+    case Import_Verified_Component_Contracts
+    solve( !C5ARevocationContract( ~verifier, certificate ) ▶₁ #ia )
+      case Import_Verified_Component_Contracts
+      solve( !C5BTransparencyContract( ~verifier, ~certificate, log,
+                                       checkpoint, root
+             ) ▶₂ #ia )
+        case Import_Verified_Component_Contracts
+        solve( !CompromisedRevocationVerifierContract( ~verifier, ~certificate
+               ) ▶₃ #ia )
+          case Compromise_Revocation_Verifier_Contract_case_1
+          by contradiction /* from formulas */
+        next
+          case Compromise_Revocation_Verifier_Contract_case_2
+          by contradiction /* from formulas */
+        next
+          case Compromise_Revocation_Verifier_Contract_case_3
+          by contradiction /* from formulas */
+        next
+          case Compromise_Revocation_Verifier_Contract_case_4
+          by contradiction /* from formulas */
+        qed
+      qed
+    qed
+  qed
+next
+  case Accept_Revoked_Composed_Contract_While_Update_Missing
+  solve( !C4BLineageContract( verifier, contract, child_id ) ▶₀ #ia )
+    case Import_Verified_Component_Contracts
+    solve( !C5ARevocationContract( ~verifier, certificate ) ▶₁ #ia )
+      case Import_Verified_Component_Contracts
+      solve( !C5BTransparencyContract( ~verifier, ~certificate, log,
+                                       checkpoint, root
+             ) ▶₂ #ia )
+        case Import_Verified_Component_Contracts
+        solve( !MissingRevocationUpdateContract( ~verifier, ~certificate
+               ) ▶₃ #ia )
+          case Observe_Missing_Revocation_Update_case_1
+          by contradiction /* from formulas */
+        next
+          case Observe_Missing_Revocation_Update_case_2
+          by contradiction /* from formulas */
+        next
+          case Observe_Missing_Revocation_Update_case_3
+          by contradiction /* from formulas */
+        next
+          case Observe_Missing_Revocation_Update_case_4
+          by contradiction /* from formulas */
+        qed
+      qed
+    qed
+  qed
+qed
+
+lemma forked_composed_acceptance_requires_prior_log_compromise:
+  all-traces
+  "∀ verifier contract child_id certificate log checkpoint root
+     lineage_mode revocation_mode #ia.
+    (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                            checkpoint, root, lineage_mode, revocation_mode, 'forked'
+     ) @ #ia) ⇒
+    (∃ compromised_root #ic.
+      (TransparencyLogCompromised( log, checkpoint, compromised_root ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id certificate log checkpoint root
+   lineage_mode revocation_mode #ia.
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          checkpoint, root, lineage_mode, revocation_mode, 'forked'
+   ) @ #ia)
+ ∧
+  ∀ compromised_root #ic.
+   (TransparencyLogCompromised( log, checkpoint, compromised_root ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+by sorry
+
+lemma stale_lineage_composed_acceptance_requires_prior_compromise:
+  all-traces
+  "∀ verifier contract child_id certificate log checkpoint root
+     revocation_mode transparency_mode #ia.
+    (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                            checkpoint, root, 'stale', revocation_mode, transparency_mode
+     ) @ #ia) ⇒
+    (∃ #ic.
+      (LineageVerifierCompromised( verifier, contract, child_id ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id certificate log checkpoint root
+   revocation_mode transparency_mode #ia.
+  (FinalComposedAccepted( verifier, contract, child_id, certificate, log,
+                          checkpoint, root, 'stale', revocation_mode, transparency_mode
+   ) @ #ia)
+ ∧
+  ∀ #ic.
+   (LineageVerifierCompromised( verifier, contract, child_id ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+by sorry
+
+lemma conflicting_composed_roots_require_prior_log_compromise:
+  all-traces
+  "∀ verifier_1 verifier_2 contract child_id certificate log checkpoint
+     root_1 root_2 lineage_mode_1 lineage_mode_2 revocation_mode_1
+     revocation_mode_2 transparency_mode_1 transparency_mode_2 #i1 #i2.
+    ((((FinalComposedAccepted( verifier_1, contract, child_id, certificate,
+                               log, checkpoint, root_1, lineage_mode_1, revocation_mode_1,
+                               transparency_mode_1
+        ) @ #i1) ∧
+       (FinalComposedAccepted( verifier_2, contract, child_id, certificate, log,
+                               checkpoint, root_2, lineage_mode_2, revocation_mode_2,
+                               transparency_mode_2
+        ) @ #i2)) ∧
+      (#i1 < #i2)) ∧
+     (¬(root_1 = root_2))) ⇒
+    (∃ compromised_root #ic.
+      (TransparencyLogCompromised( log, checkpoint, compromised_root ) @ #ic) ∧
+      (#ic < #i2))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier_1 verifier_2 contract child_id certificate log checkpoint
+   root_1 root_2 lineage_mode_1 lineage_mode_2 revocation_mode_1
+   revocation_mode_2 transparency_mode_1 transparency_mode_2 #i1 #i2.
+  (FinalComposedAccepted( verifier_1, contract, child_id, certificate, log,
+                          checkpoint, root_1, lineage_mode_1, revocation_mode_1,
+                          transparency_mode_1
+   ) @ #i1) ∧
+  (FinalComposedAccepted( verifier_2, contract, child_id, certificate, log,
+                          checkpoint, root_2, lineage_mode_2, revocation_mode_2,
+                          transparency_mode_2
+   ) @ #i2)
+ ∧
+  (#i1 < #i2) ∧
+  (¬(root_1 = root_2)) ∧
+  (∀ compromised_root #ic.
+    (TransparencyLogCompromised( log, checkpoint, compromised_root ) @ #ic)
+   ⇒
+    ¬(#ic < #i2))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: model/tamarin/oclm_phase1c5c_revocation_transparency_lineage_composition_contract.spthy
+
+  processing time: 1.41s
+  
+  executable_composed_security_lifecycle (exists-trace): analysis incomplete (1 steps)
+  composed_acceptance_requires_all_verified_component_contracts (all-traces): analysis incomplete (1 steps)
+  clean_composed_acceptance_has_current_component_evidence (all-traces): analysis incomplete (1 steps)
+  revoked_composed_acceptance_requires_explicit_exception (all-traces): verified (21 steps)
+  forked_composed_acceptance_requires_prior_log_compromise (all-traces): analysis incomplete (1 steps)
+  stale_lineage_composed_acceptance_requires_prior_compromise (all-traces): analysis incomplete (1 steps)
+  conflicting_composed_roots_require_prior_log_compromise (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

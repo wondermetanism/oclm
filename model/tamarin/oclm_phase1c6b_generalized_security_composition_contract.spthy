@@ -1,0 +1,1769 @@
+theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract
+begin
+
+/*
+ * OCLM Phase 1-C6B
+ *
+ * Generalized Security Composition Contract
+ *
+ * This theory composes the already verified guarantees of:
+ *
+ *   Phase 1-C5C:
+ *     revocation / transparency / lineage security composition
+ *
+ *   Phase 1-C6A:
+ *     reusable multi-epoch successor and rollback resistance
+ *
+ * Both component interiors remain opaque. Their verified guarantees are
+ * imported as assume-guarantee contract handles.
+ *
+ * The final acceptance decision binds:
+ *
+ *   - generalized epoch state
+ *   - certificate revocation state
+ *   - transparency checkpoint state
+ *   - lineage/security composition contract
+ *
+ * Explicit exception paths:
+ *
+ *   stale epoch:
+ *     prior generalized-verifier compromise
+ *
+ *   revoked certificate:
+ *     missing revocation update
+ *     or prior revocation-verifier compromise
+ *
+ *   forked transparency root:
+ *     prior Transparency Log compromise
+ *
+ * Out of scope:
+ *
+ *   component-internal cryptography
+ *   natural-number induction inside Tamarin
+ *   Merkle-tree internals
+ *   gossip availability
+ *   witness quorum
+ *   implementation refinement
+ */
+
+
+/* =========================================================================
+ * Import the verified C5C and C6A contracts
+ * ========================================================================= */
+
+rule Import_Verified_C5C_And_C6A_Contracts:
+  [
+    Fr(~verifier),
+    Fr(~contract),
+    Fr(~child_id),
+    Fr(~certificate),
+    Fr(~log),
+    Fr(~canonical_transparency_root),
+    Fr(~epoch_0),
+    Fr(~epoch_pk_0),
+    Fr(~lineage_root_0)
+  ]
+  --[
+    C5CContractImported(
+      ~verifier,
+      ~contract,
+      ~child_id,
+      ~certificate,
+      ~log,
+      's1',
+      ~canonical_transparency_root
+    ),
+
+    C6AContractImported(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    GeneralizedSecurityCompositionInitialized(
+      ~verifier,
+      ~contract,
+      ~child_id,
+      ~certificate,
+      ~log,
+      's1',
+      ~canonical_transparency_root,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    )
+  ]->
+  [
+    !C5CSecurityContract(
+      ~verifier,
+      ~contract,
+      ~child_id,
+      ~certificate,
+      ~log,
+      's1',
+      ~canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      ~verifier,
+      ~contract
+    ),
+
+    !GeneralizedEpochRecord(
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    GeneralizedCompositionEpochState(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0,
+      'honest'
+    ),
+
+    GeneralizedCertificateStatus(
+      ~certificate,
+      'active'
+    ),
+
+    AdvanceGeneralizedCompositionEpochPermit(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    CurrentGeneralizedAcceptancePermit(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    CompromiseGeneralizedCompositionVerifierPermit(
+      ~verifier,
+      ~contract
+    ),
+
+    CompromiseGeneralizedTransparencyLogPermit(
+      ~log,
+      ~certificate,
+      's1',
+      ~canonical_transparency_root
+    ),
+
+    RevokeGeneralizedCertificatePermit(
+      ~verifier,
+      ~certificate
+    )
+  ]
+
+
+/* =========================================================================
+ * Reusable generalized epoch advancement
+ * ========================================================================= */
+
+rule Advance_Generalized_Composition_Epoch:
+  [
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root,
+      'honest'
+    ),
+
+    AdvanceGeneralizedCompositionEpochPermit(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root
+    ),
+
+    Fr(~higher_epoch),
+    Fr(~higher_epoch_pk),
+    Fr(~higher_lineage_root)
+  ]
+  --[
+    GeneralizedCompositionEpochTransition(
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    ),
+
+    GeneralizedCompositionEpochAdvanced(
+      verifier,
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    )
+  ]->
+  [
+    !GeneralizedEpochRecord(
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    ),
+
+    !GeneralizedCompositionTransition(
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root,
+      'honest'
+    ),
+
+    AdvanceGeneralizedCompositionEpochPermit(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    ),
+
+    CurrentGeneralizedAcceptancePermit(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    )
+  ]
+
+
+/* =========================================================================
+ * Clean acceptance at the current generalized epoch
+ * ========================================================================= */
+
+rule Accept_Clean_Generalized_Composition:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    ),
+
+    CurrentGeneralizedAcceptancePermit(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    )
+  ]
+  --[
+    GeneralizedEpochComponentSatisfied(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'current'
+    ),
+
+    GeneralizedSecurityComponentSatisfied(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      'active',
+      'canonical'
+    ),
+
+    GeneralizedFinalAccepted(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'current',
+      'active',
+      'canonical'
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    )
+  ]
+
+
+/* =========================================================================
+ * Transparency Log compromise and forked acceptance
+ * ========================================================================= */
+
+rule Compromise_Generalized_Transparency_Log:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    CompromiseGeneralizedTransparencyLogPermit(
+      log,
+      certificate,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    Fr(~fork_transparency_root)
+  ]
+  --[
+    GeneralizedTransparencyLogCompromised(
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    GeneralizedConflictingTransparencyRootCreated(
+      log,
+      certificate,
+      checkpoint,
+      canonical_transparency_root,
+      ~fork_transparency_root
+    )
+  ]->
+  [
+    !GeneralizedForkedTransparencyContract(
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      ~fork_transparency_root
+    ),
+
+    ForkedGeneralizedAcceptancePermit(
+      verifier,
+      contract,
+      certificate,
+      log,
+      checkpoint,
+      ~fork_transparency_root
+    )
+  ]
+
+
+rule Accept_Generalized_Composition_Under_Forked_Transparency:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    !GeneralizedForkedTransparencyContract(
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      fork_transparency_root
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      epoch_state
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    ),
+
+    ForkedGeneralizedAcceptancePermit(
+      verifier,
+      contract,
+      certificate,
+      log,
+      checkpoint,
+      fork_transparency_root
+    )
+  ]
+  --[
+    GeneralizedEpochComponentSatisfied(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      epoch_state
+    ),
+
+    GeneralizedSecurityComponentSatisfied(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      fork_transparency_root,
+      'active',
+      'forked'
+    ),
+
+    GeneralizedFinalAccepted(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      fork_transparency_root,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      epoch_state,
+      'active',
+      'forked'
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      epoch_state
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    )
+  ]
+
+
+/* =========================================================================
+ * Generalized verifier compromise and reusable rollback
+ * ========================================================================= */
+
+rule Compromise_Generalized_Composition_Verifier:
+  [
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    ),
+
+    CompromiseGeneralizedCompositionVerifierPermit(
+      verifier,
+      contract
+    )
+  ]
+  --[
+    GeneralizedCompositionVerifierCompromised(
+      verifier,
+      contract,
+      epoch
+    )
+  ]->
+  [
+    !GeneralizedCompositionCompromiseState(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    StaleGeneralizedAcceptancePermit(
+      verifier,
+      contract
+    )
+  ]
+
+
+rule Roll_Back_Generalized_Composition_One_Epoch:
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      higher_epoch,
+      higher_epoch_pk,
+      higher_lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedCompositionCompromiseState(
+      verifier,
+      contract
+    ),
+
+    !GeneralizedCompositionTransition(
+      contract,
+      lower_epoch,
+      higher_epoch
+    ),
+
+    !GeneralizedEpochRecord(
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root
+    )
+  ]
+  --[
+    GeneralizedCompositionEpochRollback(
+      verifier,
+      contract,
+      higher_epoch,
+      lower_epoch
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root,
+      'compromised'
+    )
+  ]
+
+
+rule Accept_Stale_Generalized_Composition:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedCompositionCompromiseState(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    ),
+
+    StaleGeneralizedAcceptancePermit(
+      verifier,
+      contract
+    )
+  ]
+  --[
+    GeneralizedEpochCompromiseUsed(
+      verifier,
+      contract,
+      epoch
+    ),
+
+    GeneralizedEpochComponentSatisfied(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale'
+    ),
+
+    GeneralizedSecurityComponentSatisfied(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      'active',
+      'canonical'
+    ),
+
+    GeneralizedFinalAccepted(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale',
+      'active',
+      'canonical'
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    )
+  ]
+
+
+/* =========================================================================
+ * Revocation and explicit exception paths
+ * ========================================================================= */
+
+rule Revoke_Generalized_Certificate:
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'active'
+    ),
+
+    RevokeGeneralizedCertificatePermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedCertificateRevoked(
+      verifier,
+      certificate
+    ),
+
+    GeneralizedRevocationUpdatePublished(
+      verifier,
+      certificate
+    )
+  ]->
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    ObserveGeneralizedMissingUpdatePermit(
+      verifier,
+      certificate
+    ),
+
+    ApplyGeneralizedRevocationUpdatePermit(
+      verifier,
+      certificate
+    )
+  ]
+
+
+rule Observe_Generalized_Missing_Revocation_Update:
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    ObserveGeneralizedMissingUpdatePermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedRevocationUpdateMissing(
+      verifier,
+      certificate
+    )
+  ]->
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    !GeneralizedMissingUpdateContract(
+      verifier,
+      certificate
+    ),
+
+    MissingUpdateGeneralizedAcceptancePermit(
+      verifier,
+      certificate
+    )
+  ]
+
+
+rule Accept_Revoked_Generalized_Composition_While_Update_Missing:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    !GeneralizedMissingUpdateContract(
+      verifier,
+      certificate
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedCompositionCompromiseState(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    MissingUpdateGeneralizedAcceptancePermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedEpochCompromiseUsed(
+      verifier,
+      contract,
+      epoch
+    ),
+
+    GeneralizedEpochComponentSatisfied(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale'
+    ),
+
+    GeneralizedSecurityComponentSatisfied(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      'revoked-missing-update',
+      'canonical'
+    ),
+
+    GeneralizedFinalAccepted(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale',
+      'revoked-missing-update',
+      'canonical'
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    )
+  ]
+
+
+rule Apply_Generalized_Revocation_Update:
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    ApplyGeneralizedRevocationUpdatePermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedCurrentRevocationStateApplied(
+      verifier,
+      certificate
+    )
+  ]->
+  [
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    CompromiseGeneralizedRevocationVerifierPermit(
+      verifier,
+      certificate
+    )
+  ]
+
+
+rule Compromise_Generalized_Revocation_Verifier:
+  [
+    CompromiseGeneralizedRevocationVerifierPermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedRevocationVerifierCompromised(
+      verifier,
+      certificate
+    )
+  ]->
+  [
+    !GeneralizedCompromisedRevocationContract(
+      verifier,
+      certificate
+    ),
+
+    CompromisedRevocationGeneralizedAcceptancePermit(
+      verifier,
+      certificate
+    )
+  ]
+
+
+rule Accept_Revoked_Generalized_Composition_After_Verifier_Compromise:
+  [
+    !C5CSecurityContract(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root
+    ),
+
+    !C6AMultiEpochContract(
+      verifier,
+      contract
+    ),
+
+    !GeneralizedCompromisedRevocationContract(
+      verifier,
+      certificate
+    ),
+
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedCompositionCompromiseState(
+      verifier,
+      contract
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    ),
+
+    CompromisedRevocationGeneralizedAcceptancePermit(
+      verifier,
+      certificate
+    )
+  ]
+  --[
+    GeneralizedEpochCompromiseUsed(
+      verifier,
+      contract,
+      epoch
+    ),
+
+    GeneralizedEpochComponentSatisfied(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale'
+    ),
+
+    GeneralizedSecurityComponentSatisfied(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      'revoked-compromised-verifier',
+      'canonical'
+    ),
+
+    GeneralizedFinalAccepted(
+      verifier,
+      contract,
+      child_id,
+      certificate,
+      log,
+      checkpoint,
+      canonical_transparency_root,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale',
+      'revoked-compromised-verifier',
+      'canonical'
+    )
+  ]->
+  [
+    GeneralizedCompositionEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    GeneralizedCertificateStatus(
+      certificate,
+      'revoked'
+    )
+  ]
+
+
+/* =========================================================================
+ * Executability
+ * ========================================================================= */
+
+lemma executable_generalized_clean_multi_epoch_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract child_id certificate log
+       canonical_transparency_root
+       epoch_0 epoch_pk_0 lineage_root_0
+       epoch_1
+       epoch_2 epoch_pk_2 lineage_root_2
+       #i0 #it1 #it2 #ia.
+
+         GeneralizedSecurityCompositionInitialized(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0
+         ) @ #i0
+
+       & GeneralizedCompositionEpochTransition(
+           contract,
+           epoch_0,
+           epoch_1
+         ) @ #it1
+
+       & GeneralizedCompositionEpochTransition(
+           contract,
+           epoch_1,
+           epoch_2
+         ) @ #it2
+
+       & GeneralizedFinalAccepted(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_2,
+           epoch_pk_2,
+           lineage_root_2,
+           'current',
+           'active',
+           'canonical'
+         ) @ #ia
+
+       & #i0 < #it1
+       & #it1 < #it2
+       & #it2 < #ia
+  "
+
+
+lemma executable_generalized_forked_transparency_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract child_id certificate log
+       canonical_transparency_root fork_transparency_root
+       epoch_0 epoch_pk_0 lineage_root_0
+       #i0 #ic #ia.
+
+         GeneralizedSecurityCompositionInitialized(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0
+         ) @ #i0
+
+       & GeneralizedTransparencyLogCompromised(
+           log,
+           's1',
+           canonical_transparency_root
+         ) @ #ic
+
+       & GeneralizedFinalAccepted(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           fork_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0,
+           'honest',
+           'active',
+           'forked'
+         ) @ #ia
+
+       & #i0 < #ic
+       & #ic < #ia
+  "
+
+
+lemma executable_generalized_stale_epoch_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract child_id certificate log
+       canonical_transparency_root
+       epoch_0 epoch_pk_0 lineage_root_0
+       epoch_1
+       #i0 #it #ic #ir #ia.
+
+         GeneralizedSecurityCompositionInitialized(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0
+         ) @ #i0
+
+       & GeneralizedCompositionEpochTransition(
+           contract,
+           epoch_0,
+           epoch_1
+         ) @ #it
+
+       & GeneralizedCompositionVerifierCompromised(
+           verifier,
+           contract,
+           epoch_1
+         ) @ #ic
+
+       & GeneralizedCompositionEpochRollback(
+           verifier,
+           contract,
+           epoch_1,
+           epoch_0
+         ) @ #ir
+
+       & GeneralizedFinalAccepted(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0,
+           'stale',
+           'active',
+           'canonical'
+         ) @ #ia
+
+       & #i0 < #it
+       & #it < #ic
+       & #ic < #ir
+       & #ir < #ia
+  "
+
+
+lemma executable_generalized_revocation_exception_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract child_id certificate log
+       canonical_transparency_root
+       epoch_0 epoch_pk_0 lineage_root_0
+       #i0 #iepoch_compromise
+       #irevoke #imissing #iaccept_missing
+       #iapply #irevocation_compromise #iaccept_compromised.
+
+         GeneralizedSecurityCompositionInitialized(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0
+         ) @ #i0
+
+       & GeneralizedCompositionVerifierCompromised(
+           verifier,
+           contract,
+           epoch_0
+         ) @ #iepoch_compromise
+
+       & GeneralizedCertificateRevoked(
+           verifier,
+           certificate
+         ) @ #irevoke
+
+       & GeneralizedRevocationUpdateMissing(
+           verifier,
+           certificate
+         ) @ #imissing
+
+       & GeneralizedFinalAccepted(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0,
+           'stale',
+           'revoked-missing-update',
+           'canonical'
+         ) @ #iaccept_missing
+
+       & GeneralizedCurrentRevocationStateApplied(
+           verifier,
+           certificate
+         ) @ #iapply
+
+       & GeneralizedRevocationVerifierCompromised(
+           verifier,
+           certificate
+         ) @ #irevocation_compromise
+
+       & GeneralizedFinalAccepted(
+           verifier,
+           contract,
+           child_id,
+           certificate,
+           log,
+           's1',
+           canonical_transparency_root,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0,
+           'stale',
+           'revoked-compromised-verifier',
+           'canonical'
+         ) @ #iaccept_compromised
+
+       & #i0 < #iepoch_compromise
+       & #iepoch_compromise < #irevoke
+       & #irevoke < #imissing
+       & #imissing < #iaccept_missing
+       & #iaccept_missing < #iapply
+       & #iapply < #irevocation_compromise
+       & #irevocation_compromise < #iaccept_compromised
+  "
+
+
+/* =========================================================================
+ * Every final acceptance is anchored in both verified contracts
+ * ========================================================================= */
+
+lemma generalized_acceptance_requires_c5c_and_c6a_contracts:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root
+        epoch_mode revocation_mode transparency_mode #ia.
+
+      GeneralizedFinalAccepted(
+        verifier,
+        contract,
+        child_id,
+        certificate,
+        log,
+        checkpoint,
+        transparency_root,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        epoch_mode,
+        revocation_mode,
+        transparency_mode
+      ) @ #ia
+
+      ==>
+
+      (Ex canonical_root initial_epoch initial_epoch_pk
+          initial_lineage_root #ic5c #ic6a.
+
+          C5CContractImported(
+            verifier,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            canonical_root
+          ) @ #ic5c
+
+        & C6AContractImported(
+            verifier,
+            contract,
+            initial_epoch,
+            initial_epoch_pk,
+            initial_lineage_root
+          ) @ #ic6a
+
+        & #ic5c < #ia
+        & #ic6a < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Clean acceptance carries both clean security and current epoch evidence
+ * ========================================================================= */
+
+lemma clean_generalized_acceptance_has_complete_evidence:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root #ia.
+
+      GeneralizedFinalAccepted(
+        verifier,
+        contract,
+        child_id,
+        certificate,
+        log,
+        checkpoint,
+        transparency_root,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'current',
+        'active',
+        'canonical'
+      ) @ #ia
+
+      ==>
+
+          GeneralizedEpochComponentSatisfied(
+            verifier,
+            contract,
+            epoch,
+            epoch_pk,
+            lineage_root,
+            'current'
+          ) @ #ia
+
+        & GeneralizedSecurityComponentSatisfied(
+            verifier,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            transparency_root,
+            'active',
+            'canonical'
+          ) @ #ia
+  "
+
+
+/* =========================================================================
+ * Stale generalized acceptance requires prior epoch-verifier compromise
+ * ========================================================================= */
+
+lemma stale_generalized_acceptance_has_stale_epoch_evidence:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root
+        revocation_mode transparency_mode #ia.
+
+      GeneralizedFinalAccepted(
+        verifier,
+        contract,
+        child_id,
+        certificate,
+        log,
+        checkpoint,
+        transparency_root,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'stale',
+        revocation_mode,
+        transparency_mode
+      ) @ #ia
+
+      ==>
+
+      GeneralizedEpochComponentSatisfied(
+        verifier,
+        contract,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'stale'
+      ) @ #ia
+  "
+
+
+lemma stale_generalized_acceptance_uses_epoch_compromise_state:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root
+        revocation_mode transparency_mode #ia.
+
+      GeneralizedFinalAccepted(
+        verifier,
+        contract,
+        child_id,
+        certificate,
+        log,
+        checkpoint,
+        transparency_root,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'stale',
+        revocation_mode,
+        transparency_mode
+      ) @ #ia
+
+      ==>
+
+      GeneralizedEpochCompromiseUsed(
+        verifier,
+        contract,
+        epoch
+      ) @ #ia
+  "
+
+
+lemma generalized_epoch_compromise_use_requires_prior_compromise:
+  "
+    All verifier contract epoch #iu.
+
+      GeneralizedEpochCompromiseUsed(
+        verifier,
+        contract,
+        epoch
+      ) @ #iu
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedCompositionVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #iu
+      )
+  "
+
+
+/* =========================================================================
+ * Revoked generalized acceptance requires an explicit C5C exception
+ * ========================================================================= */
+
+lemma revoked_generalized_acceptance_requires_explicit_exception:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root
+        epoch_mode revocation_mode transparency_mode #ia.
+
+          GeneralizedFinalAccepted(
+            verifier,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            transparency_root,
+            epoch,
+            epoch_pk,
+            lineage_root,
+            epoch_mode,
+            revocation_mode,
+            transparency_mode
+          ) @ #ia
+
+        & not (revocation_mode = 'active')
+
+      ==>
+
+        (Ex #im.
+
+            GeneralizedRevocationUpdateMissing(
+              verifier,
+              certificate
+            ) @ #im
+
+          & #im < #ia
+        )
+
+      |
+
+        (Ex #ic.
+
+            GeneralizedRevocationVerifierCompromised(
+              verifier,
+              certificate
+            ) @ #ic
+
+          & #ic < #ia
+        )
+  "
+
+
+/* =========================================================================
+ * Forked generalized acceptance requires prior Log compromise
+ * ========================================================================= */
+
+lemma forked_generalized_acceptance_requires_prior_log_compromise:
+  "
+    All verifier contract child_id certificate log checkpoint
+        transparency_root epoch epoch_pk lineage_root
+        epoch_mode revocation_mode #ia.
+
+      GeneralizedFinalAccepted(
+        verifier,
+        contract,
+        child_id,
+        certificate,
+        log,
+        checkpoint,
+        transparency_root,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        epoch_mode,
+        revocation_mode,
+        'forked'
+      ) @ #ia
+
+      ==>
+
+      (Ex canonical_root #ic.
+
+          GeneralizedTransparencyLogCompromised(
+            log,
+            checkpoint,
+            canonical_root
+          ) @ #ic
+
+        & #ic < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting direct epoch histories require prior verifier compromise
+ * ========================================================================= */
+
+lemma conflicting_generalized_epoch_histories_require_prior_compromise:
+  "
+    All verifier contract child_id certificate log checkpoint
+        lower_epoch higher_epoch
+        lower_epoch_pk lower_lineage_root
+        higher_epoch_pk higher_lineage_root
+        lower_transparency_root higher_transparency_root
+        lower_revocation_mode higher_revocation_mode
+        lower_transparency_mode higher_transparency_mode
+        #it #ih #il.
+
+          GeneralizedCompositionEpochTransition(
+            contract,
+            lower_epoch,
+            higher_epoch
+          ) @ #it
+
+        & GeneralizedFinalAccepted(
+            verifier,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            higher_transparency_root,
+            higher_epoch,
+            higher_epoch_pk,
+            higher_lineage_root,
+            'current',
+            higher_revocation_mode,
+            higher_transparency_mode
+          ) @ #ih
+
+        & GeneralizedFinalAccepted(
+            verifier,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            lower_transparency_root,
+            lower_epoch,
+            lower_epoch_pk,
+            lower_lineage_root,
+            'stale',
+            lower_revocation_mode,
+            lower_transparency_mode
+          ) @ #il
+
+        & #ih < #il
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedCompositionVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #il
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting final transparency roots require prior Log compromise
+ * ========================================================================= */
+
+lemma conflicting_generalized_transparency_roots_require_prior_compromise:
+  "
+    All verifier_1 verifier_2 contract child_id certificate log checkpoint
+        transparency_root_1 transparency_root_2
+        epoch_1 epoch_2 epoch_pk_1 epoch_pk_2
+        lineage_root_1 lineage_root_2
+        epoch_mode_1 epoch_mode_2
+        revocation_mode_1 revocation_mode_2
+        transparency_mode_1 transparency_mode_2
+        #i1 #i2.
+
+          GeneralizedFinalAccepted(
+            verifier_1,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            transparency_root_1,
+            epoch_1,
+            epoch_pk_1,
+            lineage_root_1,
+            epoch_mode_1,
+            revocation_mode_1,
+            transparency_mode_1
+          ) @ #i1
+
+        & GeneralizedFinalAccepted(
+            verifier_2,
+            contract,
+            child_id,
+            certificate,
+            log,
+            checkpoint,
+            transparency_root_2,
+            epoch_2,
+            epoch_pk_2,
+            lineage_root_2,
+            epoch_mode_2,
+            revocation_mode_2,
+            transparency_mode_2
+          ) @ #i2
+
+        & #i1 < #i2
+        & not (transparency_root_1 = transparency_root_2)
+
+      ==>
+
+      (Ex canonical_root #ic.
+
+          GeneralizedTransparencyLogCompromised(
+            log,
+            checkpoint,
+            canonical_root
+          ) @ #ic
+
+        & #ic < #i2
+      )
+  "
+
+end

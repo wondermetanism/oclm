@@ -1,0 +1,693 @@
+theory OCLM_Phase1C3A_ForwardSecureEpochCore
+begin
+
+builtins: hashing, signing
+
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================
+   Oracle root
+   ========================================================= */
+
+rule RootSetup:
+  [ Fr(~root_sk) ]
+  --[
+      RootInitialized(
+        pk(~root_sk)
+      )
+    ]->
+  [
+      !RootSecret(~root_sk),
+      !RootPublic(pk(~root_sk)),
+
+      OldEpochPermit(
+        pk(~root_sk)
+      ),
+
+      Out(
+        pk(~root_sk)
+      )
+  ]
+
+
+/* =========================================================
+   Old epoch
+   ========================================================= */
+
+rule StartOldEpoch:
+  let
+    predecessor =
+      'oclm-c3-genesis'
+
+    credential =
+      <'oclm-c3-epoch-credential-v1',
+       pk(~root_sk),
+       ~old_epoch,
+       pk(~old_sk),
+       predecessor>
+
+    root_signature =
+      sign(
+        credential,
+        ~root_sk
+      )
+  in
+
+  [
+      !RootSecret(~root_sk),
+
+      OldEpochPermit(
+        pk(~root_sk)
+      ),
+
+      Fr(~old_epoch),
+      Fr(~old_sk)
+  ]
+  --[
+      EpochCredentialIssued(
+        pk(~root_sk),
+        ~old_epoch,
+        pk(~old_sk),
+        predecessor
+      ),
+
+      OldEpochStarted(
+        pk(~root_sk),
+        ~old_epoch,
+        pk(~old_sk),
+        predecessor
+      )
+    ]->
+  [
+      !OldEpochCredential(
+        pk(~root_sk),
+        ~old_epoch,
+        pk(~old_sk),
+        predecessor,
+        credential,
+        root_signature
+      ),
+
+      OldEpochKeyLive(
+        pk(~root_sk),
+        ~old_epoch,
+        ~old_sk
+      ),
+
+      OldEpochReady(
+        pk(~root_sk),
+        ~old_epoch,
+        pk(~old_sk),
+        predecessor
+      ),
+
+      Out(
+        <credential,
+         root_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Issue one old certificate and erase the old epoch key
+   ========================================================= */
+
+rule IssueOldCertificateAndEraseKey:
+  let
+    lineage =
+      h(
+        <'oclm-c3-lineage',
+         root_pk,
+         old_epoch,
+         pk(~old_sk),
+         predecessor,
+         ~iss,
+         ~lineage_seed>
+      )
+
+    child_id =
+      h(
+        <'oclm-c3-child-id',
+         lineage>
+      )
+
+    certificate =
+      <'oclm-c3-forward-secure-certificate-v1',
+       root_pk,
+       old_epoch,
+       pk(~old_sk),
+       predecessor,
+       ~iss,
+       child_id,
+       lineage>
+
+    certificate_signature =
+      sign(
+        certificate,
+        ~old_sk
+      )
+
+    certificate_anchor =
+      h(
+        <certificate,
+         certificate_signature>
+      )
+  in
+
+  [
+      OldEpochKeyLive(
+        root_pk,
+        old_epoch,
+        ~old_sk
+      ),
+
+      OldEpochReady(
+        root_pk,
+        old_epoch,
+        pk(~old_sk),
+        predecessor
+      ),
+
+      !OldEpochCredential(
+        root_pk,
+        old_epoch,
+        pk(~old_sk),
+        predecessor,
+        credential,
+        root_signature
+      ),
+
+      Fr(~iss),
+      Fr(~lineage_seed)
+  ]
+  --[
+      OldCertificateIssued(
+        root_pk,
+        old_epoch,
+        pk(~old_sk),
+        predecessor,
+        ~iss,
+        child_id,
+        lineage,
+        certificate_anchor
+      ),
+
+      OldEpochKeyErased(
+        root_pk,
+        old_epoch,
+        pk(~old_sk),
+        certificate_anchor
+      )
+    ]->
+  [
+      NextEpochPermit(
+        root_pk,
+        old_epoch,
+        pk(~old_sk),
+        certificate_anchor
+      ),
+
+      Out(
+        <credential,
+         root_signature>
+      ),
+
+      Out(
+        <certificate,
+         certificate_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Later epoch starts only after old-key erasure
+   ========================================================= */
+
+rule StartLaterEpoch:
+  let
+    credential =
+      <'oclm-c3-epoch-credential-v1',
+       pk(~root_sk),
+       ~later_epoch,
+       pk(~later_sk),
+       old_anchor>
+
+    root_signature =
+      sign(
+        credential,
+        ~root_sk
+      )
+  in
+
+  [
+      !RootSecret(~root_sk),
+
+      NextEpochPermit(
+        pk(~root_sk),
+        old_epoch,
+        old_epoch_pk,
+        old_anchor
+      ),
+
+      Fr(~later_epoch),
+      Fr(~later_sk)
+  ]
+  --[
+      EpochCredentialIssued(
+        pk(~root_sk),
+        ~later_epoch,
+        pk(~later_sk),
+        old_anchor
+      ),
+
+      LaterEpochStarted(
+        pk(~root_sk),
+        old_epoch,
+        old_epoch_pk,
+        ~later_epoch,
+        pk(~later_sk),
+        old_anchor
+      )
+    ]->
+  [
+      LaterEpochKeyLive(
+        pk(~root_sk),
+        old_epoch,
+        old_epoch_pk,
+        ~later_epoch,
+        ~later_sk
+      ),
+
+      Out(
+        <credential,
+         root_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Key compromise
+   ========================================================= */
+
+rule CompromiseOldEpochKey:
+  [
+      OldEpochKeyLive(
+        root_pk,
+        old_epoch,
+        old_sk
+      )
+  ]
+  --[
+      OldEpochKeyCompromised(
+        root_pk,
+        old_epoch,
+        pk(old_sk)
+      )
+    ]->
+  [
+      Out(old_sk)
+  ]
+
+
+rule CompromiseLaterEpochKey:
+  [
+      LaterEpochKeyLive(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        later_sk
+      )
+  ]
+  --[
+      LaterEpochKeyCompromised(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        pk(later_sk)
+      )
+    ]->
+  [
+      !LaterEpochCompromiseActive(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        pk(later_sk)
+      ),
+
+      Out(later_sk)
+  ]
+
+
+rule CompromiseRootKey:
+  [
+      !RootSecret(root_sk)
+  ]
+  --[
+      RootKeyCompromised(
+        pk(root_sk)
+      )
+    ]->
+  [
+      Out(root_sk)
+  ]
+
+
+/* =========================================================
+   Stage 1 verification:
+   verify the root-signed epoch credential
+   ========================================================= */
+
+rule VerifyEpochCredential:
+  let
+    credential =
+      <'oclm-c3-epoch-credential-v1',
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor>
+  in
+
+  [
+      !RootPublic(root_pk),
+
+      In(
+        <credential,
+         root_signature>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          root_signature,
+          credential,
+          root_pk
+        ),
+        true
+      ),
+
+      EpochCredentialAccepted(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor
+      )
+    ]->
+  [
+      !VerifiedEpochCredential(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor
+      )
+  ]
+
+
+/* =========================================================
+   Stage 2 verification:
+   verify an old certificate after a later-key compromise
+   ========================================================= */
+
+rule VerifyOldCertificateAfterLaterCompromise:
+  let
+    certificate =
+      <'oclm-c3-forward-secure-certificate-v1',
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage>
+  in
+
+  [
+      !VerifiedEpochCredential(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        predecessor
+      ),
+
+      !LaterEpochCompromiseActive(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        later_epoch_pk
+      ),
+
+      In(
+        <certificate,
+         certificate_signature>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          certificate_signature,
+          certificate,
+          old_epoch_pk
+        ),
+        true
+      ),
+
+      Eq(
+        child_id,
+        h(
+          <'oclm-c3-child-id',
+           lineage>
+        )
+      ),
+
+      OldCertificateAcceptedAfterLaterCompromise(
+        root_pk,
+        old_epoch,
+        old_epoch_pk,
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        later_epoch,
+        later_epoch_pk
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Executability:
+   old certificate remains accepted after later-key compromise
+   ========================================================= */
+
+lemma executable_old_certificate_after_later_epoch_compromise:
+  exists-trace
+  "Ex root_pk
+      old_epoch old_epoch_pk predecessor
+      iss child_id lineage old_anchor
+      later_epoch later_epoch_pk
+      #c #n #k #v.
+
+     OldCertificateIssued(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       old_anchor
+     ) @ #c
+
+     &
+
+     OldEpochKeyErased(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_anchor
+     ) @ #c
+
+     &
+
+     LaterEpochStarted(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       later_epoch,
+       later_epoch_pk,
+       old_anchor
+     ) @ #n
+
+     &
+
+     LaterEpochKeyCompromised(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       later_epoch,
+       later_epoch_pk
+     ) @ #k
+
+     &
+
+     OldCertificateAcceptedAfterLaterCompromise(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       later_epoch,
+       later_epoch_pk
+     ) @ #v
+
+     & #c < #n
+     & #n < #k
+     & #k < #v"
+
+
+/* =========================================================
+   Erasure safety
+   ========================================================= */
+
+lemma erased_old_epoch_key_cannot_be_compromised_later:
+  "All root_pk old_epoch old_epoch_pk anchor #e.
+
+     OldEpochKeyErased(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       anchor
+     ) @ #e
+
+     ==>
+
+     not (
+       Ex #k.
+         OldEpochKeyCompromised(
+           root_pk,
+           old_epoch,
+           old_epoch_pk
+         ) @ #k
+
+         & #e < #k
+     )"
+
+
+/* =========================================================
+   Root credential origin
+   ========================================================= */
+
+lemma accepted_epoch_credential_requires_issuance_or_root_compromise:
+  "All root_pk epoch epoch_pk predecessor #v.
+
+     EpochCredentialAccepted(
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor
+     ) @ #v
+
+     ==>
+
+     (
+       Ex #i.
+         EpochCredentialIssued(
+           root_pk,
+           epoch,
+           epoch_pk,
+           predecessor
+         ) @ #i
+
+         & #i < #v
+     )
+
+     |
+
+     (
+       Ex #r.
+         RootKeyCompromised(
+           root_pk
+         ) @ #r
+
+         & #r < #v
+     )"
+
+
+/* =========================================================
+   Old certificate origin
+
+   A later epoch compromise is deliberately not an exception.
+   ========================================================= */
+
+lemma accepted_old_certificate_requires_issuance_or_target_compromise:
+  "All root_pk
+       old_epoch old_epoch_pk predecessor
+       iss child_id lineage
+       later_epoch later_epoch_pk
+       #v.
+
+     OldCertificateAcceptedAfterLaterCompromise(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       later_epoch,
+       later_epoch_pk
+     ) @ #v
+
+     ==>
+
+     (
+       Ex anchor #i.
+         OldCertificateIssued(
+           root_pk,
+           old_epoch,
+           old_epoch_pk,
+           predecessor,
+           iss,
+           child_id,
+           lineage,
+           anchor
+         ) @ #i
+
+         & #i < #v
+     )
+
+     |
+
+     (
+       Ex #k.
+         OldEpochKeyCompromised(
+           root_pk,
+           old_epoch,
+           old_epoch_pk
+         ) @ #k
+
+         & #k < #v
+     )
+
+     |
+
+     (
+       Ex #r.
+         RootKeyCompromised(
+           root_pk
+         ) @ #r
+
+         & #r < #v
+     )"
+
+end

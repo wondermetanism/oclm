@@ -1,0 +1,83 @@
+OCLM Phase 1-C4B
+Rollback-Resistant Composition Contract
+
+Status:
+FORMALLY VERIFIED
+
+Verification date:
+2026-07-17
+
+Verification environment:
+Tamarin Prover 1.12.0
+Maude 3.5.1
+macOS 26.5.2 arm64
+
+Model:
+oclm_phase1c4b_rollback_resistant_composition_contract.spthy
+
+Model SHA-256:
+f6fc87b5b68e4af994fe531c6b70e0f47a1864235df29986020d5ac64b9d0602
+
+Final all-lemma proof result:
+phase1c4b_all_lemmas_20260717.txt
+
+Final proof SHA-256:
+5757cbc91820b2d4005673eefb29652c693063682548dfba219c48af8cecb0f5
+
+Final processing time:
+1.28 seconds
+
+Verified lemmas:
+
+1. executable_rollback_resistant_composed_lifecycle
+   exists-trace
+   verified (26 steps)
+
+2. rollback_resistant_acceptance_requires_c3b_contract
+   all-traces
+   verified (8 steps)
+
+3. composed_acceptance_uses_latest_state_or_prior_verifier_compromise
+   all-traces
+   verified (28 steps)
+
+4. stale_composed_acceptance_requires_prior_verifier_compromise
+   all-traces
+   verified (27 steps)
+
+5. same_contract_conflicting_verifier_histories_require_compromise
+   all-traces
+   verified (106 steps)
+
+Verified guarantee:
+
+Every rollback-resistant composed acceptance remains anchored to a prior
+C3B closed lineage contract. Acceptance under the current verifier state
+uses the latest finite verifier state e2. Acceptance under a stale verifier
+state requires prior verifier compromise. Conflicting verifier-state
+histories for the same C3B contract require prior verifier compromise.
+
+Assume-guarantee boundary:
+
+- Phase 1-C3B provides the verified Oracle-Parent-Child Time-Space lineage
+  and forward-secure Composition Certificate contract.
+- Phase 1-C4A provides the finite verifier-state monotonicity core.
+- Phase 1-C4B proves their rollback-resistant composition contract.
+
+Explicit scope:
+
+- opaque imported C3B closed contract
+- finite verifier states e0 -> e1 -> e2
+- later-epoch-key compromise
+- Claim Collapse
+- current-state composed acceptance
+- persistent verifier compromise
+- stale-state acceptance after compromised rollback
+
+Excluded from this phase:
+
+- re-proof of C3B internal lineage details
+- revocation and transparency
+- split-view resistance
+- unbounded multi-epoch generalization
+- implementation-level secure storage and rollback protection

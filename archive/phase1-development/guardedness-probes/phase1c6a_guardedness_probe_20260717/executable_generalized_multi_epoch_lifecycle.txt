@@ -1,0 +1,71 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory loaded
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory translated
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks started
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks ended
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory closed
+tamarin-prover: unguarded variable(s) 'epoch_pk_2', 'lineage_root_2' in the
+subformula
+  "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1
+     epoch_pk_1 lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3
+     epoch_pk_3 lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+    ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                    epoch_0, epoch_pk_0, lineage_root_0
+                    ) @ #i0) ∧
+                   (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                  (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                 (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                           lineage_root_3, 'current'
+                 ) @ #ia)) ∧
+               (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                ) @ #ic)) ∧
+              (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+               ) @ #ir1)) ∧
+             (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+              ) @ #ir2)) ∧
+            (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                       lineage_root_1, 'stale'
+             ) @ #is)) ∧
+           (#i0 < #it1)) ∧
+          (#it1 < #it2)) ∧
+         (#it2 < #it3)) ∧
+        (#it3 < #ia)) ∧
+       (#ia < #ic)) ∧
+      (#ic < #ir1)) ∧
+     (#ir1 < #ir2)) ∧
+    (#ir2 < #is)"
+in the formula
+  "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1
+     epoch_pk_1 lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3
+     epoch_pk_3 lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+    ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                    epoch_0, epoch_pk_0, lineage_root_0
+                    ) @ #i0) ∧
+                   (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                  (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                 (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                           lineage_root_3, 'current'
+                 ) @ #ia)) ∧
+               (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                ) @ #ic)) ∧
+              (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+               ) @ #ir1)) ∧
+             (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+              ) @ #ir2)) ∧
+            (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                       lineage_root_1, 'stale'
+             ) @ #is)) ∧
+           (#i0 < #it1)) ∧
+          (#it1 < #it2)) ∧
+         (#it2 < #it3)) ∧
+        (#it3 < #ia)) ∧
+       (#ia < #ic)) ∧
+      (#ic < #ir1)) ∧
+     (#ir1 < #ir2)) ∧
+    (#ir2 < #is)"
+CallStack (from HasCallStack):
+  error, called at src/Theory/Constraint/System/Guarded.hs:465:29 in tamarin-prover-theory-1.12.0-FbCxjv2pbRW9B4EGkShrKZ:Theory.Constraint.System.Guarded

@@ -1,0 +1,771 @@
+theory OCLM_Phase1B_External
+begin
+
+builtins: hashing, signing
+
+
+/* =========================================================
+   Equality restriction
+
+   All verification equations recorded through Eq must hold
+   under the signing and hashing equational theories.
+   ========================================================= */
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================
+   Oracle setup
+   ========================================================= */
+
+rule OracleSetup:
+  [ Fr(~oracle_sk) ]
+  --[
+      OracleInitialized(pk(~oracle_sk))
+    ]->
+  [
+      !OracleState(~oracle_sk),
+      !OraclePublic(pk(~oracle_sk)),
+      Out(pk(~oracle_sk))
+  ]
+
+
+/* =========================================================
+   Oracle issuance
+
+   The Oracle fixes:
+   - complementary credentials
+   - Parent bindings
+   - time window
+   - causal space
+
+   before Child generation.
+   ========================================================= */
+
+rule IssuePair:
+  let
+    root_body =
+      <'oclm-root-v2',
+       pk(~oracle_sk),
+       ~iss,
+       $A,
+       $B,
+       h(~credA),
+       h(~credB),
+       ~window,
+       ~space>
+
+    root_hash = h(root_body)
+    root_sig  = sign(root_body, ~oracle_sk)
+  in
+
+  [
+      !OracleState(~oracle_sk),
+
+      Fr(~iss),
+      Fr(~credA),
+      Fr(~credB),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      OracleIssued(
+        pk(~oracle_sk),
+        ~iss,
+        root_hash,
+        $A,
+        $B,
+        h(~credA),
+        h(~credB),
+        ~window,
+        ~space
+      ),
+
+      PairIssued(~iss)
+    ]->
+  [
+      PairOpen(
+        pk(~oracle_sk),
+        ~iss,
+        $A,
+        $B,
+        ~credA,
+        ~credB,
+        ~window,
+        ~space,
+        root_body,
+        root_hash,
+        root_sig
+      ),
+
+      ParentACred(
+        $A,
+        ~iss,
+        ~credA,
+        root_hash
+      ),
+
+      ParentBCred(
+        $B,
+        ~iss,
+        ~credB,
+        root_hash
+      ),
+
+      !OracleRootRecord(
+        pk(~oracle_sk),
+        ~iss,
+        root_body,
+        root_hash,
+        root_sig
+      ),
+
+      Out(<root_body, root_sig>)
+  ]
+
+
+/* =========================================================
+   Parent A participation
+   ========================================================= */
+
+rule ParentAParticipate:
+  [
+      ParentACred(
+        A,
+        iss,
+        credA,
+        root_hash
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        iss,
+        A,
+        root_hash,
+        h(credA),
+        ~timeA,
+        ~contextA
+      )
+    ]->
+  [
+      ParentAReady(
+        A,
+        iss,
+        credA,
+        root_hash,
+        ~timeA,
+        ~contextA
+      )
+  ]
+
+
+/* =========================================================
+   Parent B participation
+   ========================================================= */
+
+rule ParentBParticipate:
+  [
+      ParentBCred(
+        B,
+        iss,
+        credB,
+        root_hash
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        iss,
+        B,
+        root_hash,
+        h(credB),
+        ~timeB,
+        ~contextB
+      )
+    ]->
+  [
+      ParentBReady(
+        B,
+        iss,
+        credB,
+        root_hash,
+        ~timeB,
+        ~contextB
+      )
+  ]
+
+
+/* =========================================================
+   Child generation
+
+   PairOpen is linear and consumed exactly once.
+
+   The external Child package contains:
+   - Oracle root body and signature
+   - Child payload and signature
+
+   It does not expose raw Parent credentials.
+   ========================================================= */
+
+rule GenerateChild:
+  let
+    lineage =
+      h(
+        <'oclm-lineage-v2',
+         oracle_pk,
+         iss,
+         root_hash,
+         A,
+         B,
+         h(credA),
+         h(credB),
+         timeA,
+         timeB,
+         ~timeC,
+         window,
+         space,
+         contextA,
+         contextB,
+         ~interaction>
+      )
+
+    child_id =
+      h(
+        <'oclm-child-id-v2',
+         lineage>
+      )
+
+    child_payload =
+      <'oclm-child-v2',
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root_hash,
+       A,
+       B,
+       h(credA),
+       h(credB),
+       timeA,
+       timeB,
+       ~timeC,
+       window,
+       space>
+
+    child_sig =
+      sign(child_payload, ~oracle_sk)
+  in
+
+  [
+      !OracleState(~oracle_sk),
+
+      PairOpen(
+        oracle_pk,
+        iss,
+        A,
+        B,
+        credA,
+        credB,
+        window,
+        space,
+        root_body,
+        root_hash,
+        root_sig
+      ),
+
+      ParentAReady(
+        A,
+        iss,
+        credA,
+        root_hash,
+        timeA,
+        contextA
+      ),
+
+      ParentBReady(
+        B,
+        iss,
+        credB,
+        root_hash,
+        timeB,
+        contextB
+      ),
+
+      Fr(~timeC),
+      Fr(~interaction)
+  ]
+  --[
+      PairConsumed(iss),
+
+      ChildGenerated(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root_hash,
+        A,
+        B,
+        h(credA),
+        h(credB),
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+    ]->
+  [
+      Out(
+        <root_body,
+         root_sig,
+         child_payload,
+         child_sig>
+      )
+  ]
+
+
+/* =========================================================
+   External adversarial verification
+
+   The entire package arrives through In(...).
+   Therefore the attacker may:
+   - replay it
+   - replace fields
+   - construct arbitrary packages
+   - mix roots and Children
+   - alter Parents, times, or spaces
+
+   Acceptance occurs only if all bindings and signatures
+   verify under a genuine Oracle public key.
+   ========================================================= */
+
+rule VerifyExternalChild:
+  let
+    root_body =
+      <'oclm-root-v2',
+       oracle_pk,
+       iss,
+       A,
+       B,
+       credA_hash,
+       credB_hash,
+       window,
+       space>
+
+    child_payload =
+      <'oclm-child-v2',
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root_hash,
+       A,
+       B,
+       credA_hash,
+       credB_hash,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space>
+  in
+
+  [
+      !OraclePublic(oracle_pk),
+
+      In(
+        <root_body,
+         root_sig,
+         child_payload,
+         child_sig>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          root_sig,
+          root_body,
+          oracle_pk
+        ),
+        true
+      ),
+
+      Eq(
+        verify(
+          child_sig,
+          child_payload,
+          oracle_pk
+        ),
+        true
+      ),
+
+      Eq(
+        root_hash,
+        h(root_body)
+      ),
+
+      Eq(
+        child_id,
+        h(
+          <'oclm-child-id-v2',
+           lineage>
+        )
+      ),
+
+      ChildAcceptedExternal(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root_hash,
+        A,
+        B,
+        credA_hash,
+        credB_hash,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Parent and node claims remain arbitrary network messages.
+
+   They are deliberately not inputs to VerifyExternalChild.
+   ========================================================= */
+
+rule PublishClaim:
+  [
+      In(<iss, claimant, claim>)
+  ]
+  --[
+      ClaimPublished(
+        iss,
+        claimant,
+        claim
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Oracle key compromise
+
+   After this event the attacker learns the Oracle secret key
+   and can produce new signatures.
+   ========================================================= */
+
+rule KeyCompromise:
+  [
+      !OracleState(oracle_sk)
+  ]
+  --[
+      OracleKeyCompromised(
+        pk(oracle_sk)
+      )
+    ]->
+  [
+      Out(oracle_sk)
+  ]
+
+
+/* =========================================================
+   Executability
+   ========================================================= */
+
+lemma executable_external_acceptance:
+  exists-trace
+  "Ex oracle_pk iss child_id lineage root_hash
+      A B credA_hash credB_hash
+      timeA timeB timeC window space #i.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root_hash,
+       A,
+       B,
+       credA_hash,
+       credB_hash,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ i"
+
+
+/* =========================================================
+   External acceptance correspondence
+
+   Every externally accepted Child has either:
+   - a matching genuine prior Child generation, or
+   - a prior compromise of that Oracle key.
+   ========================================================= */
+
+lemma external_acceptance_requires_generation_or_compromise:
+  "All oracle_pk iss child_id lineage root_hash
+       A B credA_hash credB_hash
+       timeA timeB timeC window space #i.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root_hash,
+       A,
+       B,
+       credA_hash,
+       credB_hash,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ i
+
+     ==>
+
+     (
+       Ex #j.
+         ChildGenerated(
+           oracle_pk,
+           iss,
+           child_id,
+           lineage,
+           root_hash,
+           A,
+           B,
+           credA_hash,
+           credB_hash,
+           timeA,
+           timeB,
+           timeC,
+           window,
+           space
+         ) @ j
+         & j < i
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & k < i
+     )"
+
+
+/* =========================================================
+   Oracle-root correspondence
+
+   Every externally accepted Child has either:
+   - a matching genuine prior Oracle issuance, or
+   - a prior compromise.
+   ========================================================= */
+
+lemma external_acceptance_requires_issue_or_compromise:
+  "All oracle_pk iss child_id lineage root_hash
+       A B credA_hash credB_hash
+       timeA timeB timeC window space #i.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root_hash,
+       A,
+       B,
+       credA_hash,
+       credB_hash,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ i
+
+     ==>
+
+     (
+       Ex #j.
+         OracleIssued(
+           oracle_pk,
+           iss,
+           root_hash,
+           A,
+           B,
+           credA_hash,
+           credB_hash,
+           window,
+           space
+         ) @ j
+         & j < i
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & k < i
+     )"
+
+
+/* =========================================================
+   External lineage substitution resistance
+
+   The same Child identifier cannot be externally accepted
+   under two different Oracle–Parent–Time–Space lineages,
+   unless the Oracle key had already been compromised before
+   one of the acceptance events.
+   ========================================================= */
+
+lemma external_child_lineage_is_bound_or_compromised:
+  "All oracle_pk child_id
+       iss1 lineage1 root1 A1 B1 credA1 credB1
+       timeA1 timeB1 timeC1 window1 space1
+       iss2 lineage2 root2 A2 B2 credA2 credB2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss1,
+       child_id,
+       lineage1,
+       root1,
+       A1,
+       B1,
+       credA1,
+       credB1,
+       timeA1,
+       timeB1,
+       timeC1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss2,
+       child_id,
+       lineage2,
+       root2,
+       A2,
+       B2,
+       credA2,
+       credB2,
+       timeA2,
+       timeB2,
+       timeC2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     (
+       iss1 = iss2
+       & lineage1 = lineage2
+       & root1 = root2
+       & A1 = A2
+       & B1 = B2
+       & credA1 = credA2
+       & credB1 = credB2
+       & timeA1 = timeA2
+       & timeB1 = timeB2
+       & timeC1 = timeC2
+       & window1 = window2
+       & space1 = space2
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & (
+             k < i
+             | k < j
+           )
+     )"
+
+
+/* =========================================================
+   One genuine issuance remains single-use
+   ========================================================= */
+
+lemma external_model_pair_is_single_use:
+  "All oracle_pk1 oracle_pk2 iss
+       child1 lineage1 root1 A1 B1 credA1 credB1
+       timeA1 timeB1 timeC1 window1 space1
+       child2 lineage2 root2 A2 B2 credA2 credB2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+
+     ChildGenerated(
+       oracle_pk1,
+       iss,
+       child1,
+       lineage1,
+       root1,
+       A1,
+       B1,
+       credA1,
+       credB1,
+       timeA1,
+       timeB1,
+       timeC1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ChildGenerated(
+       oracle_pk2,
+       iss,
+       child2,
+       lineage2,
+       root2,
+       A2,
+       B2,
+       credA2,
+       credB2,
+       timeA2,
+       timeB2,
+       timeC2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     #i = #j"
+
+end

@@ -1,0 +1,1568 @@
+theory OCLM_Phase1C1_CompositionContract
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+rule (modulo E) OracleSetup:
+   [ Fr( ~oracle_seed ) ]
+  --[ OracleInitialized( h(~oracle_seed) ) ]->
+   [
+   !OracleState( ~oracle_seed ), !OraclePublic( h(~oracle_seed) ),
+   Out( h(~oracle_seed) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OpenWindow:
+   [ !OracleState( ~oracle_seed ), Fr( ~iss ), Fr( ~window ), Fr( ~space ) ]
+  --[
+  WindowOpened( h(~oracle_seed), ~iss,
+                h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A,
+                $B, ~window, ~space
+  )
+  ]->
+   [
+   WindowNone( h(~oracle_seed), ~iss,
+               h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A,
+               $B, ~window, ~space
+   ),
+   Out( <'oclm-window-opened', h(~oracle_seed), ~iss, 
+         h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A, 
+         $B, ~window, ~space>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAFirst:
+   [
+   WindowNone( oracle_pk, iss, root, A, B, window, space ), Fr( ~timeA ),
+   Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( oracle_pk, iss, root, A, B, ~timeA, ~contextA,
+                       window, space
+  )
+  ]->
+   [
+   WindowAReady( oracle_pk, iss, root, A, B, ~timeA, ~contextA, window,
+                 space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBFirst:
+   [
+   WindowNone( oracle_pk, iss, root, A, B, window, space ), Fr( ~timeB ),
+   Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( oracle_pk, iss, root, A, B, ~timeB, ~contextB,
+                       window, space
+  )
+  ]->
+   [
+   WindowBReady( oracle_pk, iss, root, A, B, ~timeB, ~contextB, window,
+                 space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBJoins:
+   [
+   WindowAReady( oracle_pk, iss, root, A, B, timeA, contextA, window, space
+   ),
+   Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( oracle_pk, iss, root, A, B, ~timeB, ~contextB,
+                       window, space
+  )
+  ]->
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, timeA, contextA, ~timeB,
+                    ~contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAJoins:
+   [
+   WindowBReady( oracle_pk, iss, root, A, B, timeB, contextB, window, space
+   ),
+   Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( oracle_pk, iss, root, A, B, ~timeA, ~contextA,
+                       window, space
+  )
+  ]->
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, ~timeA, ~contextA, timeB,
+                    contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateChild:
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, timeA, contextA, timeB,
+                    contextB, window, space
+   ),
+   Fr( ~timeC ), Fr( ~interaction )
+   ]
+  --[
+  ChildGeneratedInsideWindow( oracle_pk, iss,
+                              h(<'oclm-c1-child', 
+                                 h(<'oclm-c1-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                                    window, space, contextA, contextB, ~interaction>)
+                                >),
+                              h(<'oclm-c1-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                                 window, space, contextA, contextB, ~interaction>),
+                              root, A, B, timeA, timeB, ~timeC, window, space
+  )
+  ]->
+   [
+   WindowGenerated( oracle_pk, iss,
+                    h(<'oclm-c1-child', 
+                       h(<'oclm-c1-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                          window, space, contextA, contextB, ~interaction>)
+                      >),
+                    h(<'oclm-c1-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                       window, space, contextA, contextB, ~interaction>),
+                    root, A, B, timeA, timeB, ~timeC, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CloseGeneratedWindow:
+   [
+   WindowGenerated( oracle_pk, iss, child_id, lineage, root, A, B, timeA,
+                    timeB, timeC, window, space
+   )
+   ]
+  --[
+  WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                               B, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [
+   !AuthenticatedGenerationContract( oracle_pk, iss, child_id, lineage,
+                                     root, A, B, timeA, timeB, timeC, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentAClaim:
+   [ In( <'claim-a', iss, A, claimA> ) ]
+  --[ ParentAClaimPublished( iss, A, claimA ) ]->
+   [ !ParentAClaim( iss, A, claimA ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentBClaim:
+   [ In( <'claim-b', iss, B, claimB> ) ]
+  --[ ParentBClaimPublished( iss, B, claimB ) ]->
+   [ !ParentBClaim( iss, B, claimB ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishConsensusDecision:
+   [ In( <'consensus', iss, decision> ) ]
+  --[ ConsensusDecisionPublished( iss, decision ) ]->
+   [ !ConsensusDecision( iss, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) DeclareClaimCollapse:
+   [
+   !ParentAClaim( iss, A, claimA ), !ParentBClaim( iss, B, claimB ),
+   !ConsensusDecision( iss, decision )
+   ]
+  --[ ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) ]->
+   [ !CollapseActive( iss, A, B, claimA, claimB, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) AcceptAuthenticAfterCollapse:
+   [
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   !AuthenticatedGenerationContract( oracle_pk, iss, child_id, lineage,
+                                     root, A, B, timeA, timeB, timeC, window, space
+   )
+   ]
+  --[
+  ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                         timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OracleKeyCompromise:
+   [ !OracleState( oracle_seed ) ]
+  --[ OracleKeyCompromised( h(oracle_seed) ) ]->
+   [ !CompromisedOracle( h(oracle_seed) ), Out( oracle_seed ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) AcceptCompromisedAfterCollapse:
+   [
+   !CompromisedOracle( oracle_pk ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <'compromised-child', child_id, lineage, root, timeA, timeB, timeC, 
+        window, space>
+   )
+   ]
+  --[
+  ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                         timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_honest_composed_lifecycle:
+  exists-trace
+  "∃ oracle_pk iss child_id lineage root A B timeA timeB timeC contextA
+     contextB window space claimA claimB decision #o #a #b #g #c #d #v.
+    ((((((((((((((WindowOpened( oracle_pk, iss, root, A, B, window, space
+                  ) @ #o) ∧
+                 (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                                       window, space
+                  ) @ #a)) ∧
+                (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                                      window, space
+                 ) @ #b)) ∧
+               (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                            B, timeA, timeB, timeC, window, space
+                ) @ #g)) ∧
+              (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                            B, timeA, timeB, timeC, window, space
+               ) @ #c)) ∧
+             (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d)) ∧
+            (ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                                    timeA, timeB, timeC, window, space
+             ) @ #v)) ∧
+           (#o < #a)) ∧
+          (#o < #b)) ∧
+         (#a < #g)) ∧
+        (#b < #g)) ∧
+       (#g < #c)) ∧
+      (#d < #v)) ∧
+     (#c < #v)) ∧
+    (¬(∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC contextA
+   contextB window space claimA claimB decision #o #a #b #g #c #d #v.
+  (WindowOpened( oracle_pk, iss, root, A, B, window, space ) @ #o) ∧
+  (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                        window, space
+   ) @ #a) ∧
+  (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                        window, space
+   ) @ #b) ∧
+  (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                               B, timeA, timeB, timeC, window, space
+   ) @ #g) ∧
+  (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                B, timeA, timeB, timeC, window, space
+   ) @ #c) ∧
+  (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d) ∧
+  (ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                          timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (#o < #a) ∧
+  (#o < #b) ∧
+  (#a < #g) ∧
+  (#b < #g) ∧
+  (#g < #c) ∧
+  (#d < #v) ∧
+  (#c < #v) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v))"
+*/
+simplify
+solve( !OracleState( ~oracle_seed ) ▶₀ #o )
+  case OracleSetup
+  solve( WindowBothReady( h(~oracle_seed), ~iss,
+                          h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A,
+                          $B, timeA, contextA, timeB, contextB, ~window, ~space
+         ) ▶₀ #g )
+    case ParentAJoins
+    solve( WindowGenerated( h(~oracle_seed), ~iss,
+                            h(<'oclm-c1-child', 
+                               h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                  h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A, 
+                                  $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, ~contextB, 
+                                  ~interaction>)
+                              >),
+                            h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                               h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A, 
+                               $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, ~contextB, 
+                               ~interaction>),
+                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>), $A,
+                            $B, ~timeA, ~timeB, ~timeC, ~window, ~space
+           ) ▶₀ #c )
+      case GenerateChild
+      solve( !ParentAClaim( ~iss, $A, claimA ) ▶₀ #d )
+        case PublishParentAClaim
+        solve( !ParentBClaim( ~iss, $B, claimB ) ▶₁ #d )
+          case PublishParentBClaim
+          solve( !ConsensusDecision( ~iss, decision ) ▶₂ #d )
+            case PublishConsensusDecision
+            solve( ParentAParticipated( h(~oracle_seed), ~iss,
+                                        h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>),
+                                        $A, $B, ~timeA, contextA.1, ~window, ~space
+                   ) @ #a )
+              case ParentAJoins
+              solve( ParentBParticipated( h(~oracle_seed), ~iss,
+                                          h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space>),
+                                          $A, $B, ~timeB, contextB.2, ~window, ~space
+                     ) @ #b )
+                case ParentBFirst
+                solve( ComposedChildAccepted( h(~oracle_seed), ~iss,
+                                              h(<'oclm-c1-child', 
+                                                 h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                    h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                       ~window, ~space>), 
+                                                    $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                    ~contextA, ~contextB, ~interaction>)
+                                                >),
+                                              h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                 h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, 
+                                                    ~space>), 
+                                                 $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                                 ~contextB, ~interaction>),
+                                              h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, 
+                                                 ~space>),
+                                              $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space
+                       ) @ #v )
+                  case AcceptAuthenticAfterCollapse
+                  solve( !CollapseActive( ~iss, $A, $B, claimA.1, claimB.1, decision.1
+                         ) ▶₀ #v )
+                    case DeclareClaimCollapse
+                    solve( !AuthenticatedGenerationContract( h(~oracle_seed), ~iss,
+                                                             h(<'oclm-c1-child', 
+                                                                h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                                   h(<'oclm-c1-root', h(~oracle_seed), ~iss, 
+                                                                      $A, $B, ~window, ~space>), 
+                                                                   $A, $B, ~timeA, ~timeB, ~timeC, ~window, 
+                                                                   ~space, ~contextA, ~contextB, ~interaction
+                                                                  >)
+                                                               >),
+                                                             h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                                h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, 
+                                                                   $B, ~window, ~space>), 
+                                                                $A, $B, ~timeA, ~timeB, ~timeC, ~window, 
+                                                                ~space, ~contextA, ~contextB, ~interaction>),
+                                                             h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, 
+                                                                $B, ~window, ~space>),
+                                                             $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space
+                           ) ▶₁ #v )
+                      case CloseGeneratedWindow
+                      solve( !KU( ~iss ) @ #vk.4 )
+                        case OpenWindow
+                        SOLVED // trace found
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+lemma composed_acceptance_requires_closed_generation_or_compromise:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+     #v.
+    (ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                            timeA, timeB, timeC, window, space
+     ) @ #v) ⇒
+    ((∃ #c.
+       (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                     B, timeA, timeB, timeC, window, space
+        ) @ #c) ∧
+       (#c < #v)) ∨
+     (∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+   #v.
+  (ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                          timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #c.
+    (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                  B, timeA, timeB, timeC, window, space
+     ) @ #c)
+   ⇒
+    ¬(#c < #v)) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v))"
+*/
+simplify
+solve( ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                              B, timeA, timeB, timeC, window, space
+       ) @ #v )
+  case AcceptAuthenticAfterCollapse
+  solve( !CollapseActive( iss, A, B, claimA, claimB, decision ) ▶₀ #v )
+    case DeclareClaimCollapse
+    solve( !AuthenticatedGenerationContract( oracle_pk, iss, child_id,
+                                             lineage, root, A, B, timeA, timeB, timeC, window, space
+           ) ▶₁ #v )
+      case CloseGeneratedWindow_case_1
+      by contradiction /* from formulas */
+    next
+      case CloseGeneratedWindow_case_2
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case AcceptCompromisedAfterCollapse
+  solve( !CompromisedOracle( oracle_pk ) ▶₀ #v )
+    case OracleKeyCompromise
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma uncompromised_acceptance_has_full_composed_ancestry:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+     #v.
+    ((ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                             timeA, timeB, timeC, window, space
+      ) @ #v) ∧
+     (¬(∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))) ⇒
+    (∃ contextA contextB #o #a #b #g #c.
+      ((((((((((WindowOpened( oracle_pk, iss, root, A, B, window, space
+                ) @ #o) ∧
+               (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                                     window, space
+                ) @ #a)) ∧
+              (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                                    window, space
+               ) @ #b)) ∧
+             (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                          B, timeA, timeB, timeC, window, space
+              ) @ #g)) ∧
+            (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                          B, timeA, timeB, timeC, window, space
+             ) @ #c)) ∧
+           (#o < #a)) ∧
+          (#o < #b)) ∧
+         (#a < #g)) ∧
+        (#b < #g)) ∧
+       (#g < #c)) ∧
+      (#c < #v))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+   #v.
+  (ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A, B,
+                          timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v)) ∧
+  (∀ contextA contextB #o #a #b #g #c.
+    (WindowOpened( oracle_pk, iss, root, A, B, window, space ) @ #o) ∧
+    (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                          window, space
+     ) @ #a) ∧
+    (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                          window, space
+     ) @ #b) ∧
+    (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                 B, timeA, timeB, timeC, window, space
+     ) @ #g) ∧
+    (WindowClosedAfterGeneration( oracle_pk, iss, child_id, lineage, root, A,
+                                  B, timeA, timeB, timeC, window, space
+     ) @ #c)
+   ⇒
+    ((¬(#o < #a)) ∨
+     (¬(#o < #b)) ∨
+     (¬(#a < #g)) ∨
+     (¬(#b < #g)) ∨
+     (¬(#g < #c)) ∨
+     (¬(#c < #v))))"
+*/
+simplify
+solve( ComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                              B, timeA, timeB, timeC, window, space
+       ) @ #v )
+  case AcceptAuthenticAfterCollapse
+  solve( !CollapseActive( iss, A, B, claimA, claimB, decision ) ▶₀ #v )
+    case DeclareClaimCollapse
+    solve( !AuthenticatedGenerationContract( oracle_pk, iss, child_id,
+                                             lineage, root, A, B, timeA, timeB, timeC, window, space
+           ) ▶₁ #v )
+      case CloseGeneratedWindow_case_1
+      by contradiction /* from formulas */
+    next
+      case CloseGeneratedWindow_case_2
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case AcceptCompromisedAfterCollapse
+  solve( !CompromisedOracle( oracle_pk ) ▶₀ #v )
+    case OracleKeyCompromise
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma composed_child_identity_is_bound_or_compromised:
+  all-traces
+  "∀ oracle_pk child_id iss1 lineage1 root1 A1 B1 timeA1 timeB1 timeC1
+     window1 space1 iss2 lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2
+     space2 #i #j.
+    ((ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1, A1,
+                             B1, timeA1, timeB1, timeC1, window1, space1
+      ) @ #i) ∧
+     (ComposedChildAccepted( oracle_pk, iss2, child_id, lineage2, root2, A2,
+                             B2, timeA2, timeB2, timeC2, window2, space2
+      ) @ #j)) ⇒
+    (((((((((((iss1 = iss2) ∧ (lineage1 = lineage2)) ∧ (root1 = root2)) ∧
+            (A1 = A2)) ∧
+           (B1 = B2)) ∧
+          (timeA1 = timeA2)) ∧
+         (timeB1 = timeB2)) ∧
+        (timeC1 = timeC2)) ∧
+       (window1 = window2)) ∧
+      (space1 = space2)) ∨
+     (∃ #k.
+       (OracleKeyCompromised( oracle_pk ) @ #k) ∧ ((#k < #i) ∨ (#k < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk child_id iss1 lineage1 root1 A1 B1 timeA1 timeB1 timeC1
+   window1 space1 iss2 lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2
+   space2 #i #j.
+  (ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1, A1,
+                          B1, timeA1, timeB1, timeC1, window1, space1
+   ) @ #i) ∧
+  (ComposedChildAccepted( oracle_pk, iss2, child_id, lineage2, root2, A2,
+                          B2, timeA2, timeB2, timeC2, window2, space2
+   ) @ #j)
+ ∧
+  (((¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(root1 = root2)) ∨
+    (¬(A1 = A2)) ∨
+    (¬(B1 = B2)) ∨
+    (¬(timeA1 = timeA2)) ∨
+    (¬(timeB1 = timeB2)) ∨
+    (¬(timeC1 = timeC2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #k.
+    (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ (¬(#k < #i)) ∧ (¬(#k < #j)))"
+*/
+simplify
+solve( (¬(iss1 = iss2))  ∥ (¬(lineage1 = lineage2))  ∥
+       (¬(root1 = root2))  ∥ (¬(A1 = A2))  ∥ (¬(B1 = B2))  ∥
+       (¬(timeA1 = timeA2))  ∥ (¬(timeB1 = timeB2))  ∥ (¬(timeC1 = timeC2))  ∥
+       (¬(window1 = window2))  ∥ (¬(space1 = space2)) )
+  case case_1
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_10
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_2
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_3
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_4
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_5
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_6
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_7
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_8
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case case_9
+  solve( ComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+         ) @ #i )
+    case AcceptAuthenticAfterCollapse
+    solve( !CollapseActive( iss1, A1, B1, claimA, claimB, decision ) ▶₀ #i )
+      case DeclareClaimCollapse
+      solve( !AuthenticatedGenerationContract( oracle_pk, iss1, child_id,
+                                               lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                               space1
+             ) ▶₁ #i )
+        case CloseGeneratedWindow_case_1
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      next
+        case CloseGeneratedWindow_case_2
+        solve( ComposedChildAccepted( h(~oracle_seed), iss2,
+                                      h(<'oclm-c1-child', 
+                                         h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                            h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, ~window, ~space
+                                              >), 
+                                            $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                            ~contextB, ~interaction>)
+                                        >),
+                                      lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+               ) @ #j )
+          case AcceptAuthenticAfterCollapse
+          solve( !CollapseActive( iss2, A2, B2, claimA.1, claimB.1, decision.1
+                 ) ▶₀ #j )
+            case DeclareClaimCollapse
+            solve( !AuthenticatedGenerationContract( h(~oracle_seed), iss2,
+                                                     h(<'oclm-c1-child', 
+                                                        h(<'oclm-c1-lineage', h(~oracle_seed), ~iss, 
+                                                           h(<'oclm-c1-root', h(~oracle_seed), ~iss, $A, $B, 
+                                                              ~window, ~space>), 
+                                                           $A, $B, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                                                           ~contextA, ~contextB, ~interaction>)
+                                                       >),
+                                                     lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                                     space2
+                   ) ▶₁ #j )
+              case CloseGeneratedWindow
+              by contradiction /* from formulas */
+            qed
+          qed
+        next
+          case AcceptCompromisedAfterCollapse
+          solve( !CompromisedOracle( h(~oracle_seed) ) ▶₀ #j )
+            case OracleKeyCompromise
+            by contradiction /* from formulas */
+          qed
+        qed
+      qed
+    qed
+  next
+    case AcceptCompromisedAfterCollapse
+    solve( !CompromisedOracle( oracle_pk ) ▶₀ #i )
+      case OracleKeyCompromise
+      by contradiction /* from formulas */
+    qed
+  qed
+qed
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1c1_composition_contract.spthy
+
+  processing time: 4.03s
+  
+  executable_honest_composed_lifecycle (exists-trace): verified (14 steps)
+  composed_acceptance_requires_closed_generation_or_compromise (all-traces): verified (8 steps)
+  uncompromised_acceptance_has_full_composed_ancestry (all-traces): verified (8 steps)
+  composed_child_identity_is_bound_or_compromised (all-traces): verified (172 steps)
+
+==============================================================================

@@ -1,0 +1,368 @@
+theory OCLM_Phase1B1_ExternalSignature
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) OracleSetup:
+   [ Fr( ~oracle_sk ) ]
+  --[ OracleInitialized( pk(~oracle_sk) ) ]->
+   [
+   !OracleSecret( ~oracle_sk ), !OraclePublic( pk(~oracle_sk) ),
+   Out( pk(~oracle_sk) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateLegitimateChild:
+   [
+   !OracleSecret( ~oracle_sk ), Fr( ~iss ), Fr( ~root ), Fr( ~parent_a ),
+   Fr( ~parent_b ), Fr( ~time_c ), Fr( ~window ), Fr( ~space )
+   ]
+  --[
+  ChildGenerated( pk(~oracle_sk), ~iss,
+                  h(<'oclm-child-id-b1', 
+                     h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                        ~time_c, ~window, ~space>)
+                    >),
+                  h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                     ~time_c, ~window, ~space>),
+                  ~root, ~parent_a, ~parent_b, ~time_c, ~window, ~space
+  )
+  ]->
+   [
+   Out( <
+         <'oclm-child-b1', pk(~oracle_sk), ~iss, 
+          h(<'oclm-child-id-b1', 
+             h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                ~time_c, ~window, ~space>)
+            >), 
+          h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+             ~time_c, ~window, ~space>), 
+          ~root, ~parent_a, ~parent_b, ~time_c, ~window, ~space>, 
+         sign(<'oclm-child-b1', pk(~oracle_sk), ~iss, 
+               h(<'oclm-child-id-b1', 
+                  h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                     ~time_c, ~window, ~space>)
+                 >), 
+               h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                  ~time_c, ~window, ~space>), 
+               ~root, ~parent_a, ~parent_b, ~time_c, ~window, ~space>,
+              ~oracle_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyExternalChild:
+   [
+   !OraclePublic( oracle_pk ),
+   In( <
+        <'oclm-child-b1', oracle_pk, iss, child_id, lineage, root, parent_a, 
+         parent_b, time_c, window, space>, 
+        signature>
+   )
+   ]
+  --[
+  Eq( verify(signature,
+             <'oclm-child-b1', oracle_pk, iss, child_id, lineage, root, parent_a, 
+              parent_b, time_c, window, space>,
+             oracle_pk),
+      true
+  ),
+  Eq( child_id, h(<'oclm-child-id-b1', lineage>) ),
+  ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root, parent_a,
+                         parent_b, time_c, window, space
+  )
+  ]->
+   [ ]
+
+  /*
+  rule (modulo AC) VerifyExternalChild:
+     [
+     !OraclePublic( oracle_pk ),
+     In( <
+          <'oclm-child-b1', oracle_pk, iss, child_id, lineage, root, parent_a, 
+           parent_b, time_c, window, space>, 
+          signature>
+     )
+     ]
+    --[
+    Eq( z, true ), Eq( child_id, h(<'oclm-child-id-b1', lineage>) ),
+    ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root, parent_a,
+                           parent_b, time_c, window, space
+    )
+    ]->
+     [ ]
+    variants (modulo AC)
+    1. child_id
+             = child_id.25
+       iss   = iss.26
+       lineage
+             = lineage.27
+       oracle_pk
+             = oracle_pk.28
+       parent_a
+             = parent_a.29
+       parent_b
+             = parent_b.30
+       root  = root.31
+       signature
+             = signature.32
+       space = space.33
+       time_c
+             = time_c.34
+       window
+             = window.35
+       z     = verify(signature.32,
+                      <'oclm-child-b1', oracle_pk.28, iss.26, child_id.25, lineage.27, 
+                       root.31, parent_a.29, parent_b.30, time_c.34, window.35, space.33>,
+                      oracle_pk.28)
+    
+    2. child_id
+             = child_id.32
+       iss   = iss.33
+       lineage
+             = lineage.34
+       oracle_pk
+             = pk(x.62)
+       parent_a
+             = parent_a.36
+       parent_b
+             = parent_b.37
+       root  = root.38
+       signature
+             = sign(<'oclm-child-b1', pk(x.62), iss.33, child_id.32, lineage.34, 
+                     root.38, parent_a.36, parent_b.37, time_c.41, window.42, space.40>,
+                    x.62)
+       space = space.40
+       time_c
+             = time_c.41
+       window
+             = window.42
+       z     = true
+  */
+
+rule (modulo E) OracleKeyCompromise:
+   [ !OracleSecret( oracle_sk ) ]
+  --[ OracleKeyCompromised( pk(oracle_sk) ) ]->
+   [ Out( oracle_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_external_child:
+  exists-trace
+  "∃ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+     space #i.
+    ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root, parent_a,
+                           parent_b, time_c, window, space
+    ) @ #i"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+   space #i.
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root,
+                          parent_a, parent_b, time_c, window, space
+   ) @ #i)"
+*/
+by sorry
+
+lemma external_child_requires_generation_or_compromise:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+     space #i.
+    (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root,
+                            parent_a, parent_b, time_c, window, space
+     ) @ #i) ⇒
+    ((∃ #j.
+       (ChildGenerated( oracle_pk, iss, child_id, lineage, root, parent_a,
+                        parent_b, time_c, window, space
+        ) @ #j) ∧
+       (#j < #i)) ∨
+     (∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #i)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+   space #i.
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root,
+                          parent_a, parent_b, time_c, window, space
+   ) @ #i)
+ ∧
+  (∀ #j.
+    (ChildGenerated( oracle_pk, iss, child_id, lineage, root, parent_a,
+                     parent_b, time_c, window, space
+     ) @ #j)
+   ⇒
+    ¬(#j < #i)) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #i))"
+*/
+by sorry
+
+lemma external_child_identity_is_bound_or_compromised:
+  all-traces
+  "∀ oracle_pk child_id iss1 lineage1 root1 parent_a1 parent_b1 time_c1
+     window1 space1 iss2 lineage2 root2 parent_a2 parent_b2 time_c2 window2
+     space2 #i #j.
+    ((ChildAcceptedExternal( oracle_pk, iss1, child_id, lineage1, root1,
+                             parent_a1, parent_b1, time_c1, window1, space1
+      ) @ #i) ∧
+     (ChildAcceptedExternal( oracle_pk, iss2, child_id, lineage2, root2,
+                             parent_a2, parent_b2, time_c2, window2, space2
+      ) @ #j)) ⇒
+    (((((((((iss1 = iss2) ∧ (lineage1 = lineage2)) ∧ (root1 = root2)) ∧
+          (parent_a1 = parent_a2)) ∧
+         (parent_b1 = parent_b2)) ∧
+        (time_c1 = time_c2)) ∧
+       (window1 = window2)) ∧
+      (space1 = space2)) ∨
+     (∃ #k.
+       (OracleKeyCompromised( oracle_pk ) @ #k) ∧ ((#k < #i) ∨ (#k < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk child_id iss1 lineage1 root1 parent_a1 parent_b1 time_c1
+   window1 space1 iss2 lineage2 root2 parent_a2 parent_b2 time_c2 window2
+   space2 #i #j.
+  (ChildAcceptedExternal( oracle_pk, iss1, child_id, lineage1, root1,
+                          parent_a1, parent_b1, time_c1, window1, space1
+   ) @ #i) ∧
+  (ChildAcceptedExternal( oracle_pk, iss2, child_id, lineage2, root2,
+                          parent_a2, parent_b2, time_c2, window2, space2
+   ) @ #j)
+ ∧
+  (((¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(root1 = root2)) ∨
+    (¬(parent_a1 = parent_a2)) ∨
+    (¬(parent_b1 = parent_b2)) ∨
+    (¬(time_c1 = time_c2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #k.
+    (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ (¬(#k < #i)) ∧ (¬(#k < #j)))"
+*/
+by sorry
+
+lemma executable_honest_external_child:
+  exists-trace
+  "∃ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+     space #g #i.
+    (((ChildGenerated( oracle_pk, iss, child_id, lineage, root, parent_a,
+                       parent_b, time_c, window, space
+       ) @ #g) ∧
+      (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root,
+                              parent_a, parent_b, time_c, window, space
+       ) @ #i)) ∧
+     (#g < #i)) ∧
+    (¬(∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #i)))"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ oracle_pk iss child_id lineage root parent_a parent_b time_c window
+   space #g #i.
+  (ChildGenerated( oracle_pk, iss, child_id, lineage, root, parent_a,
+                   parent_b, time_c, window, space
+   ) @ #g) ∧
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root,
+                          parent_a, parent_b, time_c, window, space
+   ) @ #i)
+ ∧
+  (#g < #i) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #i))"
+*/
+simplify
+solve( !OracleSecret( ~oracle_sk ) ▶₀ #g )
+  case OracleSetup
+  solve( !OraclePublic( pk(~oracle_sk) ) ▶₀ #i )
+    case OracleSetup
+    solve( !KU( ~iss ) @ #vk.6 )
+      case GenerateLegitimateChild
+      solve( !KU( ~root ) @ #vk.12 )
+        case GenerateLegitimateChild
+        solve( !KU( ~parent_a ) @ #vk.14 )
+          case GenerateLegitimateChild
+          solve( !KU( ~parent_b ) @ #vk.16 )
+            case GenerateLegitimateChild
+            solve( !KU( ~time_c ) @ #vk.18 )
+              case GenerateLegitimateChild
+              solve( !KU( ~window ) @ #vk.20 )
+                case GenerateLegitimateChild
+                solve( !KU( ~space ) @ #vk.21 )
+                  case GenerateLegitimateChild
+                  solve( !KU( sign(<'oclm-child-b1', pk(~oracle_sk), ~iss, 
+                                    h(<'oclm-child-id-b1', 
+                                       h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, 
+                                          ~parent_b, ~time_c, ~window, ~space>)
+                                      >), 
+                                    h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                                       ~time_c, ~window, ~space>), 
+                                    ~root, ~parent_a, ~parent_b, ~time_c, ~window, ~space>,
+                                   ~oracle_sk)
+                         ) @ #vk.22 )
+                    case GenerateLegitimateChild
+                    solve( !KU( pk(~oracle_sk) ) @ #vk.20 )
+                      case GenerateLegitimateChild
+                      solve( !KU( h(<'oclm-child-id-b1', 
+                                     h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, ~parent_a, ~parent_b, 
+                                        ~time_c, ~window, ~space>)
+                                    >)
+                             ) @ #vk.21 )
+                        case GenerateLegitimateChild
+                        solve( !KU( h(<'oclm-lineage-b1', pk(~oracle_sk), ~iss, ~root, 
+                                       ~parent_a, ~parent_b, ~time_c, ~window, ~space>)
+                               ) @ #vk.22 )
+                          case GenerateLegitimateChild
+                          SOLVED // trace found
+                        qed
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1b1_external_signature.spthy
+
+  processing time: 3.05s
+  
+  executable_external_child (exists-trace): analysis incomplete (1 steps)
+  external_child_requires_generation_or_compromise (all-traces): analysis incomplete (1 steps)
+  external_child_identity_is_bound_or_compromised (all-traces): analysis incomplete (1 steps)
+  executable_honest_external_child (exists-trace): verified (15 steps)
+
+==============================================================================

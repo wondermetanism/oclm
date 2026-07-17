@@ -1,0 +1,591 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory loaded
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory translated
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks started
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks ended
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/*
+looping facts with injective instances:
+  AdvanceEpochPermit/5, VerifierEpochState/6
+*/
+
+rule (modulo E) Initialize_Multi_Epoch_Lifecycle:
+   [
+   Fr( ~verifier ), Fr( ~contract ), Fr( ~epoch_0 ), Fr( ~epoch_pk_0 ),
+   Fr( ~lineage_root_0 )
+   ]
+  --[
+  MultiEpochLifecycleInitialized( ~verifier, ~contract, ~epoch_0,
+                                  ~epoch_pk_0, ~lineage_root_0
+  ),
+  EpochIssued( ~contract, ~epoch_0, ~epoch_pk_0, ~lineage_root_0 ),
+  VerifierEpochObserved( ~verifier, ~contract, ~epoch_0 )
+  ]->
+   [
+   !EpochRecord( ~contract, ~epoch_0, ~epoch_pk_0, ~lineage_root_0 ),
+   VerifierEpochState( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                       ~lineage_root_0, 'honest'
+   ),
+   AdvanceEpochPermit( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                       ~lineage_root_0
+   ),
+   CurrentEpochAcceptancePermit( ~verifier, ~contract, ~epoch_0,
+                                 ~epoch_pk_0, ~lineage_root_0
+   ),
+   CompromiseGeneralizedVerifierPermit( ~verifier, ~contract )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_To_Fresh_Next_Epoch:
+   [
+   VerifierEpochState( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root, 'honest'
+   ),
+   AdvanceEpochPermit( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root
+   ),
+   Fr( ~higher_epoch ), Fr( ~higher_epoch_pk ), Fr( ~higher_lineage_root )
+   ]
+  --[
+  EpochTransitionRecorded( contract, lower_epoch, ~higher_epoch ),
+  EpochIssued( contract, ~higher_epoch, ~higher_epoch_pk,
+               ~higher_lineage_root
+  ),
+  VerifierEpochAdvanced( verifier, contract, lower_epoch, ~higher_epoch ),
+  VerifierEpochObserved( verifier, contract, ~higher_epoch )
+  ]->
+   [
+   !EpochRecord( contract, ~higher_epoch, ~higher_epoch_pk,
+                 ~higher_lineage_root
+   ),
+   !EpochTransition( contract, lower_epoch, ~higher_epoch ),
+   VerifierEpochState( verifier, contract, ~higher_epoch, ~higher_epoch_pk,
+                       ~higher_lineage_root, 'honest'
+   ),
+   AdvanceEpochPermit( verifier, contract, ~higher_epoch, ~higher_epoch_pk,
+                       ~higher_lineage_root
+   ),
+   CurrentEpochAcceptancePermit( verifier, contract, ~higher_epoch,
+                                 ~higher_epoch_pk, ~higher_lineage_root
+   )
+   ]
+
+  // loop breakers: [0,1]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_At_Honest_Current_Epoch:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   ),
+   CurrentEpochAcceptancePermit( verifier, contract, epoch, epoch_pk,
+                                 lineage_root
+   ),
+   !EpochRecord( contract, epoch, epoch_pk, lineage_root )
+   ]
+  --[
+  CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+  ),
+  GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                            lineage_root, 'current'
+  )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Generalized_Epoch_Verifier:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   ),
+   CompromiseGeneralizedVerifierPermit( verifier, contract )
+   ]
+  --[ GeneralizedEpochVerifierCompromised( verifier, contract, epoch ) ]->
+   [
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   ),
+   CompromisedEpochAcceptancePermit( verifier, contract )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Roll_Back_One_Recorded_Epoch_After_Compromise:
+   [
+   VerifierEpochState( verifier, contract, higher_epoch, higher_epoch_pk,
+                       higher_lineage_root, 'compromised'
+   ),
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   !EpochTransition( contract, lower_epoch, higher_epoch ),
+   !EpochRecord( contract, lower_epoch, lower_epoch_pk, lower_lineage_root )
+   ]
+  --[
+  GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+  ),
+  VerifierEpochObserved( verifier, contract, lower_epoch )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root, 'compromised'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_At_Stale_Epoch_After_Compromise:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   ),
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   !EpochRecord( contract, epoch, epoch_pk, lineage_root ),
+   CompromisedEpochAcceptancePermit( verifier, contract )
+   ]
+  --[
+  StaleEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root ),
+  GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                            lineage_root, 'stale'
+  )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+lemma executable_generalized_multi_epoch_lifecycle:
+  exists-trace
+  "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1 epoch_pk_1
+     lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3 epoch_pk_3
+     lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+    ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                    epoch_0, epoch_pk_0, lineage_root_0
+                    ) @ #i0) ∧
+                   (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                  (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                 (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                           lineage_root_3, 'current'
+                 ) @ #ia)) ∧
+               (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                ) @ #ic)) ∧
+              (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+               ) @ #ir1)) ∧
+             (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+              ) @ #ir2)) ∧
+            (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                       lineage_root_1, 'stale'
+             ) @ #is)) ∧
+           (#i0 < #it1)) ∧
+          (#it1 < #it2)) ∧
+         (#it2 < #it3)) ∧
+        (#it3 < #ia)) ∧
+       (#ia < #ic)) ∧
+      (#ic < #ir1)) ∧
+     (#ir1 < #ir2)) ∧
+    (#ir2 < #is)"
+/*
+conversion to guarded formula failed:
+  unguarded variable(s) 'epoch_pk_2', 'lineage_root_2' in the subformula
+    "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1 epoch_pk_1
+       lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3 epoch_pk_3
+       lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+      ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                      epoch_0, epoch_pk_0, lineage_root_0
+                      ) @ #i0) ∧
+                     (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                    (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                   (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                  (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                             lineage_root_3, 'current'
+                   ) @ #ia)) ∧
+                 (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                  ) @ #ic)) ∧
+                (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+                 ) @ #ir1)) ∧
+               (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+                ) @ #ir2)) ∧
+              (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                         lineage_root_1, 'stale'
+               ) @ #is)) ∧
+             (#i0 < #it1)) ∧
+            (#it1 < #it2)) ∧
+           (#it2 < #it3)) ∧
+          (#it3 < #ia)) ∧
+         (#ia < #ic)) ∧
+        (#ic < #ir1)) ∧
+       (#ir1 < #ir2)) ∧
+      (#ir2 < #is)"
+  in the formula
+    "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1 epoch_pk_1
+       lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3 epoch_pk_3
+       lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+      ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                      epoch_0, epoch_pk_0, lineage_root_0
+                      ) @ #i0) ∧
+                     (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                    (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                   (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                  (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                             lineage_root_3, 'current'
+                   ) @ #ia)) ∧
+                 (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                  ) @ #ic)) ∧
+                (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+                 ) @ #ir1)) ∧
+               (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+                ) @ #ir2)) ∧
+              (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                         lineage_root_1, 'stale'
+               ) @ #is)) ∧
+             (#i0 < #it1)) ∧
+            (#it1 < #it2)) ∧
+           (#it2 < #it3)) ∧
+          (#it3 < #ia)) ∧
+         (#ia < #ic)) ∧
+        (#ic < #ir1)) ∧
+       (#ir1 < #ir2)) ∧
+      (#ir2 < #is)"
+*/
+by sorry
+
+lemma accepted_epoch_requires_matching_prior_issuance:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root mode #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, mode
+     ) @ #ia) ⇒
+    (∃ #ii.
+      (EpochIssued( contract, epoch, epoch_pk, lineage_root ) @ #ii) ∧
+      (#ii < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root mode #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, mode
+   ) @ #ia)
+ ∧
+  ∀ #ii.
+   (EpochIssued( contract, epoch, epoch_pk, lineage_root ) @ #ii)
+  ⇒
+   ¬(#ii < #ia)"
+*/
+by sorry
+
+lemma current_epoch_acceptance_has_current_evidence:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, 'current'
+     ) @ #ia) ⇒
+    (CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+     ) @ #ia)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, 'current'
+   ) @ #ia)
+ ∧
+  ¬(CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+    ) @ #ia)"
+*/
+by sorry
+
+lemma stale_epoch_acceptance_requires_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, 'stale'
+     ) @ #ia) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, 'stale'
+   ) @ #ia)
+ ∧
+  ∀ compromise_epoch #ic.
+   (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                         compromise_epoch
+    ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+by sorry
+
+lemma generalized_epoch_rollback_requires_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract higher_epoch lower_epoch #ir.
+    (GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+     ) @ #ir) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #ir))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract higher_epoch lower_epoch #ir.
+  (GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+   ) @ #ir)
+ ∧
+  ∀ compromise_epoch #ic.
+   (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                         compromise_epoch
+    ) @ #ic)
+  ⇒
+   ¬(#ic < #ir)"
+*/
+by sorry
+
+lemma recorded_epoch_transition_never_rolls_back_without_compromise:
+  all-traces
+  "∀ verifier contract lower_epoch higher_epoch #it #ih #il.
+    ((((EpochTransitionRecorded( contract, lower_epoch, higher_epoch
+        ) @ #it) ∧
+       (VerifierEpochObserved( verifier, contract, higher_epoch ) @ #ih)) ∧
+      (VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il)) ∧
+     (#ih < #il)) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #il))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract lower_epoch higher_epoch #it #ih #il.
+  (EpochTransitionRecorded( contract, lower_epoch, higher_epoch ) @ #it) ∧
+  (VerifierEpochObserved( verifier, contract, higher_epoch ) @ #ih) ∧
+  (VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il)
+ ∧
+  (#ih < #il) ∧
+  (∀ compromise_epoch #ic.
+    (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                          compromise_epoch
+     ) @ #ic)
+   ⇒
+    ¬(#ic < #il))"
+*/
+simplify
+solve( VerifierEpochObserved( verifier.1, contract, ~higher_epoch
+       ) @ #ih )
+  case Advance_To_Fresh_Next_Epoch
+  solve( VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il )
+    case Advance_To_Fresh_Next_Epoch
+    solve( VerifierEpochState( verifier, contract, ~higher_epoch,
+                               lower_epoch_pk, lower_lineage_root, 'honest'
+           ) ▶₀ #ih )
+      case Accept_At_Honest_Current_Epoch
+      by contradiction /* cyclic */
+    next
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* cyclic */
+    qed
+  next
+    case Initialize_Multi_Epoch_Lifecycle
+    by contradiction /* cyclic */
+  next
+    case Roll_Back_One_Recorded_Epoch_After_Compromise
+    solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #il )
+      case Compromise_Generalized_Epoch_Verifier_case_1
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_2
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_3
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_4
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case Roll_Back_One_Recorded_Epoch_After_Compromise
+  solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ih )
+    case Compromise_Generalized_Epoch_Verifier_case_1
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_2
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_3
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_4
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma conflicting_direct_epoch_acceptances_require_prior_compromise:
+  all-traces
+  "∀ verifier contract lower_epoch higher_epoch lower_epoch_pk
+     lower_lineage_root higher_epoch_pk higher_lineage_root higher_mode
+     lower_mode #it #ih #il.
+    ((((EpochTransitionRecorded( contract, lower_epoch, higher_epoch
+        ) @ #it) ∧
+       (GeneralizedEpochAccepted( verifier, contract, higher_epoch,
+                                  higher_epoch_pk, higher_lineage_root, higher_mode
+        ) @ #ih)) ∧
+      (GeneralizedEpochAccepted( verifier, contract, lower_epoch,
+                                 lower_epoch_pk, lower_lineage_root, lower_mode
+       ) @ #il)) ∧
+     (#ih < #il)) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #il))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract lower_epoch higher_epoch lower_epoch_pk
+   lower_lineage_root higher_epoch_pk higher_lineage_root higher_mode
+   lower_mode #it #ih #il.
+  (EpochTransitionRecorded( contract, lower_epoch, higher_epoch ) @ #it) ∧
+  (GeneralizedEpochAccepted( verifier, contract, higher_epoch,
+                             higher_epoch_pk, higher_lineage_root, higher_mode
+   ) @ #ih) ∧
+  (GeneralizedEpochAccepted( verifier, contract, lower_epoch,
+                             lower_epoch_pk, lower_lineage_root, lower_mode
+   ) @ #il)
+ ∧
+  (#ih < #il) ∧
+  (∀ compromise_epoch #ic.
+    (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                          compromise_epoch
+     ) @ #ic)
+   ⇒
+    ¬(#ic < #il))"
+*/
+by sorry
+
+/*
+WARNING: the following wellformedness checks failed!
+
+ Formula guardedness
+====================
+
+  Lemma `executable_generalized_multi_epoch_lifecycle' cannot be converted to a guarded formula:
+    unguarded variable(s) 'epoch_pk_2', 'lineage_root_2' in the
+    subformula
+      "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1
+         epoch_pk_1 lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3
+         epoch_pk_3 lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+        ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                        epoch_0, epoch_pk_0, lineage_root_0
+                        ) @ #i0) ∧
+                       (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                      (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                     (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                    (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                               lineage_root_3, 'current'
+                     ) @ #ia)) ∧
+                   (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                    ) @ #ic)) ∧
+                  (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+                   ) @ #ir1)) ∧
+                 (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+                  ) @ #ir2)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                           lineage_root_1, 'stale'
+                 ) @ #is)) ∧
+               (#i0 < #it1)) ∧
+              (#it1 < #it2)) ∧
+             (#it2 < #it3)) ∧
+            (#it3 < #ia)) ∧
+           (#ia < #ic)) ∧
+          (#ic < #ir1)) ∧
+         (#ir1 < #ir2)) ∧
+        (#ir2 < #is)"
+    in the formula
+      "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1
+         epoch_pk_1 lineage_root_1 epoch_2 epoch_pk_2 lineage_root_2 epoch_3
+         epoch_pk_3 lineage_root_3 #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+        ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                        epoch_0, epoch_pk_0, lineage_root_0
+                        ) @ #i0) ∧
+                       (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                      (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                     (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                    (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                               lineage_root_3, 'current'
+                     ) @ #ia)) ∧
+                   (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                    ) @ #ic)) ∧
+                  (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+                   ) @ #ir1)) ∧
+                 (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+                  ) @ #ir2)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                           lineage_root_1, 'stale'
+                 ) @ #is)) ∧
+               (#i0 < #it1)) ∧
+              (#it1 < #it2)) ∧
+             (#it2 < #it3)) ∧
+            (#it3 < #ia)) ∧
+           (#ia < #ic)) ∧
+          (#ic < #ir1)) ∧
+         (#ir1 < #ir2)) ∧
+        (#ir2 < #is)"
+*/
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: model/tamarin/oclm_phase1c6a_multi_epoch_generalization_core.spthy
+
+  processing time: 0.60s
+  
+  WARNING: 1 wellformedness check failed!
+           The analysis results might be wrong!
+  
+  executable_generalized_multi_epoch_lifecycle (exists-trace): analysis incomplete (1 steps)
+  accepted_epoch_requires_matching_prior_issuance (all-traces): analysis incomplete (1 steps)
+  current_epoch_acceptance_has_current_evidence (all-traces): analysis incomplete (1 steps)
+  stale_epoch_acceptance_requires_prior_verifier_compromise (all-traces): analysis incomplete (1 steps)
+  generalized_epoch_rollback_requires_prior_verifier_compromise (all-traces): analysis incomplete (1 steps)
+  recorded_epoch_transition_never_rolls_back_without_compromise (all-traces): verified (17 steps)
+  conflicting_direct_epoch_acceptances_require_prior_compromise (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

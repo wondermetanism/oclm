@@ -1,0 +1,101 @@
+OCLM Phase 1-C5C
+Revocation / Transparency / Lineage Composition Contract
+
+Status:
+FORMALLY VERIFIED
+
+Verification date:
+2026-07-17
+
+Verification environment:
+Tamarin Prover 1.12.0
+Maude 3.5.1
+macOS 26.5.2 arm64
+
+Model:
+oclm_phase1c5c_revocation_transparency_lineage_composition_contract.spthy
+
+Model SHA-256:
+74cc01d5276b604e88223b788b92a34eccf46ac8bfcc01ecd07c43d575af734b
+
+Final all-lemma proof result:
+phase1c5c_all_lemmas_20260717.txt
+
+Final proof SHA-256:
+fdd7a51b24b2c878c2915e3883b0c45fa7d8552534413745febe6631be22566a
+
+Final processing time:
+2.41 seconds
+
+Verified lemmas:
+
+1. executable_composed_security_lifecycle
+   exists-trace
+   verified (49 steps)
+
+2. composed_acceptance_requires_all_verified_component_contracts
+   all-traces
+   verified (23 steps)
+
+3. clean_composed_acceptance_has_current_component_evidence
+   all-traces
+   verified (8 steps)
+
+4. revoked_composed_acceptance_requires_explicit_exception
+   all-traces
+   verified (21 steps)
+
+5. forked_composed_acceptance_requires_prior_log_compromise
+   all-traces
+   verified (7 steps)
+
+6. stale_lineage_composed_acceptance_requires_prior_compromise
+   all-traces
+   verified (5 steps)
+
+7. conflicting_composed_roots_require_prior_log_compromise
+   all-traces
+   verified (216 steps)
+
+Verified guarantee:
+
+Every final composed acceptance is anchored in the previously verified
+C4B lineage, C5A revocation and C5B transparency contracts.
+
+A clean acceptance carries current-lineage, active-certificate and
+canonical-transparency evidence at the acceptance event.
+
+Acceptance under a revoked state requires either a prior missing
+revocation update or prior revocation-verifier compromise.
+
+Forked transparency acceptance and conflicting composed roots require
+prior Transparency Log compromise.
+
+Stale-lineage acceptance requires prior lineage-verifier compromise.
+
+Composition method:
+
+The component internals are intentionally opaque. Phase 1-C5C uses
+assume-guarantee contract handles and does not duplicate the internal
+rules of C4B, C5A or C5B.
+
+Explicit scope:
+
+- finite lineage state: current or stale-after-compromise
+- finite certificate state: active or revoked
+- finite transparency checkpoint: s1 canonical or forked root
+- clean composed acceptance
+- missing-revocation-update exception
+- revocation-verifier-compromise exception
+- lineage-verifier-compromise exception
+- Transparency Log compromise and conflicting roots
+
+Excluded from this phase:
+
+- component-internal cryptographic rules
+- Merkle-tree internals
+- gossip availability
+- witness quorum
+- unbounded epochs
+- unbounded revocation states
+- unbounded transparency checkpoints

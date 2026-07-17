@@ -1,0 +1,10 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract] Theory loaded
+[Theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract] Theory translated
+[Theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract] Derivation checks started
+[Theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract] Derivation checks ended
+[Theory OCLM_Phase1C6B_Generalized_Security_Composition_Contract] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done

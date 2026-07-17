@@ -1,0 +1,78 @@
+OCLM Phase 1-C5A
+Revocation State Core
+
+Status:
+FORMALLY VERIFIED
+
+Verification date:
+2026-07-17
+
+Verification environment:
+Tamarin Prover 1.12.0
+Maude 3.5.1
+macOS 26.5.2 arm64
+
+Model:
+oclm_phase1c5a_revocation_state_core.spthy
+
+Model SHA-256:
+3f2b2eedf6f9bede139e8beefb7c7cc763aa8e843be23af1ef7698aa0cce62e0
+
+Final all-lemma proof result:
+phase1c5a_all_lemmas_20260717.txt
+
+Final proof SHA-256:
+d3d26289b4a1eee4a180f178edffb560bd1ba4c04cf5c2233c884f94893d9f1f
+
+Final processing time:
+0.95 seconds
+
+Verified lemmas:
+
+1. executable_revocation_lifecycle
+   exists-trace
+   verified (29 steps)
+
+2. certificate_reactivation_requires_prior_authority_compromise
+   all-traces
+   verified (41 steps)
+
+3. current_verifier_state_never_accepts_revoked_certificate
+   all-traces
+   verified (2 steps)
+
+4. revoked_acceptance_requires_missing_update_or_verifier_compromise
+   all-traces
+   verified (79 steps)
+
+5. verifier_revocation_state_never_rolls_back_without_compromise
+   all-traces
+   verified (64 steps)
+
+Verified guarantee:
+
+A revoked certificate cannot be reactivated without prior revocation-
+authority compromise. A verifier holding the current revocation state r1
+does not accept a revoked certificate. Acceptance of a revoked certificate
+requires either a missing revocation update or prior verifier compromise.
+The verifier revocation state cannot roll back from r1 to r0 without an
+intervening verifier compromise.
+
+Explicit scope:
+
+- certificate state active -> revoked
+- finite revocation verifier states r0 -> r1
+- stale acceptance while a published update is missing
+- rejection at the current r1 state
+- persistent verifier compromise
+- compromised rollback r1 -> r0
+- revocation-authority compromise
+- reactivation after authority compromise
+
+Excluded from this phase:
+
+- transparency-log consistency
+- split-view resistance
+- composition with C4B lineage acceptance
+- unbounded revocation-state generalization
+- implementation-level update distribution and secure storage

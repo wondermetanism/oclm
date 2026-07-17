@@ -1,0 +1,621 @@
+theory OCLM_Phase1
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+rule (modulo E) OracleSetup:
+   [ Fr( ~oracle_seed ) ]
+  --[ OracleInitialized( h(~oracle_seed) ) ]->
+   [
+   !OracleState( ~oracle_seed ), !OraclePublicRoot( h(~oracle_seed) ),
+   Out( h(~oracle_seed) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) IssuePair:
+   [
+   !OracleState( ~oracle_seed ), Fr( ~iss ), Fr( ~credA ), Fr( ~credB ),
+   Fr( ~window ), Fr( ~space )
+   ]
+  --[
+  OracleIssued( ~iss,
+                h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                   ~space>),
+                $A, $B, ~window, ~space
+  ),
+  PairIssued( ~iss )
+  ]->
+   [
+   !OracleRoot( ~iss,
+                h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                   ~space>),
+                $A, $B, ~window, ~space
+   ),
+   PairOpen( ~iss, $A, $B, ~credA, ~credB, ~window, ~space,
+             h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                ~space>)
+   ),
+   ParentACred( $A, ~iss, ~credA,
+                h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                   ~space>)
+   ),
+   ParentBCred( $B, ~iss, ~credB,
+                h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                   ~space>)
+   ),
+   Out( <~iss, 
+         h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+            ~space>), 
+         $A, $B, ~window, ~space>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAParticipate:
+   [ ParentACred( A, iss, credA, root ), Fr( ~timeA ), Fr( ~contextA ) ]
+  --[ ParentAParticipated( iss, A, root, ~timeA, ~contextA ) ]->
+   [ ParentAReady( A, iss, credA, root, ~timeA, ~contextA ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBParticipate:
+   [ ParentBCred( B, iss, credB, root ), Fr( ~timeB ), Fr( ~contextB ) ]
+  --[ ParentBParticipated( iss, B, root, ~timeB, ~contextB ) ]->
+   [ ParentBReady( B, iss, credB, root, ~timeB, ~contextB ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateChild:
+   [
+   PairOpen( iss, A, B, credA, credB, window, space, root ),
+   ParentAReady( A, iss, credA, root, timeA, contextA ),
+   ParentBReady( B, iss, credB, root, timeB, contextB ), Fr( ~timeC )
+   ]
+  --[
+  PairConsumed( iss ),
+  ChildGenerated( iss,
+                  h(<'oclm-child-v1', iss, root, A, B, credA, credB, timeA, timeB, ~timeC, 
+                     window, space, contextA, contextB>),
+                  root, A, B, timeA, timeB, ~timeC, window, space
+  )
+  ]->
+   [
+   !ChildRecord( iss,
+                 h(<'oclm-child-v1', iss, root, A, B, credA, credB, timeA, timeB, ~timeC, 
+                    window, space, contextA, contextB>),
+                 root, A, B, timeA, timeB, ~timeC, window, space
+   ),
+   Out( <iss, 
+         h(<'oclm-child-v1', iss, root, A, B, credA, credB, timeA, timeB, ~timeC, 
+            window, space, contextA, contextB>), 
+         root, A, B, ~timeC, window, space>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyChild:
+   [
+   !ChildRecord( iss, child, root, A, B, timeA, timeB, timeC, window, space
+   ),
+   !OracleRoot( iss, root, A, B, window, space )
+   ]
+  --[
+  ChildAccepted( iss, child, root, A, B, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishClaim:
+   [ In( <iss, claim> ) ] --[ ClaimPublished( iss, claim ) ]-> [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) KeyCompromise:
+   [ !OracleState( oracle_seed ) ]
+  --[ OracleKeyCompromised( h(oracle_seed) ) ]->
+   [ Out( oracle_seed ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OracleEquivocation:
+   [ !OracleRoot( iss, root1, A, B, window, space ), Fr( ~root2 ) ]
+  --[
+  OracleEquivocated( iss, root1, ~root2 ),
+  EquivocationEvidence( iss, root1, ~root2 )
+  ]->
+   [ Out( <iss, root1, ~root2> ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable:
+  exists-trace
+  "∃ iss child root A B timeA timeB timeC window space #i.
+    ChildAccepted( iss, child, root, A, B, timeA, timeB, timeC, window, space
+    ) @ #i"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ iss child root A B timeA timeB timeC window space #i.
+  (ChildAccepted( iss, child, root, A, B, timeA, timeB, timeC, window,
+                  space
+   ) @ #i)"
+*/
+simplify
+solve( !ChildRecord( iss, child, root, A, B, timeA, timeB, timeC, window,
+                     space
+       ) ▶₀ #i )
+  case GenerateChild
+  solve( !OracleRoot( ~iss,
+                      h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                         ~space>),
+                      $A, $B, ~window, ~space
+         ) ▶₁ #i )
+    case IssuePair
+    SOLVED // trace found
+  qed
+qed
+
+lemma accepted_child_was_generated:
+  all-traces
+  "∀ iss child root A B timeA timeB timeC window space #i.
+    (ChildAccepted( iss, child, root, A, B, timeA, timeB, timeC, window,
+                    space
+     ) @ #i) ⇒
+    (∃ #j.
+      (ChildGenerated( iss, child, root, A, B, timeA, timeB, timeC, window,
+                       space
+       ) @ #j) ∧
+      (#j < #i))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ iss child root A B timeA timeB timeC window space #i.
+  (ChildAccepted( iss, child, root, A, B, timeA, timeB, timeC, window,
+                  space
+   ) @ #i)
+ ∧
+  ∀ #j.
+   (ChildGenerated( iss, child, root, A, B, timeA, timeB, timeC, window,
+                    space
+    ) @ #j)
+  ⇒
+   ¬(#j < #i)"
+*/
+simplify
+solve( !ChildRecord( iss, child, root, A, B, timeA, timeB, timeC, window,
+                     space
+       ) ▶₀ #i )
+  case GenerateChild
+  by contradiction /* from formulas */
+qed
+
+lemma generated_child_has_full_ancestry:
+  all-traces
+  "∀ iss child root A B timeA timeB timeC window space #i.
+    (ChildGenerated( iss, child, root, A, B, timeA, timeB, timeC, window,
+                     space
+     ) @ #i) ⇒
+    (∃ contextA contextB #o #a #b.
+      ((((((OracleIssued( iss, root, A, B, window, space ) @ #o) ∧
+           (ParentAParticipated( iss, A, root, timeA, contextA ) @ #a)) ∧
+          (ParentBParticipated( iss, B, root, timeB, contextB ) @ #b)) ∧
+         (#o < #a)) ∧
+        (#o < #b)) ∧
+       (#a < #i)) ∧
+      (#b < #i))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ iss child root A B timeA timeB timeC window space #i.
+  (ChildGenerated( iss, child, root, A, B, timeA, timeB, timeC, window,
+                   space
+   ) @ #i)
+ ∧
+  ∀ contextA contextB #o #a #b.
+   (OracleIssued( iss, root, A, B, window, space ) @ #o) ∧
+   (ParentAParticipated( iss, A, root, timeA, contextA ) @ #a) ∧
+   (ParentBParticipated( iss, B, root, timeB, contextB ) @ #b)
+  ⇒
+   ((¬(#o < #a)) ∨ (¬(#o < #b)) ∨ (¬(#a < #i)) ∨ (¬(#b < #i)))"
+*/
+simplify
+solve( PairOpen( iss, A, B, credA, credB, window, space, root ) ▶₀ #i )
+  case IssuePair
+  solve( ParentAReady( $A, ~iss, ~credA,
+                       h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                          ~space>),
+                       timeA, contextA
+         ) ▶₁ #i )
+    case ParentAParticipate
+    solve( ParentBReady( $B, ~iss, ~credB,
+                         h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                            ~space>),
+                         timeB, contextB
+           ) ▶₂ #i )
+      case ParentBParticipate
+      by contradiction /* from formulas */
+    qed
+  qed
+qed
+
+lemma complementary_pair_is_single_use:
+  all-traces
+  "∀ iss child1 root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 child2
+     root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 #i.1 #j.1.
+    ((ChildGenerated( iss, child1, root1, A1, B1, timeA1, timeB1, timeC1,
+                      window1, space1
+      ) @ #i.1) ∧
+     (ChildGenerated( iss, child2, root2, A2, B2, timeA2, timeB2, timeC2,
+                      window2, space2
+      ) @ #j.1)) ⇒
+    (i = j)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ iss child1 root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 child2
+   root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 #i.1 #j.1.
+  (ChildGenerated( iss, child1, root1, A1, B1, timeA1, timeB1, timeC1,
+                   window1, space1
+   ) @ #i.1) ∧
+  (ChildGenerated( iss, child2, root2, A2, B2, timeA2, timeB2, timeC2,
+                   window2, space2
+   ) @ #j.1)
+ ∧
+  ¬(i = j)"
+*/
+simplify
+solve( PairOpen( iss, A1, B1, credA, credB, window1, space1, root1
+       ) ▶₀ #i )
+  case IssuePair
+  solve( ParentAReady( $A, ~iss, ~credA,
+                       h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                          ~space>),
+                       timeA1, contextA
+         ) ▶₁ #i )
+    case ParentAParticipate
+    solve( ParentBReady( $B, ~iss, ~credB,
+                         h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                            ~space>),
+                         timeB1, contextB
+           ) ▶₂ #i )
+      case ParentBParticipate
+      solve( PairOpen( ~iss, A2, B2, credA.1, credB.1, window2, space2, root2
+             ) ▶₀ #j )
+        case IssuePair
+        SOLVED // trace found
+      qed
+    qed
+  qed
+qed
+
+lemma child_lineage_is_bound:
+  all-traces
+  "∀ child iss1 root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 iss2 root2
+     A2 B2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+    ((ChildAccepted( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                     window1, space1
+      ) @ #i) ∧
+     (ChildAccepted( iss2, child, root2, A2, B2, timeA2, timeB2, timeC2,
+                     window2, space2
+      ) @ #j)) ⇒
+    (((((((((iss1 = iss2) ∧ (root1 = root2)) ∧ (A1 = A2)) ∧ (B1 = B2)) ∧
+         (timeA1 = timeA2)) ∧
+        (timeB1 = timeB2)) ∧
+       (timeC1 = timeC2)) ∧
+      (window1 = window2)) ∧
+     (space1 = space2))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ child iss1 root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 iss2 root2
+   A2 B2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+  (ChildAccepted( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                  window1, space1
+   ) @ #i) ∧
+  (ChildAccepted( iss2, child, root2, A2, B2, timeA2, timeB2, timeC2,
+                  window2, space2
+   ) @ #j)
+ ∧
+  ((¬(iss1 = iss2)) ∨
+   (¬(root1 = root2)) ∨
+   (¬(A1 = A2)) ∨
+   (¬(B1 = B2)) ∨
+   (¬(timeA1 = timeA2)) ∨
+   (¬(timeB1 = timeB2)) ∨
+   (¬(timeC1 = timeC2)) ∨
+   (¬(window1 = window2)) ∨
+   (¬(space1 = space2)))"
+*/
+simplify
+solve( (¬(iss1 = iss2))  ∥ (¬(root1 = root2))  ∥ (¬(A1 = A2))  ∥
+       (¬(B1 = B2))  ∥ (¬(timeA1 = timeA2))  ∥ (¬(timeB1 = timeB2))  ∥
+       (¬(timeC1 = timeC2))  ∥ (¬(window1 = window2))  ∥ (¬(space1 = space2)) )
+  case case_1
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_2
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_3
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_4
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_5
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_6
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_7
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_8
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+next
+  case case_9
+  solve( !ChildRecord( iss1, child, root1, A1, B1, timeA1, timeB1, timeC1,
+                       window1, space1
+         ) ▶₀ #i )
+    case GenerateChild
+    solve( !OracleRoot( ~iss,
+                        h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                           ~space>),
+                        $A, $B, ~window, ~space
+           ) ▶₁ #i )
+      case IssuePair
+      solve( !ChildRecord( iss2,
+                           h(<'oclm-child-v1', ~iss, 
+                              h(<'oclm-root-v1', ~oracle_seed, ~iss, $A, $B, ~credA, ~credB, ~window, 
+                                 ~space>), 
+                              $A, $B, ~credA, ~credB, ~timeA, ~timeB, ~timeC, ~window, ~space, 
+                              ~contextA, ~contextB>),
+                           root2, A2, B2, timeA2, timeB2, timeC2, window2, space2
+             ) ▶₀ #j )
+        case GenerateChild
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+qed
+
+lemma oracle_equivocation_is_evidenced:
+  all-traces
+  "∀ iss root1 root2 #i.
+    (OracleEquivocated( iss, root1, root2 ) @ #i) ⇒
+    (EquivocationEvidence( iss, root1, root2 ) @ #i)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ iss root1 root2 #i.
+  (OracleEquivocated( iss, root1, root2 ) @ #i)
+ ∧
+  ¬(EquivocationEvidence( iss, root1, root2 ) @ #i)"
+*/
+simplify
+by contradiction /* from formulas */
+
+/*
+WARNING: the following wellformedness checks failed!
+
+Formula terms
+=============
+
+  Lemma `complementary_pair_is_single_use' uses terms of the wrong form:
+    `Free i', `Free j'
+  
+  The only allowed terms are public constants and bound node and
+  message variables. If you encounter free message variables, then
+  you might have forgotten a #-prefix. Sort prefixes can only be
+  dropped where this is unambiguous. Moreover, reducible function
+  symbols are disallowed.
+*/
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1.spthy
+
+  processing time: 1.27s
+  
+  WARNING: 1 wellformedness check failed!
+           The analysis results might be wrong!
+  
+  executable (exists-trace): verified (4 steps)
+  accepted_child_was_generated (all-traces): verified (3 steps)
+  generated_child_has_full_ancestry (all-traces): verified (5 steps)
+  complementary_pair_is_single_use (all-traces): falsified - found trace (6 steps)
+  child_lineage_is_bound (all-traces): verified (38 steps)
+  oracle_equivocation_is_evidenced (all-traces): verified (2 steps)
+
+==============================================================================

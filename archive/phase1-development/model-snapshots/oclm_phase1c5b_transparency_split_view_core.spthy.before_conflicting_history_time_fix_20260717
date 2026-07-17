@@ -1,0 +1,907 @@
+theory OCLM_Phase1C5B_Transparency_Split_View_Core
+begin
+
+/*
+ * OCLM Phase 1-C5B
+ * Transparency / Split-View Resistance Core
+ *
+ * Scope:
+ *
+ * - finite transparency checkpoints s0 -> s1
+ * - one append-only honest checkpoint extension
+ * - two independent verifier views
+ * - consistent gossip under the honest checkpoint
+ * - explicit Transparency Log compromise
+ * - conflicting root issuance for the same checkpoint version
+ * - acceptance of the same certificate under conflicting roots
+ * - gossip-based equivocation evidence
+ *
+ * Out of scope:
+ *
+ * - C4B lineage composition
+ * - C5A revocation composition
+ * - Merkle-tree cryptographic internals
+ * - gossip transport availability
+ * - unbounded checkpoint sequences
+ * - implementation-level witness quorum
+ */
+
+
+/* =========================================================================
+ * Initialization
+ * ========================================================================= */
+
+rule Initialize_Transparency_Lifecycle:
+  [
+    Fr(~log),
+    Fr(~certificate),
+    Fr(~verifier_a),
+    Fr(~verifier_b),
+    Fr(~root_0)
+  ]
+  --[
+    TransparencyLifecycleInitialized(
+      ~log,
+      ~certificate,
+      ~verifier_a,
+      ~verifier_b
+    ),
+
+    TransparencyCheckpointIssued(
+      ~log,
+      's0',
+      ~root_0
+    ),
+
+    TransparencyViewObserved(
+      ~verifier_a,
+      ~log,
+      's0',
+      ~root_0
+    ),
+
+    TransparencyViewObserved(
+      ~verifier_b,
+      ~log,
+      's0',
+      ~root_0
+    )
+  ]->
+  [
+    LogState(
+      ~log,
+      's0',
+      ~root_0,
+      'honest'
+    ),
+
+    VerifierView(
+      ~verifier_a,
+      ~log,
+      's0',
+      ~root_0,
+      'honest'
+    ),
+
+    VerifierView(
+      ~verifier_b,
+      ~log,
+      's0',
+      ~root_0,
+      'honest'
+    ),
+
+    !TransparencyObject(
+      ~log,
+      ~certificate
+    ),
+
+    AppendCheckpointPermit(
+      ~log
+    ),
+
+    AdvanceVerifierPermit(
+      ~verifier_a,
+      ~log
+    ),
+
+    AdvanceVerifierPermit(
+      ~verifier_b,
+      ~log
+    ),
+
+    ConsistentGossipPermit(
+      ~log,
+      ~verifier_a,
+      ~verifier_b
+    ),
+
+    CanonicalAcceptancePermit(
+      ~verifier_a,
+      ~log,
+      ~certificate
+    ),
+
+    CompromiseLogPermit(
+      ~log
+    ),
+
+    ForkViewAcceptancePermit(
+      ~verifier_b,
+      ~log
+    ),
+
+    ForkCertificateAcceptancePermit(
+      ~verifier_b,
+      ~log,
+      ~certificate
+    ),
+
+    ConflictingGossipPermit(
+      ~log,
+      ~verifier_a,
+      ~verifier_b
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest append-only checkpoint extension
+ * ========================================================================= */
+
+rule Append_Honest_Checkpoint_s0_to_s1:
+  [
+    LogState(
+      log,
+      's0',
+      root_0,
+      'honest'
+    ),
+
+    AppendCheckpointPermit(
+      log
+    ),
+
+    !TransparencyObject(
+      log,
+      certificate
+    ),
+
+    Fr(~root_1)
+  ]
+  --[
+    TransparencyCheckpointIssued(
+      log,
+      's1',
+      ~root_1
+    ),
+
+    TransparencyAppendOnlyExtension(
+      log,
+      's0',
+      root_0,
+      's1',
+      ~root_1
+    ),
+
+    TransparencyCertificateIncluded(
+      certificate,
+      log,
+      's1',
+      ~root_1
+    )
+  ]->
+  [
+    LogState(
+      log,
+      's1',
+      ~root_1,
+      'honest'
+    ),
+
+    !AuthenticTransparencyCheckpoint(
+      log,
+      's1',
+      ~root_1
+    ),
+
+    !CanonicalTransparencyInclusion(
+      certificate,
+      log,
+      's1',
+      ~root_1
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest verifier acceptance of the canonical checkpoint
+ * ========================================================================= */
+
+rule Advance_Verifier_To_Canonical_s1:
+  [
+    VerifierView(
+      verifier,
+      log,
+      's0',
+      root_0,
+      'honest'
+    ),
+
+    !AuthenticTransparencyCheckpoint(
+      log,
+      's1',
+      root_1
+    ),
+
+    AdvanceVerifierPermit(
+      verifier,
+      log
+    )
+  ]
+  --[
+    TransparencyCheckpointAccepted(
+      verifier,
+      log,
+      's1',
+      root_1
+    ),
+
+    TransparencyViewObserved(
+      verifier,
+      log,
+      's1',
+      root_1
+    )
+  ]->
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      root_1,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Consistent gossip under the honest checkpoint
+ * ========================================================================= */
+
+rule Gossip_Consistent_Transparency_Views:
+  [
+    VerifierView(
+      verifier_a,
+      log,
+      's1',
+      root_1,
+      'honest'
+    ),
+
+    VerifierView(
+      verifier_b,
+      log,
+      's1',
+      root_1,
+      'honest'
+    ),
+
+    ConsistentGossipPermit(
+      log,
+      verifier_a,
+      verifier_b
+    )
+  ]
+  --[
+    TransparencyViewsConsistent(
+      verifier_a,
+      verifier_b,
+      log,
+      's1',
+      root_1
+    )
+  ]->
+  [
+    VerifierView(
+      verifier_a,
+      log,
+      's1',
+      root_1,
+      'honest'
+    ),
+
+    VerifierView(
+      verifier_b,
+      log,
+      's1',
+      root_1,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Certificate acceptance under the canonical checkpoint
+ * ========================================================================= */
+
+rule Accept_Certificate_Under_Canonical_Checkpoint:
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      root_1,
+      'honest'
+    ),
+
+    !CanonicalTransparencyInclusion(
+      certificate,
+      log,
+      's1',
+      root_1
+    ),
+
+    CanonicalAcceptancePermit(
+      verifier,
+      log,
+      certificate
+    )
+  ]
+  --[
+    TransparencyCertificateAccepted(
+      verifier,
+      certificate,
+      log,
+      's1',
+      root_1
+    )
+  ]->
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      root_1,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Explicit persistent Transparency Log compromise
+ * ========================================================================= */
+
+rule Compromise_Transparency_Log:
+  [
+    LogState(
+      log,
+      's1',
+      canonical_root,
+      'honest'
+    ),
+
+    CompromiseLogPermit(
+      log
+    )
+  ]
+  --[
+    TransparencyLogCompromised(
+      log,
+      's1',
+      canonical_root
+    )
+  ]->
+  [
+    LogState(
+      log,
+      's1',
+      canonical_root,
+      'compromised'
+    ),
+
+    IssueForkPermit(
+      log
+    )
+  ]
+
+
+/* =========================================================================
+ * Conflicting root issuance after log compromise
+ * ========================================================================= */
+
+rule Issue_Conflicting_Checkpoint_After_Log_Compromise:
+  [
+    LogState(
+      log,
+      's1',
+      canonical_root,
+      'compromised'
+    ),
+
+    IssueForkPermit(
+      log
+    ),
+
+    !TransparencyObject(
+      log,
+      certificate
+    ),
+
+    Fr(~fork_root)
+  ]
+  --[
+    TransparencyCheckpointIssued(
+      log,
+      's1',
+      ~fork_root
+    ),
+
+    ConflictingTransparencyCheckpointIssued(
+      log,
+      's1',
+      canonical_root,
+      ~fork_root
+    ),
+
+    TransparencyCertificateIncluded(
+      certificate,
+      log,
+      's1',
+      ~fork_root
+    )
+  ]->
+  [
+    LogState(
+      log,
+      's1',
+      canonical_root,
+      'compromised'
+    ),
+
+    !ForkTransparencyCheckpoint(
+      log,
+      's1',
+      ~fork_root
+    ),
+
+    !ForkTransparencyInclusion(
+      certificate,
+      log,
+      's1',
+      ~fork_root
+    )
+  ]
+
+
+/* =========================================================================
+ * One verifier accepts the forked root
+ * ========================================================================= */
+
+rule Accept_Forked_Checkpoint_View:
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      canonical_root,
+      'honest'
+    ),
+
+    !ForkTransparencyCheckpoint(
+      log,
+      's1',
+      fork_root
+    ),
+
+    ForkViewAcceptancePermit(
+      verifier,
+      log
+    )
+  ]
+  --[
+    TransparencyCheckpointAccepted(
+      verifier,
+      log,
+      's1',
+      fork_root
+    ),
+
+    ForkedTransparencyViewAccepted(
+      verifier,
+      log,
+      's1',
+      canonical_root,
+      fork_root
+    ),
+
+    TransparencyViewObserved(
+      verifier,
+      log,
+      's1',
+      fork_root
+    )
+  ]->
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      fork_root,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Same certificate accepted under the forked root
+ * ========================================================================= */
+
+rule Accept_Certificate_Under_Forked_Checkpoint:
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      fork_root,
+      'honest'
+    ),
+
+    !ForkTransparencyInclusion(
+      certificate,
+      log,
+      's1',
+      fork_root
+    ),
+
+    ForkCertificateAcceptancePermit(
+      verifier,
+      log,
+      certificate
+    )
+  ]
+  --[
+    TransparencyCertificateAccepted(
+      verifier,
+      certificate,
+      log,
+      's1',
+      fork_root
+    )
+  ]->
+  [
+    VerifierView(
+      verifier,
+      log,
+      's1',
+      fork_root,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Gossip detects conflicting same-version roots
+ * ========================================================================= */
+
+rule Gossip_Conflicting_Transparency_Views:
+  [
+    VerifierView(
+      verifier_a,
+      log,
+      's1',
+      canonical_root,
+      'honest'
+    ),
+
+    VerifierView(
+      verifier_b,
+      log,
+      's1',
+      fork_root,
+      'honest'
+    ),
+
+    !AuthenticTransparencyCheckpoint(
+      log,
+      's1',
+      canonical_root
+    ),
+
+    !ForkTransparencyCheckpoint(
+      log,
+      's1',
+      fork_root
+    ),
+
+    ConflictingGossipPermit(
+      log,
+      verifier_a,
+      verifier_b
+    )
+  ]
+  --[
+    TransparencyViewsGossiped(
+      verifier_a,
+      verifier_b,
+      log,
+      's1',
+      canonical_root,
+      fork_root
+    ),
+
+    TransparencyEquivocationEvidence(
+      log,
+      's1',
+      canonical_root,
+      fork_root
+    )
+  ]->
+  [
+    VerifierView(
+      verifier_a,
+      log,
+      's1',
+      canonical_root,
+      'honest'
+    ),
+
+    VerifierView(
+      verifier_b,
+      log,
+      's1',
+      fork_root,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Executability
+ * ========================================================================= */
+
+lemma executable_transparency_split_view_lifecycle:
+  exists-trace
+  "
+    Ex log certificate verifier_a verifier_b
+       root_0 canonical_root fork_root
+       #i0 #i1 #i2 #i3 #i4 #i5 #i6 #i7 #i8 #i9 #i10.
+
+         TransparencyLifecycleInitialized(
+           log,
+           certificate,
+           verifier_a,
+           verifier_b
+         ) @ #i0
+
+       & TransparencyAppendOnlyExtension(
+           log,
+           's0',
+           root_0,
+           's1',
+           canonical_root
+         ) @ #i1
+
+       & TransparencyCheckpointAccepted(
+           verifier_a,
+           log,
+           's1',
+           canonical_root
+         ) @ #i2
+
+       & TransparencyCheckpointAccepted(
+           verifier_b,
+           log,
+           's1',
+           canonical_root
+         ) @ #i3
+
+       & TransparencyViewsConsistent(
+           verifier_a,
+           verifier_b,
+           log,
+           's1',
+           canonical_root
+         ) @ #i4
+
+       & TransparencyCertificateAccepted(
+           verifier_a,
+           certificate,
+           log,
+           's1',
+           canonical_root
+         ) @ #i5
+
+       & TransparencyLogCompromised(
+           log,
+           's1',
+           canonical_root
+         ) @ #i6
+
+       & ConflictingTransparencyCheckpointIssued(
+           log,
+           's1',
+           canonical_root,
+           fork_root
+         ) @ #i7
+
+       & ForkedTransparencyViewAccepted(
+           verifier_b,
+           log,
+           's1',
+           canonical_root,
+           fork_root
+         ) @ #i8
+
+       & TransparencyCertificateAccepted(
+           verifier_b,
+           certificate,
+           log,
+           's1',
+           fork_root
+         ) @ #i9
+
+       & TransparencyEquivocationEvidence(
+           log,
+           's1',
+           canonical_root,
+           fork_root
+         ) @ #i10
+
+       & #i0 < #i1
+       & #i1 < #i2
+       & #i2 < #i3
+       & #i3 < #i4
+       & #i4 < #i5
+       & #i5 < #i6
+       & #i6 < #i7
+       & #i7 < #i8
+       & #i8 < #i9
+       & #i9 < #i10
+  "
+
+
+/* =========================================================================
+ * Every accepted checkpoint has matching prior issuance
+ * ========================================================================= */
+
+lemma accepted_checkpoint_requires_matching_issuance:
+  "
+    All verifier log checkpoint root #ia.
+
+      TransparencyCheckpointAccepted(
+        verifier,
+        log,
+        checkpoint,
+        root
+      ) @ #ia
+
+      ==>
+
+      (Ex #ii.
+
+        TransparencyCheckpointIssued(
+          log,
+          checkpoint,
+          root
+        ) @ #ii
+
+        & #ii < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting roots at the same checkpoint require prior log compromise
+ * ========================================================================= */
+
+lemma conflicting_checkpoint_roots_require_prior_log_compromise:
+  "
+    All log checkpoint root_1 root_2 #i1 #i2.
+
+          TransparencyCheckpointIssued(
+            log,
+            checkpoint,
+            root_1
+          ) @ #i1
+
+        & TransparencyCheckpointIssued(
+            log,
+            checkpoint,
+            root_2
+          ) @ #i2
+
+        & #i1 < #i2
+        & not (root_1 = root_2)
+
+      ==>
+
+      (Ex compromised_root #ic.
+
+        TransparencyLogCompromised(
+          log,
+          checkpoint,
+          compromised_root
+        ) @ #ic
+
+        & #i1 < #ic
+        & #ic < #i2
+      )
+  "
+
+
+/* =========================================================================
+ * Same certificate under conflicting histories requires log compromise
+ * ========================================================================= */
+
+lemma same_certificate_conflicting_transparency_histories_require_compromise:
+  "
+    All verifier_1 verifier_2 certificate log checkpoint
+        root_1 root_2 #i1 #i2.
+
+          TransparencyCertificateAccepted(
+            verifier_1,
+            certificate,
+            log,
+            checkpoint,
+            root_1
+          ) @ #i1
+
+        & TransparencyCertificateAccepted(
+            verifier_2,
+            certificate,
+            log,
+            checkpoint,
+            root_2
+          ) @ #i2
+
+        & #i1 < #i2
+        & not (root_1 = root_2)
+
+      ==>
+
+      (Ex compromised_root #ic.
+
+        TransparencyLogCompromised(
+          log,
+          checkpoint,
+          compromised_root
+        ) @ #ic
+
+        & #i1 < #ic
+        & #ic < #i2
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting gossiped views produce equivocation evidence
+ * ========================================================================= */
+
+lemma conflicting_gossip_produces_equivocation_evidence:
+  "
+    All verifier_a verifier_b log checkpoint
+        root_1 root_2 #ig.
+
+          TransparencyViewsGossiped(
+            verifier_a,
+            verifier_b,
+            log,
+            checkpoint,
+            root_1,
+            root_2
+          ) @ #ig
+
+        & not (root_1 = root_2)
+
+      ==>
+
+      TransparencyEquivocationEvidence(
+        log,
+        checkpoint,
+        root_1,
+        root_2
+      ) @ #ig
+  "
+
+end

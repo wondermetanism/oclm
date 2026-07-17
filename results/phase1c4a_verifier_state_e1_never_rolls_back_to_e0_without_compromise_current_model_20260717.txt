@@ -1,0 +1,270 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core] Theory loaded
+[Theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core] Theory translated
+[Theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core] Derivation checks started
+[Theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core] Derivation checks ended
+[Theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/* looping facts with injective instances: VState/3 */
+
+rule (modulo E) Initialize_Verifier:
+   [ Fr( ~v ) ]
+  --[ VerifierInitialized( ~v ), VerifierState( ~v, 'e0' ) ]->
+   [ VState( ~v, 'e0', 'honest' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_e0_to_e1:
+   [ VState( v, 'e0', 'honest' ) ]
+  --[
+  EpochAdvanced( v, 'e0', 'e1' ), VerifierCheckpoint( v, 'e1' ),
+  VerifierState( v, 'e1' )
+  ]->
+   [ VState( v, 'e1', 'honest' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_e1_to_e2:
+   [ VState( v, 'e1', 'honest' ) ]
+  --[
+  EpochAdvanced( v, 'e1', 'e2' ), VerifierCheckpoint( v, 'e2' ),
+  VerifierState( v, 'e2' )
+  ]->
+   [ VState( v, 'e2', 'honest' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Attempt_Rollback_e1_to_e0:
+   [ VState( v, 'e1', 'honest' ) ]
+  --[ RollbackAttempt( v, 'e1', 'e0' ) ]->
+   [ VState( v, 'e1', 'honest' ) ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Attempt_Rollback_e2_to_e1:
+   [ VState( v, 'e2', 'honest' ) ]
+  --[ RollbackAttempt( v, 'e2', 'e1' ) ]->
+   [ VState( v, 'e2', 'honest' ) ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Attempt_Rollback_e2_to_e0:
+   [ VState( v, 'e2', 'honest' ) ]
+  --[ RollbackAttempt( v, 'e2', 'e0' ) ]->
+   [ VState( v, 'e2', 'honest' ) ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Verifier:
+   [ VState( v, e, 'honest' ) ]
+  --[ VerifierCompromised( v, e ) ]->
+   [ VState( v, e, 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e1_to_e0:
+   [ VState( v, 'e1', 'compromised' ) ]
+  --[ RollbackSucceeded( v, 'e1', 'e0' ), VerifierState( v, 'e0' ) ]->
+   [ VState( v, 'e0', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e2_to_e1:
+   [ VState( v, 'e2', 'compromised' ) ]
+  --[ RollbackSucceeded( v, 'e2', 'e1' ), VerifierState( v, 'e1' ) ]->
+   [ VState( v, 'e1', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e2_to_e0:
+   [ VState( v, 'e2', 'compromised' ) ]
+  --[ RollbackSucceeded( v, 'e2', 'e0' ), VerifierState( v, 'e0' ) ]->
+   [ VState( v, 'e0', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_monotonic_verifier_lifecycle:
+  exists-trace
+  "∃ v #i0 #i1 #i2 #ia #ic #ir.
+    ((((((((((VerifierInitialized( v ) @ #i0) ∧
+             (EpochAdvanced( v, 'e0', 'e1' ) @ #i1)) ∧
+            (EpochAdvanced( v, 'e1', 'e2' ) @ #i2)) ∧
+           (RollbackAttempt( v, 'e2', 'e1' ) @ #ia)) ∧
+          (VerifierCompromised( v, 'e2' ) @ #ic)) ∧
+         (RollbackSucceeded( v, 'e2', 'e1' ) @ #ir)) ∧
+        (#i0 < #i1)) ∧
+       (#i1 < #i2)) ∧
+      (#i2 < #ia)) ∧
+     (#ia < #ic)) ∧
+    (#ic < #ir)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ v #i0 #i1 #i2 #ia #ic #ir.
+  (VerifierInitialized( v ) @ #i0) ∧
+  (EpochAdvanced( v, 'e0', 'e1' ) @ #i1) ∧
+  (EpochAdvanced( v, 'e1', 'e2' ) @ #i2) ∧
+  (RollbackAttempt( v, 'e2', 'e1' ) @ #ia) ∧
+  (VerifierCompromised( v, 'e2' ) @ #ic) ∧
+  (RollbackSucceeded( v, 'e2', 'e1' ) @ #ir)
+ ∧
+  (#i0 < #i1) ∧ (#i1 < #i2) ∧ (#i2 < #ia) ∧ (#ia < #ic) ∧ (#ic < #ir)"
+*/
+by sorry
+
+lemma rollback_success_requires_prior_verifier_compromise [reuse]:
+  all-traces
+  "∀ v from_epoch to_epoch #ir.
+    (RollbackSucceeded( v, from_epoch, to_epoch ) @ #ir) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( v, compromised_epoch ) @ #ic) ∧ (#ic < #ir))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ v from_epoch to_epoch #ir.
+  (RollbackSucceeded( v, from_epoch, to_epoch ) @ #ir)
+ ∧
+  ∀ compromised_epoch #ic.
+   (VerifierCompromised( v, compromised_epoch ) @ #ic) ⇒ ¬(#ic < #ir)"
+*/
+by sorry
+
+lemma verifier_state_e1_never_rolls_back_to_e0_without_compromise:
+  all-traces
+  "∀ v #inew #iold.
+    (((VerifierState( v, 'e1' ) @ #inew) ∧
+      (VerifierState( v, 'e0' ) @ #iold)) ∧
+     (#inew < #iold)) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( v, compromised_epoch ) @ #ic) ∧ (#ic < #iold))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ v #inew #iold.
+  (VerifierState( v, 'e1' ) @ #inew) ∧ (VerifierState( v, 'e0' ) @ #iold)
+ ∧
+  (#inew < #iold) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( v, compromised_epoch ) @ #ic) ⇒ ¬(#ic < #iold))"
+*/
+simplify
+solve( VerifierState( v, 'e1' ) @ #inew )
+  case Advance_e0_to_e1
+  solve( VState( v, 'e0', 'honest' ) ▶₀ #inew )
+    case Initialize_Verifier
+    solve( VerifierState( ~v, 'e0' ) @ #iold )
+      case Compromised_Rollback_e1_to_e0
+      by contradiction /* from formulas */
+    next
+      case Compromised_Rollback_e2_to_e0
+      by contradiction /* from formulas */
+    next
+      case Initialize_Verifier
+      by contradiction /* cyclic */
+    qed
+  qed
+next
+  case Compromised_Rollback_e2_to_e1
+  by contradiction /* from formulas */
+qed
+
+lemma verifier_state_e2_never_rolls_back_to_e1_without_compromise:
+  all-traces
+  "∀ v #inew #iold.
+    (((VerifierState( v, 'e2' ) @ #inew) ∧
+      (VerifierState( v, 'e1' ) @ #iold)) ∧
+     (#inew < #iold)) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( v, compromised_epoch ) @ #ic) ∧ (#ic < #iold))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ v #inew #iold.
+  (VerifierState( v, 'e2' ) @ #inew) ∧ (VerifierState( v, 'e1' ) @ #iold)
+ ∧
+  (#inew < #iold) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( v, compromised_epoch ) @ #ic) ⇒ ¬(#ic < #iold))"
+*/
+by sorry
+
+lemma verifier_state_e2_never_rolls_back_to_e0_without_compromise:
+  all-traces
+  "∀ v #inew #iold.
+    (((VerifierState( v, 'e2' ) @ #inew) ∧
+      (VerifierState( v, 'e0' ) @ #iold)) ∧
+     (#inew < #iold)) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( v, compromised_epoch ) @ #ic) ∧ (#ic < #iold))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ v #inew #iold.
+  (VerifierState( v, 'e2' ) @ #inew) ∧ (VerifierState( v, 'e0' ) @ #iold)
+ ∧
+  (#inew < #iold) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( v, compromised_epoch ) @ #ic) ⇒ ¬(#ic < #iold))"
+*/
+by sorry
+
+lemma rollback_attempt_cannot_lower_state_without_later_compromise:
+  all-traces
+  "∀ v current_epoch target_epoch #ia #itarget.
+    (((RollbackAttempt( v, current_epoch, target_epoch ) @ #ia) ∧
+      (VerifierState( v, target_epoch ) @ #itarget)) ∧
+     (#ia < #itarget)) ⇒
+    (∃ compromised_epoch #ic.
+      ((VerifierCompromised( v, compromised_epoch ) @ #ic) ∧ (#ia < #ic)) ∧
+      (#ic < #itarget))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ v current_epoch target_epoch #ia #itarget.
+  (RollbackAttempt( v, current_epoch, target_epoch ) @ #ia) ∧
+  (VerifierState( v, target_epoch ) @ #itarget)
+ ∧
+  (#ia < #itarget) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( v, compromised_epoch ) @ #ic)
+   ⇒
+    ((¬(#ia < #ic)) ∨ (¬(#ic < #itarget))))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: model/tamarin/oclm_phase1c4a_verifier_state_monotonicity_core.spthy
+
+  processing time: 0.09s
+  
+  executable_monotonic_verifier_lifecycle (exists-trace): analysis incomplete (1 steps)
+  rollback_success_requires_prior_verifier_compromise (all-traces): analysis incomplete (1 steps)
+  verifier_state_e1_never_rolls_back_to_e0_without_compromise (all-traces): verified (8 steps)
+  verifier_state_e2_never_rolls_back_to_e1_without_compromise (all-traces): analysis incomplete (1 steps)
+  verifier_state_e2_never_rolls_back_to_e0_without_compromise (all-traces): analysis incomplete (1 steps)
+  rollback_attempt_cannot_lower_state_without_later_compromise (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

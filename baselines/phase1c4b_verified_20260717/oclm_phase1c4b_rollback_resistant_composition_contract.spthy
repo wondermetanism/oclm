@@ -1,0 +1,928 @@
+theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract
+begin
+
+/*
+ * OCLM Phase 1-C4B
+ * Rollback-Resistant Composition Contract
+ *
+ * Assume-guarantee boundary:
+ *
+ * - Phase 1-C3B has already established the complete
+ *   Oracle-Parent-Child-Time-Space lineage contract.
+ * - The opaque term "contract" represents that complete verified contract.
+ * - Phase 1-C4B does not re-prove the internals of C3B.
+ * - Phase 1-C4B composes C3B acceptance with a finite monotonic
+ *   verifier-state lifecycle e0 -> e1 -> e2.
+ *
+ * Scope:
+ *
+ * - authentic C3B closed contract
+ * - old-epoch certificate identity
+ * - later-epoch compromise
+ * - Claim Collapse
+ * - current-state acceptance at verifier epoch e2
+ * - explicit verifier compromise
+ * - compromised rollback to e1 or e0
+ * - stale-state acceptance only after verifier compromise
+ *
+ * Out of scope:
+ *
+ * - re-proving the internal C3B lineage
+ * - revocation and transparency
+ * - split-view resistance
+ * - unbounded multi-epoch generalization
+ */
+
+
+/* =========================================================================
+ * Import the already-verified C3B composition contract
+ * ========================================================================= */
+
+rule Import_C3B_Composition_Contract:
+  [
+    Fr(~verifier),
+    Fr(~contract),
+    Fr(~child_id),
+    Fr(~composition_root),
+    Fr(~lineage_root),
+    Fr(~old_epoch),
+    Fr(~old_epoch_pk),
+    Fr(~later_epoch),
+    Fr(~later_epoch_pk)
+  ]
+  --[
+    C3BContractImported(
+      ~contract,
+      ~child_id,
+      ~composition_root,
+      ~lineage_root,
+      ~old_epoch,
+      ~old_epoch_pk
+    ),
+
+    VerifierInitialized(
+      ~verifier
+    ),
+
+    VerifierStateObserved(
+      ~verifier,
+      'e0'
+    )
+  ]->
+  [
+    !C3BClosedContract(
+      ~contract,
+      ~child_id,
+      ~composition_root,
+      ~lineage_root,
+      ~old_epoch,
+      ~old_epoch_pk
+    ),
+
+    VState(
+      ~verifier,
+      'e0',
+      'honest'
+    ),
+
+    LaterEpochPermit(
+      ~verifier,
+      ~contract,
+      ~child_id,
+      ~later_epoch,
+      ~later_epoch_pk
+    ),
+
+    CurrentAcceptancePermit(
+      ~verifier,
+      ~contract,
+      ~child_id
+    ),
+
+    StaleAcceptancePermit(
+      ~verifier,
+      ~contract,
+      ~child_id
+    ),
+
+    RollbackAttemptPermit_e2_to_e1(
+      ~verifier
+    ),
+
+    RollbackAttemptPermit_e2_to_e0(
+      ~verifier
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest verifier-state advancement
+ * ========================================================================= */
+
+rule Advance_Verifier_e0_to_e1:
+  [
+    VState(
+      verifier,
+      'e0',
+      'honest'
+    )
+  ]
+  --[
+    VerifierAdvanced(
+      verifier,
+      'e0',
+      'e1'
+    ),
+
+    VerifierStateObserved(
+      verifier,
+      'e1'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e1',
+      'honest'
+    )
+  ]
+
+
+rule Advance_Verifier_e1_to_e2:
+  [
+    VState(
+      verifier,
+      'e1',
+      'honest'
+    )
+  ]
+  --[
+    VerifierAdvanced(
+      verifier,
+      'e1',
+      'e2'
+    ),
+
+    VerifierStateObserved(
+      verifier,
+      'e2'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Later epoch, later-key compromise and Claim Collapse
+ * ========================================================================= */
+
+rule Start_Later_Epoch:
+  [
+    LaterEpochPermit(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+  --[
+    LaterEpochStarted(
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]->
+  [
+    LaterEpochLive(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+
+
+rule Compromise_Later_Epoch_Key:
+  [
+    LaterEpochLive(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+  --[
+    LaterEpochKeyCompromised(
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]->
+  [
+    ClaimCollapsePermit(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    ),
+
+    !LaterEpochCompromiseActive(
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+
+
+rule Activate_Claim_Collapse:
+  [
+    ClaimCollapsePermit(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+  --[
+    ClaimCollapseActivated(
+      contract,
+      child_id
+    )
+  ]->
+  [
+    !PostC3BEnvironment(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]
+
+
+/* =========================================================================
+ * Acceptance under the current verifier state
+ *
+ * The old C3B certificate remains acceptable at the latest verifier state.
+ * This is not verifier rollback.
+ * ========================================================================= */
+
+rule Accept_Composed_Child_At_Current_Verifier_State:
+  [
+    !C3BClosedContract(
+      contract,
+      child_id,
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk
+    ),
+
+    !PostC3BEnvironment(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    ),
+
+    !LaterEpochCompromiseActive(
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    ),
+
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    ),
+
+    CurrentAcceptancePermit(
+      verifier,
+      contract,
+      child_id
+    )
+  ]
+  --[
+    CurrentVerifierAcceptance(
+      verifier,
+      contract,
+      child_id,
+      'e2'
+    ),
+
+    RollbackResistantComposedAccepted(
+      verifier,
+      contract,
+      child_id,
+      'e2',
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest rollback attempts
+ *
+ * These actions do not lower verifier state.
+ * No VerifierStateObserved action is emitted because the state is unchanged.
+ * Each attempt is bounded by a one-time permit.
+ * ========================================================================= */
+
+rule Attempt_Rollback_e2_to_e1:
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    ),
+
+    RollbackAttemptPermit_e2_to_e1(
+      verifier
+    )
+  ]
+  --[
+    RollbackAttempt(
+      verifier,
+      'e2',
+      'e1'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    )
+  ]
+
+
+rule Attempt_Rollback_e2_to_e0:
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    ),
+
+    RollbackAttemptPermit_e2_to_e0(
+      verifier
+    )
+  ]
+  --[
+    RollbackAttempt(
+      verifier,
+      'e2',
+      'e0'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e2',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Explicit persistent verifier compromise
+ * ========================================================================= */
+
+rule Compromise_Verifier:
+  [
+    VState(
+      verifier,
+      epoch,
+      'honest'
+    )
+  ]
+  --[
+    VerifierCompromised(
+      verifier,
+      epoch
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      epoch,
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Compromised verifier rollback
+ * ========================================================================= */
+
+rule Compromised_Rollback_e2_to_e1:
+  [
+    VState(
+      verifier,
+      'e2',
+      'compromised'
+    )
+  ]
+  --[
+    RollbackSucceeded(
+      verifier,
+      'e2',
+      'e1'
+    ),
+
+    VerifierStateObserved(
+      verifier,
+      'e1'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e1',
+      'compromised'
+    )
+  ]
+
+
+rule Compromised_Rollback_e2_to_e0:
+  [
+    VState(
+      verifier,
+      'e2',
+      'compromised'
+    )
+  ]
+  --[
+    RollbackSucceeded(
+      verifier,
+      'e2',
+      'e0'
+    ),
+
+    VerifierStateObserved(
+      verifier,
+      'e0'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e0',
+      'compromised'
+    )
+  ]
+
+
+rule Compromised_Rollback_e1_to_e0:
+  [
+    VState(
+      verifier,
+      'e1',
+      'compromised'
+    )
+  ]
+  --[
+    RollbackSucceeded(
+      verifier,
+      'e1',
+      'e0'
+    ),
+
+    VerifierStateObserved(
+      verifier,
+      'e0'
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e0',
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Acceptance after compromised verifier rollback
+ * ========================================================================= */
+
+rule Accept_Composed_Child_At_Stale_Verifier_e1:
+  [
+    !C3BClosedContract(
+      contract,
+      child_id,
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk
+    ),
+
+    !PostC3BEnvironment(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    ),
+
+    VState(
+      verifier,
+      'e1',
+      'compromised'
+    ),
+
+    StaleAcceptancePermit(
+      verifier,
+      contract,
+      child_id
+    )
+  ]
+  --[
+    StaleVerifierAcceptance(
+      verifier,
+      contract,
+      child_id,
+      'e1'
+    ),
+
+    RollbackResistantComposedAccepted(
+      verifier,
+      contract,
+      child_id,
+      'e1',
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e1',
+      'compromised'
+    )
+  ]
+
+
+rule Accept_Composed_Child_At_Stale_Verifier_e0:
+  [
+    !C3BClosedContract(
+      contract,
+      child_id,
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk
+    ),
+
+    !PostC3BEnvironment(
+      verifier,
+      contract,
+      child_id,
+      later_epoch,
+      later_epoch_pk
+    ),
+
+    VState(
+      verifier,
+      'e0',
+      'compromised'
+    ),
+
+    StaleAcceptancePermit(
+      verifier,
+      contract,
+      child_id
+    )
+  ]
+  --[
+    StaleVerifierAcceptance(
+      verifier,
+      contract,
+      child_id,
+      'e0'
+    ),
+
+    RollbackResistantComposedAccepted(
+      verifier,
+      contract,
+      child_id,
+      'e0',
+      composition_root,
+      lineage_root,
+      old_epoch,
+      old_epoch_pk,
+      later_epoch,
+      later_epoch_pk
+    )
+  ]->
+  [
+    VState(
+      verifier,
+      'e0',
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Executability
+ * ========================================================================= */
+
+lemma executable_rollback_resistant_composed_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract child_id
+       composition_root lineage_root
+       old_epoch old_epoch_pk
+       later_epoch later_epoch_pk
+       #i0 #i1 #i2 #i3 #i4 #i5 #i6 #i7 #i8 #i9 #i10.
+
+         C3BContractImported(
+           contract,
+           child_id,
+           composition_root,
+           lineage_root,
+           old_epoch,
+           old_epoch_pk
+         ) @ #i0
+
+       & VerifierAdvanced(
+           verifier,
+           'e0',
+           'e1'
+         ) @ #i1
+
+       & VerifierAdvanced(
+           verifier,
+           'e1',
+           'e2'
+         ) @ #i2
+
+       & LaterEpochStarted(
+           contract,
+           child_id,
+           later_epoch,
+           later_epoch_pk
+         ) @ #i3
+
+       & LaterEpochKeyCompromised(
+           contract,
+           child_id,
+           later_epoch,
+           later_epoch_pk
+         ) @ #i4
+
+       & ClaimCollapseActivated(
+           contract,
+           child_id
+         ) @ #i5
+
+       & CurrentVerifierAcceptance(
+           verifier,
+           contract,
+           child_id,
+           'e2'
+         ) @ #i6
+
+       & RollbackAttempt(
+           verifier,
+           'e2',
+           'e1'
+         ) @ #i7
+
+       & VerifierCompromised(
+           verifier,
+           'e2'
+         ) @ #i8
+
+       & RollbackSucceeded(
+           verifier,
+           'e2',
+           'e1'
+         ) @ #i9
+
+       & StaleVerifierAcceptance(
+           verifier,
+           contract,
+           child_id,
+           'e1'
+         ) @ #i10
+
+       & #i0 < #i1
+       & #i1 < #i2
+       & #i2 < #i3
+       & #i3 < #i4
+       & #i4 < #i5
+       & #i5 < #i6
+       & #i6 < #i7
+       & #i7 < #i8
+       & #i8 < #i9
+       & #i9 < #i10
+  "
+
+
+/* =========================================================================
+ * Every composed acceptance remains anchored to the imported C3B contract
+ * ========================================================================= */
+
+lemma rollback_resistant_acceptance_requires_c3b_contract:
+  "
+    All verifier contract child_id verifier_epoch
+        composition_root lineage_root
+        old_epoch old_epoch_pk
+        later_epoch later_epoch_pk
+        #ia.
+
+      RollbackResistantComposedAccepted(
+        verifier,
+        contract,
+        child_id,
+        verifier_epoch,
+        composition_root,
+        lineage_root,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        later_epoch_pk
+      ) @ #ia
+
+      ==>
+
+      (Ex #ic.
+
+        C3BContractImported(
+          contract,
+          child_id,
+          composition_root,
+          lineage_root,
+          old_epoch,
+          old_epoch_pk
+        ) @ #ic
+
+        & #ic < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Uncompromised acceptance uses the latest verifier state
+ * ========================================================================= */
+
+lemma composed_acceptance_uses_latest_state_or_prior_verifier_compromise:
+  "
+    All verifier contract child_id verifier_epoch
+        composition_root lineage_root
+        old_epoch old_epoch_pk
+        later_epoch later_epoch_pk
+        #ia.
+
+      RollbackResistantComposedAccepted(
+        verifier,
+        contract,
+        child_id,
+        verifier_epoch,
+        composition_root,
+        lineage_root,
+        old_epoch,
+        old_epoch_pk,
+        later_epoch,
+        later_epoch_pk
+      ) @ #ia
+
+      ==>
+
+      (
+        verifier_epoch = 'e2'
+
+        |
+
+        (Ex compromised_epoch #ic.
+
+          VerifierCompromised(
+            verifier,
+            compromised_epoch
+          ) @ #ic
+
+          & #ic < #ia
+        )
+      )
+  "
+
+
+/* =========================================================================
+ * Stale-state acceptance requires prior verifier compromise
+ * ========================================================================= */
+
+lemma stale_composed_acceptance_requires_prior_verifier_compromise:
+  "
+    All verifier contract child_id stale_epoch #ia.
+
+      StaleVerifierAcceptance(
+        verifier,
+        contract,
+        child_id,
+        stale_epoch
+      ) @ #ia
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+        VerifierCompromised(
+          verifier,
+          compromised_epoch
+        ) @ #ic
+
+        & #ic < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting verifier histories for the same C3B contract require compromise
+ * ========================================================================= */
+
+lemma same_contract_conflicting_verifier_histories_require_compromise:
+  "
+    All verifier contract child_id
+        verifier_epoch_1 verifier_epoch_2
+        composition_root lineage_root
+        old_epoch old_epoch_pk
+        later_epoch later_epoch_pk
+        #i1 #i2.
+
+          RollbackResistantComposedAccepted(
+            verifier,
+            contract,
+            child_id,
+            verifier_epoch_1,
+            composition_root,
+            lineage_root,
+            old_epoch,
+            old_epoch_pk,
+            later_epoch,
+            later_epoch_pk
+          ) @ #i1
+
+        & RollbackResistantComposedAccepted(
+            verifier,
+            contract,
+            child_id,
+            verifier_epoch_2,
+            composition_root,
+            lineage_root,
+            old_epoch,
+            old_epoch_pk,
+            later_epoch,
+            later_epoch_pk
+          ) @ #i2
+
+        & #i1 < #i2
+        & not (verifier_epoch_1 = verifier_epoch_2)
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+        VerifierCompromised(
+          verifier,
+          compromised_epoch
+        ) @ #ic
+
+        & #ic < #i2
+      )
+  "
+
+end

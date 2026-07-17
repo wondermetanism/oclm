@@ -1,0 +1,862 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory loaded
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory translated
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks started
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Derivation checks ended
+[Theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/*
+looping facts with injective instances:
+  AdvanceEpochPermit/5, VerifierEpochState/6
+*/
+
+rule (modulo E) Initialize_Multi_Epoch_Lifecycle:
+   [
+   Fr( ~verifier ), Fr( ~contract ), Fr( ~epoch_0 ), Fr( ~epoch_pk_0 ),
+   Fr( ~lineage_root_0 )
+   ]
+  --[
+  MultiEpochLifecycleInitialized( ~verifier, ~contract, ~epoch_0,
+                                  ~epoch_pk_0, ~lineage_root_0
+  ),
+  EpochIssued( ~contract, ~epoch_0, ~epoch_pk_0, ~lineage_root_0 ),
+  VerifierEpochObserved( ~verifier, ~contract, ~epoch_0 )
+  ]->
+   [
+   !EpochRecord( ~contract, ~epoch_0, ~epoch_pk_0, ~lineage_root_0 ),
+   VerifierEpochState( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                       ~lineage_root_0, 'honest'
+   ),
+   AdvanceEpochPermit( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                       ~lineage_root_0
+   ),
+   CurrentEpochAcceptancePermit( ~verifier, ~contract, ~epoch_0,
+                                 ~epoch_pk_0, ~lineage_root_0
+   ),
+   CompromiseGeneralizedVerifierPermit( ~verifier, ~contract )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_To_Fresh_Next_Epoch:
+   [
+   VerifierEpochState( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root, 'honest'
+   ),
+   AdvanceEpochPermit( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root
+   ),
+   Fr( ~higher_epoch ), Fr( ~higher_epoch_pk ), Fr( ~higher_lineage_root )
+   ]
+  --[
+  EpochTransitionRecorded( contract, lower_epoch, ~higher_epoch ),
+  EpochIssued( contract, ~higher_epoch, ~higher_epoch_pk,
+               ~higher_lineage_root
+  ),
+  VerifierEpochAdvanced( verifier, contract, lower_epoch, ~higher_epoch ),
+  VerifierEpochObserved( verifier, contract, ~higher_epoch )
+  ]->
+   [
+   !EpochRecord( contract, ~higher_epoch, ~higher_epoch_pk,
+                 ~higher_lineage_root
+   ),
+   !EpochTransition( contract, lower_epoch, ~higher_epoch ),
+   VerifierEpochState( verifier, contract, ~higher_epoch, ~higher_epoch_pk,
+                       ~higher_lineage_root, 'honest'
+   ),
+   AdvanceEpochPermit( verifier, contract, ~higher_epoch, ~higher_epoch_pk,
+                       ~higher_lineage_root
+   ),
+   CurrentEpochAcceptancePermit( verifier, contract, ~higher_epoch,
+                                 ~higher_epoch_pk, ~higher_lineage_root
+   )
+   ]
+
+  // loop breakers: [0,1]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_At_Honest_Current_Epoch:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   ),
+   CurrentEpochAcceptancePermit( verifier, contract, epoch, epoch_pk,
+                                 lineage_root
+   ),
+   !EpochRecord( contract, epoch, epoch_pk, lineage_root )
+   ]
+  --[
+  CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+  ),
+  GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                            lineage_root, 'current'
+  )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Generalized_Epoch_Verifier:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'honest'
+   ),
+   CompromiseGeneralizedVerifierPermit( verifier, contract )
+   ]
+  --[ GeneralizedEpochVerifierCompromised( verifier, contract, epoch ) ]->
+   [
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   ),
+   CompromisedEpochAcceptancePermit( verifier, contract )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Roll_Back_One_Recorded_Epoch_After_Compromise:
+   [
+   VerifierEpochState( verifier, contract, higher_epoch, higher_epoch_pk,
+                       higher_lineage_root, 'compromised'
+   ),
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   !EpochTransition( contract, lower_epoch, higher_epoch ),
+   !EpochRecord( contract, lower_epoch, lower_epoch_pk, lower_lineage_root )
+   ]
+  --[
+  GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+  ),
+  VerifierEpochObserved( verifier, contract, lower_epoch )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, lower_epoch, lower_epoch_pk,
+                       lower_lineage_root, 'compromised'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_At_Stale_Epoch_After_Compromise:
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   ),
+   !GeneralizedVerifierCompromiseState( verifier, contract ),
+   !EpochRecord( contract, epoch, epoch_pk, lineage_root ),
+   CompromisedEpochAcceptancePermit( verifier, contract )
+   ]
+  --[
+  StaleEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root ),
+  GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                            lineage_root, 'stale'
+  )
+  ]->
+   [
+   VerifierEpochState( verifier, contract, epoch, epoch_pk, lineage_root,
+                       'compromised'
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+lemma executable_generalized_multi_epoch_lifecycle:
+  exists-trace
+  "∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1 epoch_pk_1
+     lineage_root_1 epoch_2 epoch_3 epoch_pk_3 lineage_root_3 #i0 #it1 #it2
+     #it3 #ia #ic #ir1 #ir2 #is.
+    ((((((((((((((((MultiEpochLifecycleInitialized( verifier, contract,
+                                                    epoch_0, epoch_pk_0, lineage_root_0
+                    ) @ #i0) ∧
+                   (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1)) ∧
+                  (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2)) ∧
+                 (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3)) ∧
+                (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                                           lineage_root_3, 'current'
+                 ) @ #ia)) ∧
+               (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+                ) @ #ic)) ∧
+              (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+               ) @ #ir1)) ∧
+             (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+              ) @ #ir2)) ∧
+            (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                                       lineage_root_1, 'stale'
+             ) @ #is)) ∧
+           (#i0 < #it1)) ∧
+          (#it1 < #it2)) ∧
+         (#it2 < #it3)) ∧
+        (#it3 < #ia)) ∧
+       (#ia < #ic)) ∧
+      (#ic < #ir1)) ∧
+     (#ir1 < #ir2)) ∧
+    (#ir2 < #is)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ verifier contract epoch_0 epoch_pk_0 lineage_root_0 epoch_1 epoch_pk_1
+   lineage_root_1 epoch_2 epoch_3 epoch_pk_3 lineage_root_3 #i0 #it1 #it2
+   #it3 #ia #ic #ir1 #ir2 #is.
+  (MultiEpochLifecycleInitialized( verifier, contract, epoch_0, epoch_pk_0,
+                                   lineage_root_0
+   ) @ #i0) ∧
+  (EpochTransitionRecorded( contract, epoch_0, epoch_1 ) @ #it1) ∧
+  (EpochTransitionRecorded( contract, epoch_1, epoch_2 ) @ #it2) ∧
+  (EpochTransitionRecorded( contract, epoch_2, epoch_3 ) @ #it3) ∧
+  (GeneralizedEpochAccepted( verifier, contract, epoch_3, epoch_pk_3,
+                             lineage_root_3, 'current'
+   ) @ #ia) ∧
+  (GeneralizedEpochVerifierCompromised( verifier, contract, epoch_3
+   ) @ #ic) ∧
+  (GeneralizedEpochRollback( verifier, contract, epoch_3, epoch_2
+   ) @ #ir1) ∧
+  (GeneralizedEpochRollback( verifier, contract, epoch_2, epoch_1
+   ) @ #ir2) ∧
+  (GeneralizedEpochAccepted( verifier, contract, epoch_1, epoch_pk_1,
+                             lineage_root_1, 'stale'
+   ) @ #is)
+ ∧
+  (#i0 < #it1) ∧
+  (#it1 < #it2) ∧
+  (#it2 < #it3) ∧
+  (#it3 < #ia) ∧
+  (#ia < #ic) ∧
+  (#ic < #ir1) ∧
+  (#ir1 < #ir2) ∧
+  (#ir2 < #is)"
+*/
+simplify
+solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch.2,
+                           epoch_pk, lineage_root, 'honest'
+       ) ▶₀ #ic )
+  case Accept_At_Honest_Current_Epoch
+  solve( CompromiseGeneralizedVerifierPermit( ~verifier, ~contract
+         ) ▶₁ #ic )
+    case Initialize_Multi_Epoch_Lifecycle
+    solve( !GeneralizedVerifierCompromiseState( ~verifier, ~contract
+           ) ▶₁ #ir1 )
+      case Compromise_Generalized_Epoch_Verifier
+      solve( !EpochTransition( ~contract, ~higher_epoch.1, ~higher_epoch
+             ) ▶₂ #ir1 )
+        case Advance_To_Fresh_Next_Epoch
+        solve( !EpochRecord( ~contract, ~higher_epoch.1, lower_epoch_pk,
+                             lower_lineage_root
+               ) ▶₃ #ir1 )
+          case Advance_To_Fresh_Next_Epoch
+          solve( !GeneralizedVerifierCompromiseState( ~verifier, ~contract
+                 ) ▶₁ #ir2 )
+            case Compromise_Generalized_Epoch_Verifier
+            solve( !EpochTransition( ~contract, ~higher_epoch.2, ~higher_epoch.1
+                   ) ▶₂ #ir2 )
+              case Advance_To_Fresh_Next_Epoch
+              solve( !EpochRecord( ~contract, ~higher_epoch.2, lower_epoch_pk,
+                                   lower_lineage_root
+                     ) ▶₃ #ir2 )
+                case Advance_To_Fresh_Next_Epoch
+                solve( GeneralizedEpochAccepted( ~verifier, ~contract, ~higher_epoch,
+                                                 epoch_pk_3, lineage_root_3, 'current'
+                       ) @ #ia )
+                  case Accept_At_Honest_Current_Epoch
+                  solve( CurrentEpochAcceptancePermit( ~verifier, ~contract, ~higher_epoch,
+                                                       epoch_pk_3, lineage_root_3
+                         ) ▶₁ #ia )
+                    case Advance_To_Fresh_Next_Epoch
+                    solve( GeneralizedEpochAccepted( ~verifier, ~contract, ~higher_epoch.2,
+                                                     epoch_pk_1, lineage_root_1, 'stale'
+                           ) @ #is )
+                      case Accept_At_Stale_Epoch_After_Compromise
+                      solve( !GeneralizedVerifierCompromiseState( ~verifier, ~contract
+                             ) ▶₁ #is )
+                        case Compromise_Generalized_Epoch_Verifier
+                        solve( !EpochRecord( ~contract, ~higher_epoch.2, epoch_pk_1,
+                                             lineage_root_1
+                               ) ▶₂ #is )
+                          case Advance_To_Fresh_Next_Epoch
+                          solve( CompromisedEpochAcceptancePermit( ~verifier, ~contract ) ▶₃ #is )
+                            case Compromise_Generalized_Epoch_Verifier
+                            solve( VerifierEpochState( verifier.1, ~contract, ~epoch_0,
+                                                       lower_epoch_pk, lower_lineage_root, 'honest'
+                                   ) ▶₀ #it1 )
+                              case Accept_At_Honest_Current_Epoch
+                              solve( AdvanceEpochPermit( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                                                         ~lineage_root_0
+                                     ) ▶₁ #it1 )
+                                case Initialize_Multi_Epoch_Lifecycle
+                                solve( VerifierEpochState( verifier.1, ~contract, ~higher_epoch.2,
+                                                           lower_epoch_pk, lower_lineage_root, 'honest'
+                                       ) ▶₀ #it2 )
+                                  case Accept_At_Honest_Current_Epoch
+                                  solve( AdvanceEpochPermit( ~verifier, ~contract, ~higher_epoch.2,
+                                                             ~higher_epoch_pk.4, ~higher_lineage_root.4
+                                         ) ▶₁ #it2 )
+                                    case Advance_To_Fresh_Next_Epoch
+                                    solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch.1,
+                                                               lower_epoch_pk, lower_lineage_root, 'honest'
+                                           ) ▶₀ #it3 )
+                                      case Advance_To_Fresh_Next_Epoch
+                                      solve( AdvanceEpochPermit( ~verifier, ~contract, ~higher_epoch.1,
+                                                                 ~higher_epoch_pk.2, ~higher_lineage_root.2
+                                             ) ▶₁ #it3 )
+                                        case Advance_To_Fresh_Next_Epoch
+                                        solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch,
+                                                                   higher_epoch_pk.1, higher_lineage_root.1,
+                                                                   'compromised'
+                                               ) ▶₀ #ir1 )
+                                          case Compromise_Generalized_Epoch_Verifier
+                                          solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch.1,
+                                                                     higher_epoch_pk.2, higher_lineage_root.2,
+                                                                     'compromised'
+                                                 ) ▶₀ #ir2 )
+                                            case Roll_Back_One_Recorded_Epoch_After_Compromise
+                                            solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch,
+                                                                       ~higher_epoch_pk, ~higher_lineage_root,
+                                                                       'honest'
+                                                   ) ▶₀ #ia )
+                                              case Advance_To_Fresh_Next_Epoch
+                                              solve( VerifierEpochState( ~verifier, ~contract,
+                                                                         ~higher_epoch.2, ~higher_epoch_pk.2,
+                                                                         ~higher_lineage_root.2, 'compromised'
+                                                     ) ▶₀ #is )
+                                                case Roll_Back_One_Recorded_Epoch_After_Compromise
+                                                solve( VerifierEpochState( ~verifier, ~contract, ~epoch_0,
+                                                                           ~epoch_pk_0, ~lineage_root_0,
+                                                                           'honest'
+                                                       ) ▶₀ #vr )
+                                                  case Initialize_Multi_Epoch_Lifecycle
+                                                  solve( VerifierEpochState( ~verifier, ~contract,
+                                                                             ~higher_epoch.2,
+                                                                             ~higher_epoch_pk.2,
+                                                                             ~higher_lineage_root.2, 'honest'
+                                                         ) ▶₀ #vr.1 )
+                                                    case Advance_To_Fresh_Next_Epoch
+                                                    solve( VerifierEpochState( ~verifier, ~contract,
+                                                                               ~higher_epoch.3,
+                                                                               higher_epoch_pk.3,
+                                                                               higher_lineage_root.3,
+                                                                               'compromised'
+                                                           ) ▶₀ #vr.2 )
+                                                      case Compromise_Generalized_Epoch_Verifier
+                                                      solve( VerifierEpochState( ~verifier, ~contract,
+                                                                                 ~higher_epoch.3,
+                                                                                 higher_epoch_pk.3,
+                                                                                 higher_lineage_root.3,
+                                                                                 'compromised'
+                                                             ) ▶₀ #vr.2 )
+                                                        case Roll_Back_One_Recorded_Epoch_After_Compromise
+                                                        solve( VerifierEpochState( verifier.1, ~contract,
+                                                                                   ~higher_epoch.2,
+                                                                                   lower_epoch_pk,
+                                                                                   lower_lineage_root,
+                                                                                   'honest'
+                                                               ) ▶₀ #vr.3 )
+                                                          case Accept_At_Honest_Current_Epoch
+                                                          solve( VerifierEpochState( ~verifier, ~contract,
+                                                                                     ~higher_epoch.3,
+                                                                                     higher_epoch_pk.3,
+                                                                                     higher_lineage_root.3,
+                                                                                     'compromised'
+                                                                 ) ▶₀ #vr.3 )
+                                                            case Compromise_Generalized_Epoch_Verifier
+                                                            SOLVED // trace found
+                                                          qed
+                                                        qed
+                                                      qed
+                                                    qed
+                                                  qed
+                                                qed
+                                              qed
+                                            qed
+                                          qed
+                                        qed
+                                      qed
+                                    qed
+                                  qed
+                                qed
+                              qed
+                            qed
+                          qed
+                        qed
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+lemma accepted_epoch_requires_matching_prior_issuance:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root mode #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, mode
+     ) @ #ia) ⇒
+    (∃ #ii.
+      (EpochIssued( contract, epoch, epoch_pk, lineage_root ) @ #ii) ∧
+      (#ii < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root mode #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, mode
+   ) @ #ia)
+ ∧
+  ∀ #ii.
+   (EpochIssued( contract, epoch, epoch_pk, lineage_root ) @ #ii)
+  ⇒
+   ¬(#ii < #ia)"
+*/
+simplify
+solve( GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                                 lineage_root, mode
+       ) @ #ia )
+  case Accept_At_Honest_Current_Epoch
+  solve( CurrentEpochAcceptancePermit( verifier, contract, epoch, epoch_pk,
+                                       lineage_root
+         ) ▶₁ #ia )
+    case Advance_To_Fresh_Next_Epoch
+    by contradiction /* from formulas */
+  next
+    case Initialize_Multi_Epoch_Lifecycle
+    by contradiction /* from formulas */
+  qed
+next
+  case Accept_At_Stale_Epoch_After_Compromise
+  solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ia )
+    case Compromise_Generalized_Epoch_Verifier_case_1
+    solve( !EpochRecord( ~contract, epoch, epoch_pk, lineage_root ) ▶₂ #ia )
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* from formulas */
+    next
+      case Initialize_Multi_Epoch_Lifecycle
+      by contradiction /* from formulas */
+    qed
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_2
+    solve( !EpochRecord( ~contract, epoch, epoch_pk, lineage_root ) ▶₂ #ia )
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* from formulas */
+    next
+      case Initialize_Multi_Epoch_Lifecycle
+      by contradiction /* from formulas */
+    qed
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_3
+    solve( !EpochRecord( ~contract, epoch, epoch_pk, lineage_root ) ▶₂ #ia )
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* from formulas */
+    next
+      case Initialize_Multi_Epoch_Lifecycle
+      by contradiction /* from formulas */
+    qed
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_4
+    solve( !EpochRecord( ~contract, epoch, epoch_pk, lineage_root ) ▶₂ #ia )
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* from formulas */
+    next
+      case Initialize_Multi_Epoch_Lifecycle
+      by contradiction /* from formulas */
+    qed
+  qed
+qed
+
+lemma current_epoch_acceptance_has_current_evidence:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, 'current'
+     ) @ #ia) ⇒
+    (CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+     ) @ #ia)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, 'current'
+   ) @ #ia)
+ ∧
+  ¬(CurrentEpochEvidence( verifier, contract, epoch, epoch_pk, lineage_root
+    ) @ #ia)"
+*/
+simplify
+solve( GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                                 lineage_root, 'current'
+       ) @ #ia )
+  case Accept_At_Honest_Current_Epoch
+  by contradiction /* from formulas */
+qed
+
+lemma stale_epoch_acceptance_requires_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract epoch epoch_pk lineage_root #ia.
+    (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                               lineage_root, 'stale'
+     ) @ #ia) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract epoch epoch_pk lineage_root #ia.
+  (GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                             lineage_root, 'stale'
+   ) @ #ia)
+ ∧
+  ∀ compromise_epoch #ic.
+   (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                         compromise_epoch
+    ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+simplify
+solve( GeneralizedEpochAccepted( verifier, contract, epoch, epoch_pk,
+                                 lineage_root, 'stale'
+       ) @ #ia )
+  case Accept_At_Stale_Epoch_After_Compromise
+  solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ia )
+    case Compromise_Generalized_Epoch_Verifier_case_1
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_2
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_3
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_4
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma generalized_epoch_rollback_requires_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract higher_epoch lower_epoch #ir.
+    (GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+     ) @ #ir) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #ir))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract higher_epoch lower_epoch #ir.
+  (GeneralizedEpochRollback( verifier, contract, higher_epoch, lower_epoch
+   ) @ #ir)
+ ∧
+  ∀ compromise_epoch #ic.
+   (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                         compromise_epoch
+    ) @ #ic)
+  ⇒
+   ¬(#ic < #ir)"
+*/
+simplify
+solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ir )
+  case Compromise_Generalized_Epoch_Verifier_case_1
+  by contradiction /* from formulas */
+next
+  case Compromise_Generalized_Epoch_Verifier_case_2
+  by contradiction /* from formulas */
+next
+  case Compromise_Generalized_Epoch_Verifier_case_3
+  by contradiction /* from formulas */
+next
+  case Compromise_Generalized_Epoch_Verifier_case_4
+  by contradiction /* from formulas */
+qed
+
+lemma recorded_epoch_transition_never_rolls_back_without_compromise:
+  all-traces
+  "∀ verifier contract lower_epoch higher_epoch #it #ih #il.
+    ((((EpochTransitionRecorded( contract, lower_epoch, higher_epoch
+        ) @ #it) ∧
+       (VerifierEpochObserved( verifier, contract, higher_epoch ) @ #ih)) ∧
+      (VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il)) ∧
+     (#ih < #il)) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #il))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract lower_epoch higher_epoch #it #ih #il.
+  (EpochTransitionRecorded( contract, lower_epoch, higher_epoch ) @ #it) ∧
+  (VerifierEpochObserved( verifier, contract, higher_epoch ) @ #ih) ∧
+  (VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il)
+ ∧
+  (#ih < #il) ∧
+  (∀ compromise_epoch #ic.
+    (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                          compromise_epoch
+     ) @ #ic)
+   ⇒
+    ¬(#ic < #il))"
+*/
+simplify
+solve( VerifierEpochObserved( verifier.1, contract, ~higher_epoch
+       ) @ #ih )
+  case Advance_To_Fresh_Next_Epoch
+  solve( VerifierEpochObserved( verifier, contract, lower_epoch ) @ #il )
+    case Advance_To_Fresh_Next_Epoch
+    solve( VerifierEpochState( verifier, contract, ~higher_epoch,
+                               lower_epoch_pk, lower_lineage_root, 'honest'
+           ) ▶₀ #ih )
+      case Accept_At_Honest_Current_Epoch
+      by contradiction /* cyclic */
+    next
+      case Advance_To_Fresh_Next_Epoch
+      by contradiction /* cyclic */
+    qed
+  next
+    case Initialize_Multi_Epoch_Lifecycle
+    by contradiction /* cyclic */
+  next
+    case Roll_Back_One_Recorded_Epoch_After_Compromise
+    solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #il )
+      case Compromise_Generalized_Epoch_Verifier_case_1
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_2
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_3
+      by contradiction /* from formulas */
+    next
+      case Compromise_Generalized_Epoch_Verifier_case_4
+      by contradiction /* from formulas */
+    qed
+  qed
+next
+  case Roll_Back_One_Recorded_Epoch_After_Compromise
+  solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ih )
+    case Compromise_Generalized_Epoch_Verifier_case_1
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_2
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_3
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_4
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma conflicting_direct_epoch_acceptances_require_prior_compromise:
+  all-traces
+  "∀ verifier contract lower_epoch higher_epoch lower_epoch_pk
+     lower_lineage_root higher_epoch_pk higher_lineage_root higher_mode
+     lower_mode #it #ih #il.
+    ((((EpochTransitionRecorded( contract, lower_epoch, higher_epoch
+        ) @ #it) ∧
+       (GeneralizedEpochAccepted( verifier, contract, higher_epoch,
+                                  higher_epoch_pk, higher_lineage_root, higher_mode
+        ) @ #ih)) ∧
+      (GeneralizedEpochAccepted( verifier, contract, lower_epoch,
+                                 lower_epoch_pk, lower_lineage_root, lower_mode
+       ) @ #il)) ∧
+     (#ih < #il)) ⇒
+    (∃ compromise_epoch #ic.
+      (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                            compromise_epoch
+       ) @ #ic) ∧
+      (#ic < #il))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract lower_epoch higher_epoch lower_epoch_pk
+   lower_lineage_root higher_epoch_pk higher_lineage_root higher_mode
+   lower_mode #it #ih #il.
+  (EpochTransitionRecorded( contract, lower_epoch, higher_epoch ) @ #it) ∧
+  (GeneralizedEpochAccepted( verifier, contract, higher_epoch,
+                             higher_epoch_pk, higher_lineage_root, higher_mode
+   ) @ #ih) ∧
+  (GeneralizedEpochAccepted( verifier, contract, lower_epoch,
+                             lower_epoch_pk, lower_lineage_root, lower_mode
+   ) @ #il)
+ ∧
+  (#ih < #il) ∧
+  (∀ compromise_epoch #ic.
+    (GeneralizedEpochVerifierCompromised( verifier, contract,
+                                          compromise_epoch
+     ) @ #ic)
+   ⇒
+    ¬(#ic < #il))"
+*/
+simplify
+solve( GeneralizedEpochAccepted( verifier.1, contract, ~higher_epoch,
+                                 higher_epoch_pk.1, higher_lineage_root.1, higher_mode
+       ) @ #ih )
+  case Accept_At_Honest_Current_Epoch
+  solve( CurrentEpochAcceptancePermit( verifier, contract, ~higher_epoch,
+                                       higher_epoch_pk, higher_lineage_root
+         ) ▶₁ #ih )
+    case Advance_To_Fresh_Next_Epoch
+    solve( !EpochRecord( contract, ~higher_epoch, ~higher_epoch_pk,
+                         ~higher_lineage_root
+           ) ▶₂ #ih )
+      case Advance_To_Fresh_Next_Epoch
+      solve( GeneralizedEpochAccepted( verifier, contract, lower_epoch,
+                                       lower_epoch_pk.2, lower_lineage_root.2, lower_mode
+             ) @ #il )
+        case Accept_At_Honest_Current_Epoch
+        solve( CurrentEpochAcceptancePermit( verifier, contract, lower_epoch,
+                                             lower_epoch_pk, lower_lineage_root
+               ) ▶₁ #il )
+          case Advance_To_Fresh_Next_Epoch
+          solve( !EpochRecord( contract, ~higher_epoch.1, ~higher_epoch_pk.1,
+                               ~higher_lineage_root.1
+                 ) ▶₂ #il )
+            case Advance_To_Fresh_Next_Epoch
+            solve( VerifierEpochState( verifier, contract, ~higher_epoch.1,
+                                       lower_epoch_pk, lower_lineage_root, 'honest'
+                   ) ▶₀ #it )
+              case Accept_At_Honest_Current_Epoch
+              by contradiction /* cyclic */
+            next
+              case Advance_To_Fresh_Next_Epoch
+              solve( AdvanceEpochPermit( verifier, contract, ~higher_epoch.1,
+                                         ~higher_epoch_pk.1, ~higher_lineage_root.1
+                     ) ▶₁ #it )
+                case Advance_To_Fresh_Next_Epoch
+                solve( VerifierEpochState( verifier, contract, ~higher_epoch,
+                                           ~higher_epoch_pk, ~higher_lineage_root, 'honest'
+                       ) ▶₀ #ih )
+                  case Accept_At_Honest_Current_Epoch
+                  by contradiction /* cyclic */
+                next
+                  case Advance_To_Fresh_Next_Epoch
+                  solve( VerifierEpochState( verifier, contract, ~higher_epoch.1,
+                                             ~higher_epoch_pk.1, ~higher_lineage_root.1, 'honest'
+                         ) ▶₀ #il )
+                    case Accept_At_Honest_Current_Epoch
+                    by contradiction /* cyclic */
+                  qed
+                qed
+              qed
+            qed
+          qed
+        next
+          case Initialize_Multi_Epoch_Lifecycle
+          solve( !EpochRecord( ~contract, ~epoch_0, ~epoch_pk_0, ~lineage_root_0
+                 ) ▶₂ #il )
+            case Initialize_Multi_Epoch_Lifecycle
+            solve( VerifierEpochState( ~verifier, ~contract, ~epoch_0,
+                                       lower_epoch_pk, lower_lineage_root, 'honest'
+                   ) ▶₀ #it )
+              case Accept_At_Honest_Current_Epoch
+              by contradiction /* cyclic */
+            next
+              case Initialize_Multi_Epoch_Lifecycle
+              solve( AdvanceEpochPermit( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                                         ~lineage_root_0
+                     ) ▶₁ #it )
+                case Initialize_Multi_Epoch_Lifecycle
+                solve( VerifierEpochState( ~verifier, ~contract, ~higher_epoch,
+                                           ~higher_epoch_pk, ~higher_lineage_root, 'honest'
+                       ) ▶₀ #ih )
+                  case Accept_At_Honest_Current_Epoch
+                  by contradiction /* cyclic */
+                next
+                  case Advance_To_Fresh_Next_Epoch
+                  solve( VerifierEpochState( ~verifier, ~contract, ~epoch_0, ~epoch_pk_0,
+                                             ~lineage_root_0, 'honest'
+                         ) ▶₀ #il )
+                    case Accept_At_Honest_Current_Epoch
+                    by contradiction /* cyclic */
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      next
+        case Accept_At_Stale_Epoch_After_Compromise
+        solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #il )
+          case Compromise_Generalized_Epoch_Verifier_case_1
+          by contradiction /* from formulas */
+        next
+          case Compromise_Generalized_Epoch_Verifier_case_2
+          by contradiction /* from formulas */
+        next
+          case Compromise_Generalized_Epoch_Verifier_case_3
+          by contradiction /* from formulas */
+        next
+          case Compromise_Generalized_Epoch_Verifier_case_4
+          by contradiction /* from formulas */
+        qed
+      qed
+    qed
+  qed
+next
+  case Accept_At_Stale_Epoch_After_Compromise
+  solve( !GeneralizedVerifierCompromiseState( verifier, contract ) ▶₁ #ih )
+    case Compromise_Generalized_Epoch_Verifier_case_1
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_2
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_3
+    by contradiction /* from formulas */
+  next
+    case Compromise_Generalized_Epoch_Verifier_case_4
+    by contradiction /* from formulas */
+  qed
+qed
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: model/tamarin/oclm_phase1c6a_multi_epoch_generalization_core.spthy
+
+  processing time: 3.50s
+  
+  executable_generalized_multi_epoch_lifecycle (exists-trace): verified (32 steps)
+  accepted_epoch_requires_matching_prior_issuance (all-traces): verified (18 steps)
+  current_epoch_acceptance_has_current_evidence (all-traces): verified (3 steps)
+  stale_epoch_acceptance_requires_prior_verifier_compromise (all-traces): verified (7 steps)
+  generalized_epoch_rollback_requires_prior_verifier_compromise (all-traces): verified (6 steps)
+  recorded_epoch_transition_never_rolls_back_without_compromise (all-traces): verified (17 steps)
+  conflicting_direct_epoch_acceptances_require_prior_compromise (all-traces): verified (32 steps)
+
+==============================================================================

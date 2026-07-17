@@ -1,0 +1,544 @@
+{
+    "graphs": [
+        {
+            "jgAbbrevs": [
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "CO1"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "'compromised'"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "'compromised'"
+                    }
+                }
+            ],
+            "jgClusters": [],
+            "jgDirected": true,
+            "jgEdges": [
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#inew:c0",
+                    "jgeTarget": "#iold:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr:c0",
+                    "jgeTarget": "#inew:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c0",
+                    "jgeTarget": "#vr:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.2:c0",
+                    "jgeTarget": "#vr.1:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.3:c0",
+                    "jgeTarget": "#vr.2:p0"
+                }
+            ],
+            "jgLabel": "trace_OCLM_Phase1C4A_Verifier_State_Monotonicity_Core_SL2-AS0-CL0-A1-C1-NB_verifier_state_never_rolls_back_without_compromise-case_1-Compromised_Rollback_e2_to_e1-Compromise_Verifier_case_1-Compromised_Rollback_e1_to_e0-Compromised_Rollback_e2_to_e1_case_1",
+            "jgNodes": [
+                {
+                    "jgnId": "#inew",
+                    "jgnLabel": "Compromised_Rollback_e2_to_e1",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "RollbackSucceeded",
+                                "jgnFactShow": "RollbackSucceeded( ~v, 'e2', 'e1' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierState",
+                                "jgnFactShow": "VerifierState( ~v, 'e1' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#inew:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e1', 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#inew:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e2', 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#iold",
+                    "jgnLabel": "Compromised_Rollback_e1_to_e0",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "RollbackSucceeded",
+                                "jgnFactShow": "RollbackSucceeded( ~v, 'e1', 'e0' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierState",
+                                "jgnFactShow": "VerifierState( ~v, 'e0' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#iold:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e0', 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#iold:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e1', 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr",
+                    "jgnLabel": "Compromise_Verifier",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierCompromised",
+                                "jgnFactShow": "VerifierCompromised( ~v, 'e2' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e2', 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e2', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.1",
+                    "jgnLabel": "Advance_e1_to_e2",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "EpochAdvanced",
+                                "jgnFactShow": "EpochAdvanced( ~v, 'e1', 'e2' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierCheckpoint",
+                                "jgnFactShow": "VerifierCheckpoint( ~v, 'e2' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierState",
+                                "jgnFactShow": "VerifierState( ~v, 'e2' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.1:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e2', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e2'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.1:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e1', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.2",
+                    "jgnLabel": "Advance_e0_to_e1",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "EpochAdvanced",
+                                "jgnFactShow": "EpochAdvanced( ~v, 'e0', 'e1' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierCheckpoint",
+                                "jgnFactShow": "VerifierCheckpoint( ~v, 'e1' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierState",
+                                "jgnFactShow": "VerifierState( ~v, 'e1' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.2:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e1', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e1'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.2:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e0', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.3",
+                    "jgnLabel": "Initialize_Verifier",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierInitialized",
+                                "jgnFactShow": "VerifierInitialized( ~v )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierState",
+                                "jgnFactShow": "VerifierState( ~v, 'e0' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.3:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VState",
+                                "jgnFactShow": "VState( ~v, 'e0', 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    },
+                                    {
+                                        "jgnConst": "'e0'"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.3:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~v )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~v"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                }
+            ],
+            "jgType": "Tamarin prover constraint system"
+        }
+    ]
+}

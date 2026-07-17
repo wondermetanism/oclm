@@ -1,0 +1,803 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C3B_C2C3CompositionContract] Theory loaded
+[Theory OCLM_Phase1C3B_C2C3CompositionContract] Theory translated
+[Theory OCLM_Phase1C3B_C2C3CompositionContract] Derivation checks started
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Theory OCLM_Phase1C3B_C2C3CompositionContract] Derivation checks ended
+[Theory OCLM_Phase1C3B_C2C3CompositionContract] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Saturating Sources] Step 2 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C3B_C2C3CompositionContract
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/* looping facts with injective instances: OldEpochKeyLive/3 */
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) CompositionSetup:
+   [ Fr( ~root ), Fr( ~old_epoch ), Fr( ~old_epoch_pk ), Fr( ~predecessor )
+   ]
+  --[
+  CompositionRootInitialized( ~root ),
+  OldEpochInitialized( ~root, ~old_epoch, ~old_epoch_pk, ~predecessor )
+  ]->
+   [
+   !CompositionRoot( ~root ), !RootAuthority( ~root ),
+   C2WindowPermit( ~root, ~old_epoch, ~old_epoch_pk, ~predecessor ),
+   OldEpochKeyLive( ~root, ~old_epoch, ~old_epoch_pk )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OpenC2Window:
+   [
+   C2WindowPermit( root, old_epoch, old_epoch_pk, predecessor ), Fr( ~iss ),
+   Fr( ~A ), Fr( ~B ), Fr( ~window ), Fr( ~space )
+   ]
+  --[
+  WindowOpened( root, old_epoch, old_epoch_pk, predecessor, ~iss,
+                h(<'oclm-c3b-lineage-root', root, old_epoch, old_epoch_pk, predecessor, 
+                   ~iss, ~A, ~B, ~window, ~space>),
+                ~A, ~B, ~window, ~space
+  )
+  ]->
+   [
+   C2AfterWindowOpen( root, old_epoch, old_epoch_pk, predecessor, ~iss,
+                      h(<'oclm-c3b-lineage-root', root, old_epoch, old_epoch_pk, predecessor, 
+                         ~iss, ~A, ~B, ~window, ~space>),
+                      ~A, ~B, ~window, ~space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAJoinsC2Window:
+   [
+   C2AfterWindowOpen( root, old_epoch, old_epoch_pk, predecessor, iss,
+                      lineage_root, A, B, window, space
+   ),
+   Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                       lineage_root, A, B, ~timeA, ~contextA, window, space
+  )
+  ]->
+   [
+   C2AfterParentA( root, old_epoch, old_epoch_pk, predecessor, iss,
+                   lineage_root, A, B, ~timeA, ~contextA, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBJoinsC2Window:
+   [
+   C2AfterParentA( root, old_epoch, old_epoch_pk, predecessor, iss,
+                   lineage_root, A, B, timeA, contextA, window, space
+   ),
+   Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                       lineage_root, A, B, ~timeB, ~contextB, window, space
+  )
+  ]->
+   [
+   C2BothParentsReady( root, old_epoch, old_epoch_pk, predecessor, iss,
+                       lineage_root, A, B, timeA, contextA, ~timeB, ~contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateC2Child:
+   [
+   C2BothParentsReady( root, old_epoch, old_epoch_pk, predecessor, iss,
+                       lineage_root, A, B, timeA, contextA, timeB, contextB, window, space
+   ),
+   Fr( ~timeC ), Fr( ~interaction )
+   ]
+  --[
+  ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                  h(<'oclm-c3b-child-id', 
+                     h(<'oclm-c3b-lineage', root, old_epoch, old_epoch_pk, predecessor, iss, 
+                        lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA, 
+                        contextB, ~interaction>)
+                    >),
+                  h(<'oclm-c3b-lineage', root, old_epoch, old_epoch_pk, predecessor, iss, 
+                     lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA, 
+                     contextB, ~interaction>),
+                  lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA,
+                  contextB, ~interaction
+  )
+  ]->
+   [
+   C2ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                     h(<'oclm-c3b-child-id', 
+                        h(<'oclm-c3b-lineage', root, old_epoch, old_epoch_pk, predecessor, iss, 
+                           lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA, 
+                           contextB, ~interaction>)
+                       >),
+                     h(<'oclm-c3b-lineage', root, old_epoch, old_epoch_pk, predecessor, iss, 
+                        lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA, 
+                        contextB, ~interaction>),
+                     lineage_root, A, B, timeA, timeB, ~timeC, window, space, contextA,
+                     contextB, ~interaction
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) IssueC2CompositionCertificate:
+   [
+   C2ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                     child_id, lineage, lineage_root, A, B, timeA, timeB, timeC, window,
+                     space, contextA, contextB, interaction
+   )
+   ]
+  --[
+  C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                  predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                  timeC, window, space
+  )
+  ]->
+   [
+   C2CertificateReadyForEpochSeal( root, old_epoch, old_epoch_pk,
+                                   predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                   timeC, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) SealC2CertificateUnderOldEpoch:
+   [
+   C2CertificateReadyForEpochSeal( root, old_epoch, old_epoch_pk,
+                                   predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                   timeC, window, space
+   ),
+   OldEpochKeyLive( root, old_epoch, old_epoch_pk )
+   ]
+  --[
+  C2C3CompositionContractClosed( root, old_epoch, old_epoch_pk,
+                                 predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                 timeC, window, space,
+                                 h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, old_epoch_pk, 
+                                    predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB, 
+                                    timeC, window, space>)
+  ),
+  OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                             iss, child_id, lineage,
+                             h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, old_epoch_pk, 
+                                predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB, 
+                                timeC, window, space>)
+  ),
+  OldEpochKeyErased( root, old_epoch, old_epoch_pk,
+                     h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, old_epoch_pk, 
+                        predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB, 
+                        timeC, window, space>)
+  )
+  ]->
+   [
+   !AuthenticForwardSecureCompositionCertificate( root, old_epoch,
+                                                  old_epoch_pk, predecessor, iss, child_id, lineage,
+                                                  lineage_root, A, B, timeA, timeB, timeC, window, space,
+                                                  h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, 
+                                                     old_epoch_pk, predecessor, iss, child_id, lineage, 
+                                                     lineage_root, A, B, timeA, timeB, timeC, window, space>)
+   ),
+   LaterEpochPermit( root, old_epoch, old_epoch_pk,
+                     h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, old_epoch_pk, 
+                        predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB, 
+                        timeC, window, space>)
+   ),
+   CollapsePermit( iss, A, B ),
+   Out( <'oclm-c3b-forward-secure-certificate', root, old_epoch, 
+         old_epoch_pk, predecessor, iss, child_id, lineage, lineage_root, A, B, 
+         timeA, timeB, timeC, window, space, 
+         h(<'oclm-c3b-old-certificate-anchor', root, old_epoch, old_epoch_pk, 
+            predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB, 
+            timeC, window, space>)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) StartLaterEpoch:
+   [
+   LaterEpochPermit( root, old_epoch, old_epoch_pk, old_anchor ),
+   Fr( ~later_epoch ), Fr( ~later_epoch_pk )
+   ]
+  --[
+  LaterEpochStarted( root, old_epoch, old_epoch_pk, ~later_epoch,
+                     ~later_epoch_pk, old_anchor
+  )
+  ]->
+   [
+   LaterEpochKeyLive( root, old_epoch, old_epoch_pk, ~later_epoch,
+                      ~later_epoch_pk, old_anchor
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseLaterEpochKey:
+   [
+   LaterEpochKeyLive( root, old_epoch, old_epoch_pk, later_epoch,
+                      later_epoch_pk, old_anchor
+   )
+   ]
+  --[
+  LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                            later_epoch_pk, old_anchor
+  )
+  ]->
+   [
+   !LaterEpochCompromiseActive( root, old_epoch, old_epoch_pk, later_epoch,
+                                later_epoch_pk, old_anchor
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ActivateClaimCollapseContract:
+   [
+   CollapsePermit( iss, A, B ), Fr( ~claimA ), Fr( ~claimB ),
+   Fr( ~decision )
+   ]
+  --[ ClaimCollapseDeclared( iss, A, B, ~claimA, ~claimB, ~decision ) ]->
+   [ !CollapseActive( iss, A, B, ~claimA, ~claimB, ~decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseTargetOldEpochKey:
+   [ OldEpochKeyLive( root, old_epoch, old_epoch_pk ) ]
+  --[ TargetOldEpochKeyCompromised( root, old_epoch, old_epoch_pk ) ]->
+   [
+   OldEpochKeyLive( root, old_epoch, old_epoch_pk ),
+   !TargetOldEpochCompromiseActive( root, old_epoch, old_epoch_pk )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseCompositionRoot:
+   [ !RootAuthority( root ) ]
+  --[ CompositionRootCompromised( root ) ]->
+   [ !RootCompromiseActive( root ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) AcceptAuthenticComposedCertificateAfterLaterCompromise:
+   [
+   !AuthenticForwardSecureCompositionCertificate( root, old_epoch,
+                                                  old_epoch_pk, predecessor, iss, child_id, lineage,
+                                                  lineage_root, A, B, timeA, timeB, timeC, window, space,
+                                                  old_anchor
+   ),
+   !LaterEpochCompromiseActive( root, old_epoch, old_epoch_pk, later_epoch,
+                                later_epoch_pk, old_anchor
+   ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <'oclm-c3b-forward-secure-certificate', root, old_epoch, 
+        old_epoch_pk, predecessor, iss, child_id, lineage, lineage_root, A, B, 
+        timeA, timeB, timeC, window, space, old_anchor>
+   )
+   ]
+  --[
+  Eq( child_id, h(<'oclm-c3b-child-id', lineage>) ),
+  ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                      predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                      timeC, window, space, later_epoch, later_epoch_pk
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) AcceptAfterTargetOldEpochCompromise:
+   [
+   !TargetOldEpochCompromiseActive( root, old_epoch, old_epoch_pk ),
+   !LaterEpochCompromiseActive( root, old_epoch, old_epoch_pk, later_epoch,
+                                later_epoch_pk, old_anchor
+   ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <'oclm-c3b-forward-secure-certificate', root, old_epoch, 
+        old_epoch_pk, predecessor, iss, child_id, lineage, lineage_root, A, B, 
+        timeA, timeB, timeC, window, space, old_anchor>
+   )
+   ]
+  --[
+  Eq( child_id, h(<'oclm-c3b-child-id', lineage>) ),
+  ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                      predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                      timeC, window, space, later_epoch, later_epoch_pk
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) AcceptAfterCompositionRootCompromise:
+   [
+   !RootCompromiseActive( root ),
+   !LaterEpochCompromiseActive( root, old_epoch, old_epoch_pk, later_epoch,
+                                later_epoch_pk, old_anchor
+   ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <'oclm-c3b-forward-secure-certificate', root, old_epoch, 
+        old_epoch_pk, predecessor, iss, child_id, lineage, lineage_root, A, B, 
+        timeA, timeB, timeC, window, space, old_anchor>
+   )
+   ]
+  --[
+  Eq( child_id, h(<'oclm-c3b-child-id', lineage>) ),
+  ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                      predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                      timeC, window, space, later_epoch, later_epoch_pk
+  )
+  ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_forward_secure_composed_lifecycle:
+  exists-trace
+  "∃ root old_epoch old_epoch_pk predecessor iss child_id lineage
+     lineage_root A B timeA timeB timeC contextA contextB interaction window
+     space old_anchor later_epoch later_epoch_pk claimA claimB decision #o #a
+     #b #g #c #s #n #k #d #v.
+    ((((((((((((((((((((WindowOpened( root, old_epoch, old_epoch_pk,
+                                      predecessor, iss, lineage_root, A, B, window, space
+                        ) @ #o) ∧
+                       (ParentAParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                             lineage_root, A, B, timeA, contextA, window, space
+                        ) @ #a)) ∧
+                      (ParentBParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                            lineage_root, A, B, timeB, contextB, window, space
+                       ) @ #b)) ∧
+                     (ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                      child_id, lineage, lineage_root, A, B, timeA, timeB, timeC, window,
+                                      space, contextA, contextB, interaction
+                      ) @ #g)) ∧
+                    (C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                                     predecessor, iss, child_id, lineage, lineage_root, A, B,
+                                                     timeA, timeB, timeC, window, space
+                     ) @ #c)) ∧
+                   (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                                               iss, child_id, lineage, old_anchor
+                    ) @ #s)) ∧
+                  (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #s)) ∧
+                 (LaterEpochStarted( root, old_epoch, old_epoch_pk, later_epoch,
+                                     later_epoch_pk, old_anchor
+                  ) @ #n)) ∧
+                (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                                           later_epoch_pk, old_anchor
+                 ) @ #k)) ∧
+               (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d)) ∧
+              (ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                                   predecessor, iss, child_id, lineage, lineage_root, A, B,
+                                                   timeA, timeB, timeC, window, space, later_epoch,
+                                                   later_epoch_pk
+               ) @ #v)) ∧
+             (#o < #a)) ∧
+            (#a < #b)) ∧
+           (#b < #g)) ∧
+          (#g < #c)) ∧
+         (#c < #s)) ∧
+        (#s < #n)) ∧
+       (#n < #k)) ∧
+      (#k < #v)) ∧
+     (#s < #d)) ∧
+    (#d < #v)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ root old_epoch old_epoch_pk predecessor iss child_id lineage
+   lineage_root A B timeA timeB timeC contextA contextB interaction window
+   space old_anchor later_epoch later_epoch_pk claimA claimB decision #o #a
+   #b #g #c #s #n #k #d #v.
+  (WindowOpened( root, old_epoch, old_epoch_pk, predecessor, iss,
+                 lineage_root, A, B, window, space
+   ) @ #o) ∧
+  (ParentAParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                        lineage_root, A, B, timeA, contextA, window, space
+   ) @ #a) ∧
+  (ParentBParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                        lineage_root, A, B, timeB, contextB, window, space
+   ) @ #b) ∧
+  (ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                   child_id, lineage, lineage_root, A, B, timeA, timeB, timeC, window,
+                   space, contextA, contextB, interaction
+   ) @ #g) ∧
+  (C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                   predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                   timeC, window, space
+   ) @ #c) ∧
+  (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                              iss, child_id, lineage, old_anchor
+   ) @ #s) ∧
+  (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #s) ∧
+  (LaterEpochStarted( root, old_epoch, old_epoch_pk, later_epoch,
+                      later_epoch_pk, old_anchor
+   ) @ #n) ∧
+  (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                             later_epoch_pk, old_anchor
+   ) @ #k) ∧
+  (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d) ∧
+  (ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                       predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                       timeC, window, space, later_epoch, later_epoch_pk
+   ) @ #v)
+ ∧
+  (#o < #a) ∧
+  (#a < #b) ∧
+  (#b < #g) ∧
+  (#g < #c) ∧
+  (#c < #s) ∧
+  (#s < #n) ∧
+  (#n < #k) ∧
+  (#k < #v) ∧
+  (#s < #d) ∧
+  (#d < #v)"
+*/
+by sorry
+
+lemma composed_acceptance_requires_contract_or_target_compromise:
+  all-traces
+  "∀ root old_epoch old_epoch_pk predecessor iss child_id lineage
+     lineage_root A B timeA timeB timeC window space later_epoch
+     later_epoch_pk #v.
+    (ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                         predecessor, iss, child_id, lineage, lineage_root, A, B, timeA,
+                                         timeB, timeC, window, space, later_epoch, later_epoch_pk
+     ) @ #v) ⇒
+    (((∃ old_anchor #c #s #e #k.
+        (((((((C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                               predecessor, iss, child_id, lineage, lineage_root, A, B, timeA,
+                                               timeB, timeC, window, space
+               ) @ #c) ∧
+              (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                                          iss, child_id, lineage, old_anchor
+               ) @ #s)) ∧
+             (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #e)) ∧
+            (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                                       later_epoch_pk, old_anchor
+             ) @ #k)) ∧
+           (#c < #s)) ∧
+          (#s = #e)) ∧
+         (#e < #k)) ∧
+        (#k < #v)) ∨
+      (∃ #t.
+        (TargetOldEpochKeyCompromised( root, old_epoch, old_epoch_pk ) @ #t) ∧
+        (#t < #v))) ∨
+     (∃ #r. (CompositionRootCompromised( root ) @ #r) ∧ (#r < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root old_epoch old_epoch_pk predecessor iss child_id lineage
+   lineage_root A B timeA timeB timeC window space later_epoch
+   later_epoch_pk #v.
+  (ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                       predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                       timeC, window, space, later_epoch, later_epoch_pk
+   ) @ #v)
+ ∧
+  (∀ old_anchor #c #s #e #k.
+    (C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                     predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                     timeC, window, space
+     ) @ #c) ∧
+    (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                                iss, child_id, lineage, old_anchor
+     ) @ #s) ∧
+    (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #e) ∧
+    (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                               later_epoch_pk, old_anchor
+     ) @ #k) ∧
+    (#s = #e)
+   ⇒
+    ((¬(#c < #s)) ∨ (¬(#e < #k)) ∨ (¬(#k < #v)))) ∧
+  (∀ #t.
+    (TargetOldEpochKeyCompromised( root, old_epoch, old_epoch_pk ) @ #t)
+   ⇒
+    ¬(#t < #v)) ∧
+  (∀ #r. (CompositionRootCompromised( root ) @ #r) ⇒ ¬(#r < #v))"
+*/
+by sorry
+
+lemma uncompromised_composed_acceptance_has_full_ancestry:
+  all-traces
+  "∀ root old_epoch old_epoch_pk predecessor iss child_id lineage
+     lineage_root A B timeA timeB timeC window space later_epoch
+     later_epoch_pk #v.
+    (((ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                           predecessor, iss, child_id, lineage, lineage_root, A, B, timeA,
+                                           timeB, timeC, window, space, later_epoch, later_epoch_pk
+       ) @ #v) ∧
+      (¬(∃ #t.
+          (TargetOldEpochKeyCompromised( root, old_epoch, old_epoch_pk ) @ #t) ∧
+          (#t < #v)))) ∧
+     (¬(∃ #r. (CompositionRootCompromised( root ) @ #r) ∧ (#r < #v)))) ⇒
+    (∃ contextA contextB interaction old_anchor claimA claimB decision #o #a
+       #b #g #c #s #n #k #d.
+      (((((((((((((((((((WindowOpened( root, old_epoch, old_epoch_pk,
+                                       predecessor, iss, lineage_root, A, B, window, space
+                         ) @ #o) ∧
+                        (ParentAParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                              lineage_root, A, B, timeA, contextA, window, space
+                         ) @ #a)) ∧
+                       (ParentBParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                             lineage_root, A, B, timeB, contextB, window, space
+                        ) @ #b)) ∧
+                      (ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                                       child_id, lineage, lineage_root, A, B, timeA, timeB, timeC, window,
+                                       space, contextA, contextB, interaction
+                       ) @ #g)) ∧
+                     (C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                                      predecessor, iss, child_id, lineage, lineage_root, A, B,
+                                                      timeA, timeB, timeC, window, space
+                      ) @ #c)) ∧
+                    (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                                                iss, child_id, lineage, old_anchor
+                     ) @ #s)) ∧
+                   (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #s)) ∧
+                  (LaterEpochStarted( root, old_epoch, old_epoch_pk, later_epoch,
+                                      later_epoch_pk, old_anchor
+                   ) @ #n)) ∧
+                 (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                                            later_epoch_pk, old_anchor
+                  ) @ #k)) ∧
+                (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d)) ∧
+               (#o < #a)) ∧
+              (#a < #b)) ∧
+             (#b < #g)) ∧
+            (#g < #c)) ∧
+           (#c < #s)) ∧
+          (#s < #n)) ∧
+         (#n < #k)) ∧
+        (#k < #v)) ∧
+       (#s < #d)) ∧
+      (#d < #v))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root old_epoch old_epoch_pk predecessor iss child_id lineage
+   lineage_root A B timeA timeB timeC window space later_epoch
+   later_epoch_pk #v.
+  (ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                       predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                       timeC, window, space, later_epoch, later_epoch_pk
+   ) @ #v)
+ ∧
+  (∀ #t.
+    (TargetOldEpochKeyCompromised( root, old_epoch, old_epoch_pk ) @ #t)
+   ⇒
+    ¬(#t < #v)) ∧
+  (∀ #r. (CompositionRootCompromised( root ) @ #r) ⇒ ¬(#r < #v)) ∧
+  (∀ contextA contextB interaction old_anchor claimA claimB decision #o #a
+     #b #g #c #s #n #k #d.
+    (WindowOpened( root, old_epoch, old_epoch_pk, predecessor, iss,
+                   lineage_root, A, B, window, space
+     ) @ #o) ∧
+    (ParentAParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                          lineage_root, A, B, timeA, contextA, window, space
+     ) @ #a) ∧
+    (ParentBParticipated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                          lineage_root, A, B, timeB, contextB, window, space
+     ) @ #b) ∧
+    (ChildGenerated( root, old_epoch, old_epoch_pk, predecessor, iss,
+                     child_id, lineage, lineage_root, A, B, timeA, timeB, timeC, window,
+                     space, contextA, contextB, interaction
+     ) @ #g) ∧
+    (C2CompositionCertificateIssued( root, old_epoch, old_epoch_pk,
+                                     predecessor, iss, child_id, lineage, lineage_root, A, B, timeA, timeB,
+                                     timeC, window, space
+     ) @ #c) ∧
+    (OldEpochCertificateIssued( root, old_epoch, old_epoch_pk, predecessor,
+                                iss, child_id, lineage, old_anchor
+     ) @ #s) ∧
+    (OldEpochKeyErased( root, old_epoch, old_epoch_pk, old_anchor ) @ #s) ∧
+    (LaterEpochStarted( root, old_epoch, old_epoch_pk, later_epoch,
+                        later_epoch_pk, old_anchor
+     ) @ #n) ∧
+    (LaterEpochKeyCompromised( root, old_epoch, old_epoch_pk, later_epoch,
+                               later_epoch_pk, old_anchor
+     ) @ #k) ∧
+    (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d)
+   ⇒
+    ((¬(#o < #a)) ∨
+     (¬(#a < #b)) ∨
+     (¬(#b < #g)) ∨
+     (¬(#g < #c)) ∨
+     (¬(#c < #s)) ∨
+     (¬(#s < #n)) ∨
+     (¬(#n < #k)) ∨
+     (¬(#k < #v)) ∨
+     (¬(#s < #d)) ∨
+     (¬(#d < #v))))"
+*/
+simplify
+solve( ForwardSecureComposedChildAccepted( root, old_epoch, old_epoch_pk,
+                                           predecessor, iss, child_id, lineage, lineage_root, A, B, timeA,
+                                           timeB, timeC, window, space, later_epoch, later_epoch_pk
+       ) @ #v )
+  case AcceptAfterCompositionRootCompromise
+  solve( !RootCompromiseActive( root ) ▶₀ #v )
+    case CompromiseCompositionRoot
+    by contradiction /* from formulas */
+  qed
+next
+  case AcceptAfterTargetOldEpochCompromise
+  solve( !TargetOldEpochCompromiseActive( root, old_epoch, old_epoch_pk
+         ) ▶₀ #v )
+    case CompromiseTargetOldEpochKey
+    by contradiction /* from formulas */
+  qed
+next
+  case AcceptAuthenticComposedCertificateAfterLaterCompromise
+  solve( !AuthenticForwardSecureCompositionCertificate( root, old_epoch,
+                                                        old_epoch_pk, predecessor, iss,
+                                                        h(<'oclm-c3b-child-id', lineage>), lineage,
+                                                        lineage_root, A, B, timeA, timeB, timeC, window,
+                                                        space, old_anchor
+         ) ▶₀ #v )
+    case SealC2CertificateUnderOldEpoch_case_1
+    solve( !LaterEpochCompromiseActive( ~root, ~old_epoch, ~old_epoch_pk,
+                                        later_epoch, later_epoch_pk,
+                                        h(<'oclm-c3b-old-certificate-anchor', ~root, ~old_epoch, 
+                                           ~old_epoch_pk, ~predecessor, ~iss, 
+                                           h(<'oclm-c3b-child-id', 
+                                              h(<'oclm-c3b-lineage', ~root, ~old_epoch, ~old_epoch_pk, 
+                                                 ~predecessor, ~iss, 
+                                                 h(<'oclm-c3b-lineage-root', ~root, ~old_epoch, 
+                                                    ~old_epoch_pk, ~predecessor, ~iss, ~A, ~B, ~window, ~space
+                                                   >), 
+                                                 ~A, ~B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                                 ~contextB, ~interaction>)
+                                             >), 
+                                           h(<'oclm-c3b-lineage', ~root, ~old_epoch, ~old_epoch_pk, 
+                                              ~predecessor, ~iss, 
+                                              h(<'oclm-c3b-lineage-root', ~root, ~old_epoch, ~old_epoch_pk, 
+                                                 ~predecessor, ~iss, ~A, ~B, ~window, ~space>), 
+                                              ~A, ~B, ~timeA, ~timeB, ~timeC, ~window, ~space, ~contextA, 
+                                              ~contextB, ~interaction>), 
+                                           h(<'oclm-c3b-lineage-root', ~root, ~old_epoch, ~old_epoch_pk, 
+                                              ~predecessor, ~iss, ~A, ~B, ~window, ~space>), 
+                                           ~A, ~B, ~timeA, ~timeB, ~timeC, ~window, ~space>)
+           ) ▶₁ #v )
+      case CompromiseLaterEpochKey
+      solve( !CollapseActive( ~iss, ~A, ~B, claimA, claimB, decision ) ▶₂ #v )
+        case ActivateClaimCollapseContract
+        by contradiction /* from formulas */
+      qed
+    qed
+  next
+    case SealC2CertificateUnderOldEpoch_case_2
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma forward_secure_composed_identity_is_bound_or_compromised:
+  all-traces
+  "∀ root child_id old_epoch1 old_epoch_pk1 predecessor1 iss1 lineage1
+     lineage_root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 later_epoch1
+     later_epoch_pk1 old_epoch2 old_epoch_pk2 predecessor2 iss2 lineage2
+     lineage_root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 later_epoch2
+     later_epoch_pk2 #i #j.
+    ((ForwardSecureComposedChildAccepted( root, old_epoch1, old_epoch_pk1,
+                                          predecessor1, iss1, child_id, lineage1, lineage_root1, A1, B1,
+                                          timeA1, timeB1, timeC1, window1, space1, later_epoch1,
+                                          later_epoch_pk1
+      ) @ #i) ∧
+     (ForwardSecureComposedChildAccepted( root, old_epoch2, old_epoch_pk2,
+                                          predecessor2, iss2, child_id, lineage2, lineage_root2, A2, B2,
+                                          timeA2, timeB2, timeC2, window2, space2, later_epoch2,
+                                          later_epoch_pk2
+      ) @ #j)) ⇒
+    ((((((((((((((((old_epoch1 = old_epoch2) ∧
+                   (old_epoch_pk1 = old_epoch_pk2)) ∧
+                  (predecessor1 = predecessor2)) ∧
+                 (iss1 = iss2)) ∧
+                (lineage1 = lineage2)) ∧
+               (lineage_root1 = lineage_root2)) ∧
+              (A1 = A2)) ∧
+             (B1 = B2)) ∧
+            (timeA1 = timeA2)) ∧
+           (timeB1 = timeB2)) ∧
+          (timeC1 = timeC2)) ∧
+         (window1 = window2)) ∧
+        (space1 = space2)) ∨
+       (∃ #t.
+         (TargetOldEpochKeyCompromised( root, old_epoch1, old_epoch_pk1 ) @ #t) ∧
+         ((#t < #i) ∨ (#t < #j)))) ∨
+      (∃ #t.
+        (TargetOldEpochKeyCompromised( root, old_epoch2, old_epoch_pk2 ) @ #t) ∧
+        ((#t < #i) ∨ (#t < #j)))) ∨
+     (∃ #r.
+       (CompositionRootCompromised( root ) @ #r) ∧ ((#r < #i) ∨ (#r < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root child_id old_epoch1 old_epoch_pk1 predecessor1 iss1 lineage1
+   lineage_root1 A1 B1 timeA1 timeB1 timeC1 window1 space1 later_epoch1
+   later_epoch_pk1 old_epoch2 old_epoch_pk2 predecessor2 iss2 lineage2
+   lineage_root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 later_epoch2
+   later_epoch_pk2 #i #j.
+  (ForwardSecureComposedChildAccepted( root, old_epoch1, old_epoch_pk1,
+                                       predecessor1, iss1, child_id, lineage1, lineage_root1, A1, B1, timeA1,
+                                       timeB1, timeC1, window1, space1, later_epoch1, later_epoch_pk1
+   ) @ #i) ∧
+  (ForwardSecureComposedChildAccepted( root, old_epoch2, old_epoch_pk2,
+                                       predecessor2, iss2, child_id, lineage2, lineage_root2, A2, B2, timeA2,
+                                       timeB2, timeC2, window2, space2, later_epoch2, later_epoch_pk2
+   ) @ #j)
+ ∧
+  (((¬(old_epoch1 = old_epoch2)) ∨
+    (¬(old_epoch_pk1 = old_epoch_pk2)) ∨
+    (¬(predecessor1 = predecessor2)) ∨
+    (¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(lineage_root1 = lineage_root2)) ∨
+    (¬(A1 = A2)) ∨
+    (¬(B1 = B2)) ∨
+    (¬(timeA1 = timeA2)) ∨
+    (¬(timeB1 = timeB2)) ∨
+    (¬(timeC1 = timeC2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #t.
+    (TargetOldEpochKeyCompromised( root, old_epoch1, old_epoch_pk1 ) @ #t)
+   ⇒
+    (¬(#t < #i)) ∧ (¬(#t < #j))) ∧
+  (∀ #t.
+    (TargetOldEpochKeyCompromised( root, old_epoch2, old_epoch_pk2 ) @ #t)
+   ⇒
+    (¬(#t < #i)) ∧ (¬(#t < #j))) ∧
+  (∀ #r.
+    (CompositionRootCompromised( root ) @ #r) ⇒ (¬(#r < #i)) ∧ (¬(#r < #j)))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1c3b_c2_c3_composition_contract.spthy
+
+  processing time: 22.97s
+  
+  executable_forward_secure_composed_lifecycle (exists-trace): analysis incomplete (1 steps)
+  composed_acceptance_requires_contract_or_target_compromise (all-traces): analysis incomplete (1 steps)
+  uncompromised_composed_acceptance_has_full_ancestry (all-traces): verified (11 steps)
+  forward_secure_composed_identity_is_bound_or_compromised (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

@@ -1,0 +1,1741 @@
+{
+    "graphs": [
+        {
+            "jgAbbrevs": [
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "CO1"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "'compromised'"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "'compromised'"
+                    }
+                },
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "CE1"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "~certificate"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "~certificate"
+                    }
+                },
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "FO1"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "~fork_root"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "~fork_root"
+                    }
+                },
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "VE2"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "~verifier_a"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "~verifier_a"
+                    }
+                },
+                {
+                    "jgaAbbrev": {
+                        "jgnConst": "VE1"
+                    },
+                    "jgaExpansion": {
+                        "jgnConst": "~verifier_b"
+                    },
+                    "jgaTerm": {
+                        "jgnConst": "~verifier_b"
+                    }
+                }
+            ],
+            "jgClusters": [],
+            "jgDirected": true,
+            "jgEdges": [
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr:c0",
+                    "jgeTarget": "#vr.3:p0"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr:c1",
+                    "jgeTarget": "#vr.4:p1"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr:c1",
+                    "jgeTarget": "#vr.6:p1"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr:c2",
+                    "jgeTarget": "#i1:p1"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c0",
+                    "jgeTarget": "#vr:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c1",
+                    "jgeTarget": "#vr.4:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c2",
+                    "jgeTarget": "#vr.6:p0"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr.1:c3",
+                    "jgeTarget": "#vr:p2"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr.1:c3",
+                    "jgeTarget": "#vr.2:p2"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c4",
+                    "jgeTarget": "#vr:p1"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c5",
+                    "jgeTarget": "#vr.4:p2"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c6",
+                    "jgeTarget": "#vr.6:p2"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c8",
+                    "jgeTarget": "#i1:p2"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c9",
+                    "jgeTarget": "#vr.3:p1"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c10",
+                    "jgeTarget": "#vr.5:p2"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.1:c11",
+                    "jgeTarget": "#i2:p2"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr.2:c1",
+                    "jgeTarget": "#vr.5:p1"
+                },
+                {
+                    "jgeRelation": "PersistentFact",
+                    "jgeSource": "#vr.2:c2",
+                    "jgeTarget": "#i2:p1"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.3:c0",
+                    "jgeTarget": "#vr.2:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.3:c1",
+                    "jgeTarget": "#vr.2:p1"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.4:c0",
+                    "jgeTarget": "#i1:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.5:c0",
+                    "jgeTarget": "#i2:p0"
+                },
+                {
+                    "jgeRelation": "ProtoFact",
+                    "jgeSource": "#vr.6:c0",
+                    "jgeTarget": "#vr.5:p0"
+                },
+                {
+                    "jgeRelation": "LessAtoms",
+                    "jgeSource": "#i1",
+                    "jgeTarget": "#i2"
+                },
+                {
+                    "jgeRelation": "LessAtoms",
+                    "jgeSource": "#vr.3",
+                    "jgeTarget": "#i1"
+                }
+            ],
+            "jgLabel": "trace_OCLM_Phase1C5B_Transparency_Split_View_Core_SL2-AS0-CL0-A1-C1-NB_same_certificate_conflicting_transparency_histories_require_compromise-Accept_Certificate_Under_Canonical_Checkpoint-Append_Honest_Checkpoint_s0_to_s1-Initialize_Transparency_Lifecycle-Accept_Certificate_Under_Forked_Checkpoint-Issue_Conflicting_Checkpoint_After_Log_Compromise-Initialize_Transparency_Lifecycle-Advance_Verifier_To_Canonical_s1-Accept_Forked_Checkpoint_View-Compromise_Transparency_Log-Advance_Verifier_To_Canonical_s1",
+            "jgNodes": [
+                {
+                    "jgnId": "#i1",
+                    "jgnLabel": "Accept_Certificate_Under_Canonical_Checkpoint",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCertificateAccepted",
+                                "jgnFactShow": "TransparencyCertificateAccepted( ~verifier_a, ~certificate, ~log, 's1', ~root_1)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#i1:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_a, ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#i1:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_a, ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#i1:p1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!CanonicalTransparencyInclusion",
+                                "jgnFactShow": "!CanonicalTransparencyInclusion( ~certificate, ~log, 's1', ~root_1)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#i1:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "CanonicalAcceptancePermit",
+                                "jgnFactShow": "CanonicalAcceptancePermit( ~verifier_a, ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#i2",
+                    "jgnLabel": "Accept_Certificate_Under_Forked_Checkpoint",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCertificateAccepted",
+                                "jgnFactShow": "TransparencyCertificateAccepted( ~verifier_b, ~certificate, ~log, 's1', ~fork_root)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#i2:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's1', ~fork_root, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#i2:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's1', ~fork_root, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#i2:p1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!ForkTransparencyInclusion",
+                                "jgnFactShow": "!ForkTransparencyInclusion( ~certificate, ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#i2:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ForkCertificateAcceptancePermit",
+                                "jgnFactShow": "ForkCertificateAcceptancePermit( ~verifier_b, ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr",
+                    "jgnLabel": "Append_Honest_Checkpoint_s0_to_s1",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointIssued",
+                                "jgnFactShow": "TransparencyCheckpointIssued( ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyAppendOnlyExtension",
+                                "jgnFactShow": "TransparencyAppendOnlyExtension( ~log, 's0', ~root_0, 's1', ~root_1)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCertificateIncluded",
+                                "jgnFactShow": "TransparencyCertificateIncluded( ~certificate, ~log, 's1', ~root_1)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr:c1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!AuthenticTransparencyCheckpoint",
+                                "jgnFactShow": "!AuthenticTransparencyCheckpoint( ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr:c2",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!CanonicalTransparencyInclusion",
+                                "jgnFactShow": "!CanonicalTransparencyInclusion( ~certificate, ~log, 's1', ~root_1)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr:p1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AppendCheckpointPermit",
+                                "jgnFactShow": "AppendCheckpointPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr:p2",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!TransparencyObject",
+                                "jgnFactShow": "!TransparencyObject( ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr:p3",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~root_1 )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.1",
+                    "jgnLabel": "Initialize_Transparency_Lifecycle",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyLifecycleInitialized",
+                                "jgnFactShow": "TransparencyLifecycleInitialized( ~log, ~certificate, ~verifier_a, ~verifier_b)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointIssued",
+                                "jgnFactShow": "TransparencyCheckpointIssued( ~log, 's0', ~root_0 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyViewObserved",
+                                "jgnFactShow": "TransparencyViewObserved( ~verifier_a, ~log, 's0', ~root_0 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyViewObserved",
+                                "jgnFactShow": "TransparencyViewObserved( ~verifier_b, ~log, 's0', ~root_0 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.1:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_a, ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c3",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!TransparencyObject",
+                                "jgnFactShow": "!TransparencyObject( ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c4",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AppendCheckpointPermit",
+                                "jgnFactShow": "AppendCheckpointPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c5",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AdvanceVerifierPermit",
+                                "jgnFactShow": "AdvanceVerifierPermit( ~verifier_a, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c6",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AdvanceVerifierPermit",
+                                "jgnFactShow": "AdvanceVerifierPermit( ~verifier_b, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c7",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ConsistentGossipPermit",
+                                "jgnFactShow": "ConsistentGossipPermit( ~log, ~verifier_a, ~verifier_b )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c8",
+                                "jgnFactMult": "",
+                                "jgnFactName": "CanonicalAcceptancePermit",
+                                "jgnFactShow": "CanonicalAcceptancePermit( ~verifier_a, ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c9",
+                                "jgnFactMult": "",
+                                "jgnFactName": "CompromiseLogPermit",
+                                "jgnFactShow": "CompromiseLogPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c10",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ForkViewAcceptancePermit",
+                                "jgnFactShow": "ForkViewAcceptancePermit( ~verifier_b, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c11",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ForkCertificateAcceptancePermit",
+                                "jgnFactShow": "ForkCertificateAcceptancePermit( ~verifier_b, ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:c12",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ConflictingGossipPermit",
+                                "jgnFactShow": "ConflictingGossipPermit( ~log, ~verifier_a, ~verifier_b )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.1:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~log )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:p1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~certificate )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~verifier_a )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:p3",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~verifier_b )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.1:p4",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~root_0 )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~root_0"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.2",
+                    "jgnLabel": "Issue_Conflicting_Checkpoint_After_Log_Compromise",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointIssued",
+                                "jgnFactShow": "TransparencyCheckpointIssued( ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ConflictingTransparencyCheckpointIssued",
+                                "jgnFactShow": "ConflictingTransparencyCheckpointIssued( ~log, 's1', ~root_1, ~fork_root)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCertificateIncluded",
+                                "jgnFactShow": "TransparencyCertificateIncluded( ~certificate, ~log, 's1', ~fork_root)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.2:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's1', ~root_1, 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.2:c1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!ForkTransparencyCheckpoint",
+                                "jgnFactShow": "!ForkTransparencyCheckpoint( ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.2:c2",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!ForkTransparencyInclusion",
+                                "jgnFactShow": "!ForkTransparencyInclusion( ~certificate, ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~certificate"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.2:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's1', ~root_1, 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.2:p1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "IssueForkPermit",
+                                "jgnFactShow": "IssueForkPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.2:p2",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!TransparencyObject",
+                                "jgnFactShow": "!TransparencyObject( ~log, ~certificate )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "~certificate"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.2:p3",
+                                "jgnFactMult": "",
+                                "jgnFactName": "Fr",
+                                "jgnFactShow": "Fr( ~fork_root )",
+                                "jgnFactTag": "FreshFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.3",
+                    "jgnLabel": "Compromise_Transparency_Log",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyLogCompromised",
+                                "jgnFactShow": "TransparencyLogCompromised( ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.3:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's1', ~root_1, 'compromised' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'compromised'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.3:c1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "IssueForkPermit",
+                                "jgnFactShow": "IssueForkPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.3:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "LogState",
+                                "jgnFactShow": "LogState( ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.3:p1",
+                                "jgnFactMult": "",
+                                "jgnFactName": "CompromiseLogPermit",
+                                "jgnFactShow": "CompromiseLogPermit( ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.4",
+                    "jgnLabel": "Advance_Verifier_To_Canonical_s1",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointAccepted",
+                                "jgnFactShow": "TransparencyCheckpointAccepted( ~verifier_a, ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyViewObserved",
+                                "jgnFactShow": "TransparencyViewObserved( ~verifier_a, ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.4:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_a, ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.4:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_a, ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.4:p1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!AuthenticTransparencyCheckpoint",
+                                "jgnFactShow": "!AuthenticTransparencyCheckpoint( ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.4:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AdvanceVerifierPermit",
+                                "jgnFactShow": "AdvanceVerifierPermit( ~verifier_a, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_a"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.5",
+                    "jgnLabel": "Accept_Forked_Checkpoint_View",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointAccepted",
+                                "jgnFactShow": "TransparencyCheckpointAccepted( ~verifier_b, ~log, 's1', ~fork_root)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ForkedTransparencyViewAccepted",
+                                "jgnFactShow": "ForkedTransparencyViewAccepted( ~verifier_b, ~log, 's1', ~root_1, ~fork_root)",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyViewObserved",
+                                "jgnFactShow": "TransparencyViewObserved( ~verifier_b, ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.5:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's1', ~fork_root, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.5:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.5:p1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!ForkTransparencyCheckpoint",
+                                "jgnFactShow": "!ForkTransparencyCheckpoint( ~log, 's1', ~fork_root )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~fork_root"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.5:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "ForkViewAcceptancePermit",
+                                "jgnFactShow": "ForkViewAcceptancePermit( ~verifier_b, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                },
+                {
+                    "jgnId": "#vr.6",
+                    "jgnLabel": "Advance_Verifier_To_Canonical_s1",
+                    "jgnMetadata": {
+                        "jgnActs": [
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyCheckpointAccepted",
+                                "jgnFactShow": "TransparencyCheckpointAccepted( ~verifier_b, ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "action",
+                                "jgnFactMult": "",
+                                "jgnFactName": "TransparencyViewObserved",
+                                "jgnFactShow": "TransparencyViewObserved( ~verifier_b, ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnConcs": [
+                            {
+                                "jgnFactId": "#vr.6:c0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's1', ~root_1, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            }
+                        ],
+                        "jgnPrems": [
+                            {
+                                "jgnFactId": "#vr.6:p0",
+                                "jgnFactMult": "",
+                                "jgnFactName": "VerifierView",
+                                "jgnFactShow": "VerifierView( ~verifier_b, ~log, 's0', ~root_0, 'honest' )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s0'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_0"
+                                    },
+                                    {
+                                        "jgnConst": "'honest'"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.6:p1",
+                                "jgnFactMult": "!",
+                                "jgnFactName": "!AuthenticTransparencyCheckpoint",
+                                "jgnFactShow": "!AuthenticTransparencyCheckpoint( ~log, 's1', ~root_1 )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~log"
+                                    },
+                                    {
+                                        "jgnConst": "'s1'"
+                                    },
+                                    {
+                                        "jgnConst": "~root_1"
+                                    }
+                                ]
+                            },
+                            {
+                                "jgnFactId": "#vr.6:p2",
+                                "jgnFactMult": "",
+                                "jgnFactName": "AdvanceVerifierPermit",
+                                "jgnFactShow": "AdvanceVerifierPermit( ~verifier_b, ~log )",
+                                "jgnFactTag": "ProtoFact",
+                                "jgnFactTerms": [
+                                    {
+                                        "jgnConst": "~verifier_b"
+                                    },
+                                    {
+                                        "jgnConst": "~log"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "jgnType": "isProtocolRule"
+                }
+            ],
+            "jgType": "Tamarin prover constraint system"
+        }
+    ]
+}

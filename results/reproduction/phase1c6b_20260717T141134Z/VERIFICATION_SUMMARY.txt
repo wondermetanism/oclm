@@ -1,0 +1,24 @@
+OCLM Phase 1-C6B independent reproduction
+
+Generated UTC: 20260717T141134Z
+Model: model/tamarin/oclm_phase1c6b_generalized_security_composition_contract.spthy
+Model SHA-256: c3a350f15677c93491b3af392c0519f08d3d0a6ea70200121eb4a315d7064328
+
+Tamarin version check: 1.12.0
+Maude version check: 3.5.1
+
+executable_generalized_clean_multi_epoch_lifecycle — VERIFIED
+executable_generalized_forked_transparency_lifecycle — VERIFIED
+executable_generalized_stale_epoch_lifecycle — VERIFIED
+executable_generalized_revocation_exception_lifecycle — VERIFIED
+generalized_acceptance_requires_c5c_and_c6a_contracts — VERIFIED
+clean_generalized_acceptance_has_complete_evidence — VERIFIED
+stale_generalized_acceptance_has_stale_epoch_evidence — VERIFIED
+stale_generalized_acceptance_uses_epoch_compromise_state — VERIFIED
+generalized_epoch_compromise_use_requires_prior_compromise — VERIFIED
+revoked_generalized_acceptance_requires_explicit_exception — VERIFIED
+forked_generalized_acceptance_requires_prior_log_compromise — VERIFIED
+conflicting_generalized_epoch_histories_require_prior_compromise — VERIFIED
+conflicting_generalized_transparency_roots_require_prior_compromise — VERIFIED
+
+Verified lemma count: 13/13

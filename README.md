@@ -1,0 +1,206 @@
+# Oracle–Child Lineage Model (OCLM)
+
+## Phase 1 — Formally Verified Lineage-Substitution Resistance Core
+
+Oracle–Child Lineage Model (OCLM)
+
+Conceived and designed by<br>
+Hirofumi Kureha (HiRO)<br>
+ORCID: https://orcid.org/0009-0006-6182-534X
+
+Founder & CEO of<br>
+WonderMetanism Inc.
+
+First published by<br>
+WonderMetanism Inc.
+
+---
+
+## Overview
+
+OCLM is a formal model for determining whether a state, record, right, or lineage can be accepted as a legitimate continuation of an original truth relationship.
+
+OCLM does not define truth as merely the latest record or the majority-accepted history.
+
+It defines legitimacy through consistent lineage, verified relationships, and formally specified acceptance conditions.
+
+---
+
+## Phase 1 Status
+
+**OCLM Phase 1**
+
+**FORMALLY VERIFIED**
+
+**COMPLETE**
+
+Phase 1-A through Phase 1-C6B have been completed.
+
+Final verification result:
+
+- Tamarin final lemmas: 13/13 VERIFIED
+- Verified release packages: 15/15
+- Final proof set: VERIFIED
+- Release integrity: VERIFIED
+
+---
+
+## Core Principle
+
+Records may be altered.
+
+Truth remains invariant.
+
+OCLM does not claim that physical records, storage media, or databases cannot be modified, deleted, or forged.
+
+Instead, OCLM establishes that an inconsistent substitution cannot be accepted and continued as the same legitimate truth and lineage within the formally specified model.
+
+Changing a record does not automatically change the truth represented by a valid lineage.
+
+---
+
+## Relationship with Blockchain
+
+Blockchain primarily addresses:
+
+- consensus
+- ordering
+- distributed record preservation
+- resistance against unauthorized history changes
+
+OCLM addresses:
+
+- legitimate existence
+- lineage validity
+- inheritance of state
+- acceptance conditions for truth relationships
+
+Blockchain asks:
+
+"Which history should be accepted?"
+
+OCLM asks:
+
+"What can validly exist as truth and lineage?"
+
+OCLM is not a replacement for blockchain.
+
+It defines a higher-level authenticity and lineage condition that can operate with blockchain, databases, and other infrastructures.
+
+---
+
+## Final Verified Artifacts
+
+Final model:
+
+model/tamarin/oclm_phase1c6b_generalized_security_composition_contract.spthy
+
+SHA-256:
+
+c3a350f15677c93491b3af392c0519f08d3d0a6ea70200121eb4a315d7064328
+
+Consolidated proof:
+
+results/phase1c6b_generalized_security_composition_contract_proof_20260717.txt
+
+SHA-256:
+
+de6d508dc5508b1e19e7009242f4541f9cdf8ecc170c02a1746ee8544977caec
+
+Frozen release:
+
+releases/oclm_phase1c6b_verified_20260717.zip
+
+SHA-256:
+
+39a6aa3b4103e4a50f3977b43d4948142541e788dd77a69b533ed58afb4c363e
+
+PROOF_INDEX:
+
+baselines/PROOF_INDEX.md
+
+SHA-256:
+
+d7890c5d17dec538e5b6a75397cfc25523faf54412dab81ce49388426373281f
+
+Verified proof-set manifest:
+
+releases/OCLM_VERIFIED_PROOFSET_20260717.txt
+
+SHA-256:
+
+6c91c04587780ddc6cf5e0ab3c400f299beb55097f91668d0e0811deaff3931e
+
+---
+
+## Verification
+
+The complete Phase 1 verification package contains:
+
+- Tamarin formal models
+- verification results
+- reproducible scripts
+- verified release archives
+- cryptographic integrity records
+
+Independent verification is encouraged.
+
+---
+
+## License
+
+OCLM is publicly verifiable and source-available for non-commercial research, independent verification, and educational use.
+
+Commercial use, including implementation, integration, deployment, commercial services, certification, or derivative commercial products, requires prior written authorization and a separate agreement with WonderMetanism Inc.
+
+---
+
+## Commercial Use
+
+For:
+
+- commercial implementation
+- enterprise deployment
+- integration
+- certification
+- official compliance
+- commercial services
+
+please contact WonderMetanism Inc.
+
+---
+
+## Citation
+
+Oracle–Child Lineage Model (OCLM) Phase 1:
+Formally Verified Lineage-Substitution Resistance Core
+
+Conceived and designed by<br>
+Hirofumi Kureha (HiRO)<br>
+ORCID: https://orcid.org/0009-0006-6182-534X
+
+Founder & CEO of<br>
+WonderMetanism Inc.
+
+First published by<br>
+WonderMetanism Inc.
+
+---
+
+## Persistent Identifier
+
+DOI:
+
+https://doi.org/10.5281/zenodo.21416118
+
+---
+
+## Official Source
+
+Canonical source:
+
+WonderMetanism Inc.
+
+Official website:
+
+https://www.wonder-metanism.com

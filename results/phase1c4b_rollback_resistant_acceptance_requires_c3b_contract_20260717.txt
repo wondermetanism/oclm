@@ -1,0 +1,494 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract] Theory loaded
+[Theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract] Theory translated
+[Theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract] Derivation checks started
+[Theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract] Derivation checks ended
+[Theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C4B_Rollback_Resistant_Composition_Contract
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, pair/2, snd/1
+equations: fst(<x.1, x.2>) = x.1, snd(<x.1, x.2>) = x.2
+
+/* looping facts with injective instances: VState/3 */
+
+rule (modulo E) Import_C3B_Composition_Contract:
+   [
+   Fr( ~verifier ), Fr( ~contract ), Fr( ~child_id ),
+   Fr( ~composition_root ), Fr( ~lineage_root ), Fr( ~old_epoch ),
+   Fr( ~old_epoch_pk ), Fr( ~later_epoch ), Fr( ~later_epoch_pk )
+   ]
+  --[
+  C3BContractImported( ~contract, ~child_id, ~composition_root,
+                       ~lineage_root, ~old_epoch, ~old_epoch_pk
+  ),
+  VerifierInitialized( ~verifier ),
+  VerifierStateObserved( ~verifier, 'e0' )
+  ]->
+   [
+   !C3BClosedContract( ~contract, ~child_id, ~composition_root,
+                       ~lineage_root, ~old_epoch, ~old_epoch_pk
+   ),
+   VState( ~verifier, 'e0', 'honest' ),
+   LaterEpochPermit( ~verifier, ~contract, ~child_id, ~later_epoch,
+                     ~later_epoch_pk
+   ),
+   CurrentAcceptancePermit( ~verifier, ~contract, ~child_id ),
+   StaleAcceptancePermit( ~verifier, ~contract, ~child_id ),
+   RollbackAttemptPermit_e2_to_e1( ~verifier ),
+   RollbackAttemptPermit_e2_to_e0( ~verifier )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_Verifier_e0_to_e1:
+   [ VState( verifier, 'e0', 'honest' ) ]
+  --[
+  VerifierAdvanced( verifier, 'e0', 'e1' ),
+  VerifierStateObserved( verifier, 'e1' )
+  ]->
+   [ VState( verifier, 'e1', 'honest' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Advance_Verifier_e1_to_e2:
+   [ VState( verifier, 'e1', 'honest' ) ]
+  --[
+  VerifierAdvanced( verifier, 'e1', 'e2' ),
+  VerifierStateObserved( verifier, 'e2' )
+  ]->
+   [ VState( verifier, 'e2', 'honest' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Start_Later_Epoch:
+   [
+   LaterEpochPermit( verifier, contract, child_id, later_epoch,
+                     later_epoch_pk
+   )
+   ]
+  --[ LaterEpochStarted( contract, child_id, later_epoch, later_epoch_pk )
+  ]->
+   [
+   LaterEpochLive( verifier, contract, child_id, later_epoch, later_epoch_pk
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Later_Epoch_Key:
+   [
+   LaterEpochLive( verifier, contract, child_id, later_epoch, later_epoch_pk
+   )
+   ]
+  --[
+  LaterEpochKeyCompromised( contract, child_id, later_epoch, later_epoch_pk
+  )
+  ]->
+   [
+   ClaimCollapsePermit( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   ),
+   !LaterEpochCompromiseActive( contract, child_id, later_epoch,
+                                later_epoch_pk
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Activate_Claim_Collapse:
+   [
+   ClaimCollapsePermit( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   )
+   ]
+  --[ ClaimCollapseActivated( contract, child_id ) ]->
+   [
+   !PostC3BEnvironment( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Composed_Child_At_Current_Verifier_State:
+   [
+   !C3BClosedContract( contract, child_id, composition_root, lineage_root,
+                       old_epoch, old_epoch_pk
+   ),
+   !PostC3BEnvironment( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   ),
+   !LaterEpochCompromiseActive( contract, child_id, later_epoch,
+                                later_epoch_pk
+   ),
+   VState( verifier, 'e2', 'honest' ),
+   CurrentAcceptancePermit( verifier, contract, child_id )
+   ]
+  --[
+  CurrentVerifierAcceptance( verifier, contract, child_id, 'e2' ),
+  RollbackResistantComposedAccepted( verifier, contract, child_id, 'e2',
+                                     composition_root, lineage_root, old_epoch, old_epoch_pk, later_epoch,
+                                     later_epoch_pk
+  )
+  ]->
+   [ VState( verifier, 'e2', 'honest' ) ]
+
+  // loop breaker: [3]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Attempt_Rollback_e2_to_e1:
+   [
+   VState( verifier, 'e2', 'honest' ),
+   RollbackAttemptPermit_e2_to_e1( verifier )
+   ]
+  --[ RollbackAttempt( verifier, 'e2', 'e1' ) ]->
+   [ VState( verifier, 'e2', 'honest' ) ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Attempt_Rollback_e2_to_e0:
+   [
+   VState( verifier, 'e2', 'honest' ),
+   RollbackAttemptPermit_e2_to_e0( verifier )
+   ]
+  --[ RollbackAttempt( verifier, 'e2', 'e0' ) ]->
+   [ VState( verifier, 'e2', 'honest' ) ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromise_Verifier:
+   [ VState( verifier, epoch, 'honest' ) ]
+  --[ VerifierCompromised( verifier, epoch ) ]->
+   [ VState( verifier, epoch, 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e2_to_e1:
+   [ VState( verifier, 'e2', 'compromised' ) ]
+  --[
+  RollbackSucceeded( verifier, 'e2', 'e1' ),
+  VerifierStateObserved( verifier, 'e1' )
+  ]->
+   [ VState( verifier, 'e1', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e2_to_e0:
+   [ VState( verifier, 'e2', 'compromised' ) ]
+  --[
+  RollbackSucceeded( verifier, 'e2', 'e0' ),
+  VerifierStateObserved( verifier, 'e0' )
+  ]->
+   [ VState( verifier, 'e0', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Compromised_Rollback_e1_to_e0:
+   [ VState( verifier, 'e1', 'compromised' ) ]
+  --[
+  RollbackSucceeded( verifier, 'e1', 'e0' ),
+  VerifierStateObserved( verifier, 'e0' )
+  ]->
+   [ VState( verifier, 'e0', 'compromised' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Composed_Child_At_Stale_Verifier_e1:
+   [
+   !C3BClosedContract( contract, child_id, composition_root, lineage_root,
+                       old_epoch, old_epoch_pk
+   ),
+   !PostC3BEnvironment( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   ),
+   VState( verifier, 'e1', 'compromised' ),
+   StaleAcceptancePermit( verifier, contract, child_id )
+   ]
+  --[
+  StaleVerifierAcceptance( verifier, contract, child_id, 'e1' ),
+  RollbackResistantComposedAccepted( verifier, contract, child_id, 'e1',
+                                     composition_root, lineage_root, old_epoch, old_epoch_pk, later_epoch,
+                                     later_epoch_pk
+  )
+  ]->
+   [ VState( verifier, 'e1', 'compromised' ) ]
+
+  // loop breaker: [2]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Accept_Composed_Child_At_Stale_Verifier_e0:
+   [
+   !C3BClosedContract( contract, child_id, composition_root, lineage_root,
+                       old_epoch, old_epoch_pk
+   ),
+   !PostC3BEnvironment( verifier, contract, child_id, later_epoch,
+                        later_epoch_pk
+   ),
+   VState( verifier, 'e0', 'compromised' ),
+   StaleAcceptancePermit( verifier, contract, child_id )
+   ]
+  --[
+  StaleVerifierAcceptance( verifier, contract, child_id, 'e0' ),
+  RollbackResistantComposedAccepted( verifier, contract, child_id, 'e0',
+                                     composition_root, lineage_root, old_epoch, old_epoch_pk, later_epoch,
+                                     later_epoch_pk
+  )
+  ]->
+   [ VState( verifier, 'e0', 'compromised' ) ]
+
+  // loop breaker: [2]
+  /* has exactly the trivial AC variant */
+
+lemma executable_rollback_resistant_composed_lifecycle:
+  exists-trace
+  "∃ verifier contract child_id composition_root lineage_root old_epoch
+     old_epoch_pk later_epoch later_epoch_pk #i0 #i1 #i2 #i3 #i4 #i5 #i6 #i7
+     #i8 #i9 #i10.
+    ((((((((((((((((((((C3BContractImported( contract, child_id,
+                                             composition_root, lineage_root, old_epoch, old_epoch_pk
+                        ) @ #i0) ∧
+                       (VerifierAdvanced( verifier, 'e0', 'e1' ) @ #i1)) ∧
+                      (VerifierAdvanced( verifier, 'e1', 'e2' ) @ #i2)) ∧
+                     (LaterEpochStarted( contract, child_id, later_epoch, later_epoch_pk
+                      ) @ #i3)) ∧
+                    (LaterEpochKeyCompromised( contract, child_id, later_epoch,
+                                               later_epoch_pk
+                     ) @ #i4)) ∧
+                   (ClaimCollapseActivated( contract, child_id ) @ #i5)) ∧
+                  (CurrentVerifierAcceptance( verifier, contract, child_id, 'e2'
+                   ) @ #i6)) ∧
+                 (RollbackAttempt( verifier, 'e2', 'e1' ) @ #i7)) ∧
+                (VerifierCompromised( verifier, 'e2' ) @ #i8)) ∧
+               (RollbackSucceeded( verifier, 'e2', 'e1' ) @ #i9)) ∧
+              (StaleVerifierAcceptance( verifier, contract, child_id, 'e1' ) @ #i10)) ∧
+             (#i0 < #i1)) ∧
+            (#i1 < #i2)) ∧
+           (#i2 < #i3)) ∧
+          (#i3 < #i4)) ∧
+         (#i4 < #i5)) ∧
+        (#i5 < #i6)) ∧
+       (#i6 < #i7)) ∧
+      (#i7 < #i8)) ∧
+     (#i8 < #i9)) ∧
+    (#i9 < #i10)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ verifier contract child_id composition_root lineage_root old_epoch
+   old_epoch_pk later_epoch later_epoch_pk #i0 #i1 #i2 #i3 #i4 #i5 #i6 #i7
+   #i8 #i9 #i10.
+  (C3BContractImported( contract, child_id, composition_root, lineage_root,
+                        old_epoch, old_epoch_pk
+   ) @ #i0) ∧
+  (VerifierAdvanced( verifier, 'e0', 'e1' ) @ #i1) ∧
+  (VerifierAdvanced( verifier, 'e1', 'e2' ) @ #i2) ∧
+  (LaterEpochStarted( contract, child_id, later_epoch, later_epoch_pk
+   ) @ #i3) ∧
+  (LaterEpochKeyCompromised( contract, child_id, later_epoch,
+                             later_epoch_pk
+   ) @ #i4) ∧
+  (ClaimCollapseActivated( contract, child_id ) @ #i5) ∧
+  (CurrentVerifierAcceptance( verifier, contract, child_id, 'e2' ) @ #i6) ∧
+  (RollbackAttempt( verifier, 'e2', 'e1' ) @ #i7) ∧
+  (VerifierCompromised( verifier, 'e2' ) @ #i8) ∧
+  (RollbackSucceeded( verifier, 'e2', 'e1' ) @ #i9) ∧
+  (StaleVerifierAcceptance( verifier, contract, child_id, 'e1' ) @ #i10)
+ ∧
+  (#i0 < #i1) ∧
+  (#i1 < #i2) ∧
+  (#i2 < #i3) ∧
+  (#i3 < #i4) ∧
+  (#i4 < #i5) ∧
+  (#i5 < #i6) ∧
+  (#i6 < #i7) ∧
+  (#i7 < #i8) ∧
+  (#i8 < #i9) ∧
+  (#i9 < #i10)"
+*/
+by sorry
+
+lemma rollback_resistant_acceptance_requires_c3b_contract:
+  all-traces
+  "∀ verifier contract child_id verifier_epoch composition_root
+     lineage_root old_epoch old_epoch_pk later_epoch later_epoch_pk #ia.
+    (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                        verifier_epoch, composition_root, lineage_root, old_epoch,
+                                        old_epoch_pk, later_epoch, later_epoch_pk
+     ) @ #ia) ⇒
+    (∃ #ic.
+      (C3BContractImported( contract, child_id, composition_root, lineage_root,
+                            old_epoch, old_epoch_pk
+       ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id verifier_epoch composition_root
+   lineage_root old_epoch old_epoch_pk later_epoch later_epoch_pk #ia.
+  (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                      verifier_epoch, composition_root, lineage_root, old_epoch, old_epoch_pk,
+                                      later_epoch, later_epoch_pk
+   ) @ #ia)
+ ∧
+  ∀ #ic.
+   (C3BContractImported( contract, child_id, composition_root, lineage_root,
+                         old_epoch, old_epoch_pk
+    ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+simplify
+solve( RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                          verifier_epoch, composition_root, lineage_root, old_epoch,
+                                          old_epoch_pk, later_epoch, later_epoch_pk
+       ) @ #ia )
+  case Accept_Composed_Child_At_Current_Verifier_State
+  solve( !C3BClosedContract( contract, child_id, composition_root,
+                             lineage_root, old_epoch, old_epoch_pk
+         ) ▶₀ #ia )
+    case Import_C3B_Composition_Contract
+    by contradiction /* from formulas */
+  qed
+next
+  case Accept_Composed_Child_At_Stale_Verifier_e0
+  solve( !C3BClosedContract( contract, child_id, composition_root,
+                             lineage_root, old_epoch, old_epoch_pk
+         ) ▶₀ #ia )
+    case Import_C3B_Composition_Contract
+    by contradiction /* from formulas */
+  qed
+next
+  case Accept_Composed_Child_At_Stale_Verifier_e1
+  solve( !C3BClosedContract( contract, child_id, composition_root,
+                             lineage_root, old_epoch, old_epoch_pk
+         ) ▶₀ #ia )
+    case Import_C3B_Composition_Contract
+    by contradiction /* from formulas */
+  qed
+qed
+
+lemma composed_acceptance_uses_latest_state_or_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract child_id verifier_epoch composition_root
+     lineage_root old_epoch old_epoch_pk later_epoch later_epoch_pk #ia.
+    (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                        verifier_epoch, composition_root, lineage_root, old_epoch,
+                                        old_epoch_pk, later_epoch, later_epoch_pk
+     ) @ #ia) ⇒
+    ((verifier_epoch = 'e2') ∨
+     (∃ compromised_epoch #ic.
+       (VerifierCompromised( verifier, compromised_epoch ) @ #ic) ∧
+       (#ic < #ia)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id verifier_epoch composition_root
+   lineage_root old_epoch old_epoch_pk later_epoch later_epoch_pk #ia.
+  (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                      verifier_epoch, composition_root, lineage_root, old_epoch, old_epoch_pk,
+                                      later_epoch, later_epoch_pk
+   ) @ #ia)
+ ∧
+  (¬(verifier_epoch = 'e2')) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( verifier, compromised_epoch ) @ #ic)
+   ⇒
+    ¬(#ic < #ia))"
+*/
+by sorry
+
+lemma stale_composed_acceptance_requires_prior_verifier_compromise:
+  all-traces
+  "∀ verifier contract child_id stale_epoch #ia.
+    (StaleVerifierAcceptance( verifier, contract, child_id, stale_epoch
+     ) @ #ia) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( verifier, compromised_epoch ) @ #ic) ∧
+      (#ic < #ia))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id stale_epoch #ia.
+  (StaleVerifierAcceptance( verifier, contract, child_id, stale_epoch
+   ) @ #ia)
+ ∧
+  ∀ compromised_epoch #ic.
+   (VerifierCompromised( verifier, compromised_epoch ) @ #ic)
+  ⇒
+   ¬(#ic < #ia)"
+*/
+by sorry
+
+lemma same_contract_conflicting_verifier_histories_require_compromise:
+  all-traces
+  "∀ verifier contract child_id verifier_epoch_1 verifier_epoch_2
+     composition_root lineage_root old_epoch old_epoch_pk later_epoch
+     later_epoch_pk #i1 #i2.
+    ((((RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                           verifier_epoch_1, composition_root, lineage_root, old_epoch,
+                                           old_epoch_pk, later_epoch, later_epoch_pk
+        ) @ #i1) ∧
+       (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                           verifier_epoch_2, composition_root, lineage_root, old_epoch,
+                                           old_epoch_pk, later_epoch, later_epoch_pk
+        ) @ #i2)) ∧
+      (#i1 < #i2)) ∧
+     (¬(verifier_epoch_1 = verifier_epoch_2))) ⇒
+    (∃ compromised_epoch #ic.
+      (VerifierCompromised( verifier, compromised_epoch ) @ #ic) ∧
+      (#ic < #i2))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ verifier contract child_id verifier_epoch_1 verifier_epoch_2
+   composition_root lineage_root old_epoch old_epoch_pk later_epoch
+   later_epoch_pk #i1 #i2.
+  (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                      verifier_epoch_1, composition_root, lineage_root, old_epoch,
+                                      old_epoch_pk, later_epoch, later_epoch_pk
+   ) @ #i1) ∧
+  (RollbackResistantComposedAccepted( verifier, contract, child_id,
+                                      verifier_epoch_2, composition_root, lineage_root, old_epoch,
+                                      old_epoch_pk, later_epoch, later_epoch_pk
+   ) @ #i2)
+ ∧
+  (#i1 < #i2) ∧
+  (¬(verifier_epoch_1 = verifier_epoch_2)) ∧
+  (∀ compromised_epoch #ic.
+    (VerifierCompromised( verifier, compromised_epoch ) @ #ic)
+   ⇒
+    ¬(#ic < #i2))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: model/tamarin/oclm_phase1c4b_rollback_resistant_composition_contract.spthy
+
+  processing time: 0.88s
+  
+  executable_rollback_resistant_composed_lifecycle (exists-trace): analysis incomplete (1 steps)
+  rollback_resistant_acceptance_requires_c3b_contract (all-traces): verified (8 steps)
+  composed_acceptance_uses_latest_state_or_prior_verifier_compromise (all-traces): analysis incomplete (1 steps)
+  stale_composed_acceptance_requires_prior_verifier_compromise (all-traces): analysis incomplete (1 steps)
+  same_contract_conflicting_verifier_histories_require_compromise (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

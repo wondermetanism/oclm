@@ -1,0 +1,712 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C3A_ForwardSecureEpochCore] Theory loaded
+[Theory OCLM_Phase1C3A_ForwardSecureEpochCore] Theory translated
+[Theory OCLM_Phase1C3A_ForwardSecureEpochCore] Derivation checks started
+[Theory OCLM_Phase1C3A_ForwardSecureEpochCore] Derivation checks ended
+[Theory OCLM_Phase1C3A_ForwardSecureEpochCore] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C3A_ForwardSecureEpochCore
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) RootSetup:
+   [ Fr( ~root_sk ) ]
+  --[ RootInitialized( pk(~root_sk) ) ]->
+   [
+   !RootSecret( ~root_sk ), !RootPublic( pk(~root_sk) ),
+   OldEpochPermit( pk(~root_sk) ), Out( pk(~root_sk) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) StartOldEpoch:
+   [
+   !RootSecret( ~root_sk ), OldEpochPermit( pk(~root_sk) ),
+   Fr( ~old_epoch ), Fr( ~old_sk )
+   ]
+  --[
+  EpochCredentialIssued( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                         'oclm-c3-genesis'
+  ),
+  OldEpochStarted( pk(~root_sk), ~old_epoch, pk(~old_sk), 'oclm-c3-genesis'
+  )
+  ]->
+   [
+   !OldEpochCredential( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                        'oclm-c3-genesis',
+                        <'oclm-c3-epoch-credential-v1', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                         'oclm-c3-genesis'>,
+                        sign(<'oclm-c3-epoch-credential-v1', pk(~root_sk), ~old_epoch, 
+                              pk(~old_sk), 'oclm-c3-genesis'>,
+                             ~root_sk)
+   ),
+   OldEpochKeyLive( pk(~root_sk), ~old_epoch, ~old_sk ),
+   OldEpochReady( pk(~root_sk), ~old_epoch, pk(~old_sk), 'oclm-c3-genesis'
+   ),
+   Out( <
+         <'oclm-c3-epoch-credential-v1', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+          'oclm-c3-genesis'>, 
+         sign(<'oclm-c3-epoch-credential-v1', pk(~root_sk), ~old_epoch, 
+               pk(~old_sk), 'oclm-c3-genesis'>,
+              ~root_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) IssueOldCertificateAndEraseKey:
+   [
+   OldEpochKeyLive( root_pk, old_epoch, ~old_sk ),
+   OldEpochReady( root_pk, old_epoch, pk(~old_sk), predecessor ),
+   !OldEpochCredential( root_pk, old_epoch, pk(~old_sk), predecessor,
+                        credential, root_signature
+   ),
+   Fr( ~iss ), Fr( ~lineage_seed )
+   ]
+  --[
+  OldCertificateIssued( root_pk, old_epoch, pk(~old_sk), predecessor, ~iss,
+                        h(<'oclm-c3-child-id', 
+                           h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                              ~iss, ~lineage_seed>)
+                          >),
+                        h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                           ~iss, ~lineage_seed>),
+                        h(<
+                           <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                            pk(~old_sk), predecessor, ~iss, 
+                            h(<'oclm-c3-child-id', 
+                               h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                  ~iss, ~lineage_seed>)
+                              >), 
+                            h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                               ~iss, ~lineage_seed>)
+                           >, 
+                           sign(<'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                                 pk(~old_sk), predecessor, ~iss, 
+                                 h(<'oclm-c3-child-id', 
+                                    h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                       ~iss, ~lineage_seed>)
+                                   >), 
+                                 h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                    ~iss, ~lineage_seed>)
+                                >,
+                                ~old_sk)
+                          >)
+  ),
+  OldEpochKeyErased( root_pk, old_epoch, pk(~old_sk),
+                     h(<
+                        <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                         pk(~old_sk), predecessor, ~iss, 
+                         h(<'oclm-c3-child-id', 
+                            h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                               ~iss, ~lineage_seed>)
+                           >), 
+                         h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                            ~iss, ~lineage_seed>)
+                        >, 
+                        sign(<'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                              pk(~old_sk), predecessor, ~iss, 
+                              h(<'oclm-c3-child-id', 
+                                 h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                    ~iss, ~lineage_seed>)
+                                >), 
+                              h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                 ~iss, ~lineage_seed>)
+                             >,
+                             ~old_sk)
+                       >)
+  )
+  ]->
+   [
+   NextEpochPermit( root_pk, old_epoch, pk(~old_sk),
+                    h(<
+                       <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                        pk(~old_sk), predecessor, ~iss, 
+                        h(<'oclm-c3-child-id', 
+                           h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                              ~iss, ~lineage_seed>)
+                          >), 
+                        h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                           ~iss, ~lineage_seed>)
+                       >, 
+                       sign(<'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+                             pk(~old_sk), predecessor, ~iss, 
+                             h(<'oclm-c3-child-id', 
+                                h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                   ~iss, ~lineage_seed>)
+                               >), 
+                             h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                                ~iss, ~lineage_seed>)
+                            >,
+                            ~old_sk)
+                      >)
+   ),
+   Out( <credential, root_signature> ),
+   Out( <
+         <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+          pk(~old_sk), predecessor, ~iss, 
+          h(<'oclm-c3-child-id', 
+             h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                ~iss, ~lineage_seed>)
+            >), 
+          h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+             ~iss, ~lineage_seed>)
+         >, 
+         sign(<'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+               pk(~old_sk), predecessor, ~iss, 
+               h(<'oclm-c3-child-id', 
+                  h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                     ~iss, ~lineage_seed>)
+                 >), 
+               h(<'oclm-c3-lineage', root_pk, old_epoch, pk(~old_sk), predecessor, 
+                  ~iss, ~lineage_seed>)
+              >,
+              ~old_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) StartLaterEpoch:
+   [
+   !RootSecret( ~root_sk ),
+   NextEpochPermit( pk(~root_sk), old_epoch, old_epoch_pk, old_anchor ),
+   Fr( ~later_epoch ), Fr( ~later_sk )
+   ]
+  --[
+  EpochCredentialIssued( pk(~root_sk), ~later_epoch, pk(~later_sk),
+                         old_anchor
+  ),
+  LaterEpochStarted( pk(~root_sk), old_epoch, old_epoch_pk, ~later_epoch,
+                     pk(~later_sk), old_anchor
+  )
+  ]->
+   [
+   LaterEpochKeyLive( pk(~root_sk), old_epoch, old_epoch_pk, ~later_epoch,
+                      ~later_sk
+   ),
+   Out( <
+         <'oclm-c3-epoch-credential-v1', pk(~root_sk), ~later_epoch, 
+          pk(~later_sk), old_anchor>, 
+         sign(<'oclm-c3-epoch-credential-v1', pk(~root_sk), ~later_epoch, 
+               pk(~later_sk), old_anchor>,
+              ~root_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseOldEpochKey:
+   [ OldEpochKeyLive( root_pk, old_epoch, old_sk ) ]
+  --[ OldEpochKeyCompromised( root_pk, old_epoch, pk(old_sk) ) ]->
+   [ Out( old_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseLaterEpochKey:
+   [
+   LaterEpochKeyLive( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                      later_sk
+   )
+   ]
+  --[
+  LaterEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                            pk(later_sk)
+  )
+  ]->
+   [
+   !LaterEpochCompromiseActive( root_pk, old_epoch, old_epoch_pk,
+                                later_epoch, pk(later_sk)
+   ),
+   Out( later_sk )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseRootKey:
+   [ !RootSecret( root_sk ) ]
+  --[ RootKeyCompromised( pk(root_sk) ) ]->
+   [ Out( root_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyEpochCredential:
+   [
+   !RootPublic( root_pk ),
+   In( <
+        <'oclm-c3-epoch-credential-v1', root_pk, epoch, epoch_pk, predecessor>, 
+        root_signature>
+   )
+   ]
+  --[
+  Eq( verify(root_signature,
+             <'oclm-c3-epoch-credential-v1', root_pk, epoch, epoch_pk, predecessor>,
+             root_pk),
+      true
+  ),
+  EpochCredentialAccepted( root_pk, epoch, epoch_pk, predecessor )
+  ]->
+   [ !VerifiedEpochCredential( root_pk, epoch, epoch_pk, predecessor ) ]
+
+  /*
+  rule (modulo AC) VerifyEpochCredential:
+     [
+     !RootPublic( root_pk ),
+     In( <
+          <'oclm-c3-epoch-credential-v1', root_pk, epoch, epoch_pk, predecessor>, 
+          root_signature>
+     )
+     ]
+    --[
+    Eq( z, true ),
+    EpochCredentialAccepted( root_pk, epoch, epoch_pk, predecessor )
+    ]->
+     [ !VerifiedEpochCredential( root_pk, epoch, epoch_pk, predecessor ) ]
+    variants (modulo AC)
+    1. epoch = epoch.9
+       epoch_pk
+             = epoch_pk.10
+       predecessor
+             = predecessor.11
+       root_pk
+             = root_pk.12
+       root_signature
+             = root_signature.13
+       z     = verify(root_signature.13,
+                      <'oclm-c3-epoch-credential-v1', root_pk.12, epoch.9, epoch_pk.10, 
+                       predecessor.11>,
+                      root_pk.12)
+    
+    2. epoch = epoch.12
+       epoch_pk
+             = epoch_pk.13
+       predecessor
+             = predecessor.14
+       root_pk
+             = pk(x.22)
+       root_signature
+             = sign(<'oclm-c3-epoch-credential-v1', pk(x.22), epoch.12, epoch_pk.13, 
+                     predecessor.14>,
+                    x.22)
+       z     = true
+  */
+
+rule (modulo E) VerifyOldCertificateAfterLaterCompromise:
+   [
+   !VerifiedEpochCredential( root_pk, old_epoch, old_epoch_pk, predecessor
+   ),
+   !LaterEpochCompromiseActive( root_pk, old_epoch, old_epoch_pk,
+                                later_epoch, later_epoch_pk
+   ),
+   In( <
+        <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+         old_epoch_pk, predecessor, iss, child_id, lineage>, 
+        certificate_signature>
+   )
+   ]
+  --[
+  Eq( verify(certificate_signature,
+             <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+              old_epoch_pk, predecessor, iss, child_id, lineage>,
+             old_epoch_pk),
+      true
+  ),
+  Eq( child_id, h(<'oclm-c3-child-id', lineage>) ),
+  OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                              old_epoch_pk, predecessor, iss, child_id, lineage, later_epoch,
+                                              later_epoch_pk
+  )
+  ]->
+   [ ]
+
+  /*
+  rule (modulo AC) VerifyOldCertificateAfterLaterCompromise:
+     [
+     !VerifiedEpochCredential( root_pk, old_epoch, old_epoch_pk, predecessor
+     ),
+     !LaterEpochCompromiseActive( root_pk, old_epoch, old_epoch_pk,
+                                  later_epoch, later_epoch_pk
+     ),
+     In( <
+          <'oclm-c3-forward-secure-certificate-v1', root_pk, old_epoch, 
+           old_epoch_pk, predecessor, iss, child_id, lineage>, 
+          certificate_signature>
+     )
+     ]
+    --[
+    Eq( z, true ), Eq( child_id, h(<'oclm-c3-child-id', lineage>) ),
+    OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                                old_epoch_pk, predecessor, iss, child_id, lineage,
+                                                later_epoch, later_epoch_pk
+    )
+    ]->
+     [ ]
+    variants (modulo AC)
+    1. certificate_signature
+             = certificate_signature.23
+       child_id
+             = child_id.24
+       iss   = iss.25
+       lineage
+             = lineage.28
+       old_epoch
+             = old_epoch.29
+       old_epoch_pk
+             = old_epoch_pk.30
+       predecessor
+             = predecessor.31
+       root_pk
+             = root_pk.32
+       z     = verify(certificate_signature.23,
+                      <'oclm-c3-forward-secure-certificate-v1', root_pk.32, old_epoch.29, 
+                       old_epoch_pk.30, predecessor.31, iss.25, child_id.24, lineage.28>,
+                      old_epoch_pk.30)
+    
+    2. certificate_signature
+             = sign(<'oclm-c3-forward-secure-certificate-v1', root_pk.36, 
+                     old_epoch.33, pk(x.53), predecessor.35, iss.29, child_id.28, lineage.32>,
+                    x.53)
+       child_id
+             = child_id.28
+       iss   = iss.29
+       lineage
+             = lineage.32
+       old_epoch
+             = old_epoch.33
+       old_epoch_pk
+             = pk(x.53)
+       predecessor
+             = predecessor.35
+       root_pk
+             = root_pk.36
+       z     = true
+  */
+
+lemma executable_old_certificate_after_later_epoch_compromise:
+  exists-trace
+  "∃ root_pk old_epoch old_epoch_pk predecessor iss child_id lineage
+     old_anchor later_epoch later_epoch_pk #c #n #k #v.
+    (((((((OldCertificateIssued( root_pk, old_epoch, old_epoch_pk,
+                                 predecessor, iss, child_id, lineage, old_anchor
+           ) @ #c) ∧
+          (OldEpochKeyErased( root_pk, old_epoch, old_epoch_pk, old_anchor
+           ) @ #c)) ∧
+         (LaterEpochStarted( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                             later_epoch_pk, old_anchor
+          ) @ #n)) ∧
+        (LaterEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                                   later_epoch_pk
+         ) @ #k)) ∧
+       (OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                                    old_epoch_pk, predecessor, iss, child_id, lineage,
+                                                    later_epoch, later_epoch_pk
+        ) @ #v)) ∧
+      (#c < #n)) ∧
+     (#n < #k)) ∧
+    (#k < #v)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ root_pk old_epoch old_epoch_pk predecessor iss child_id lineage
+   old_anchor later_epoch later_epoch_pk #c #n #k #v.
+  (OldCertificateIssued( root_pk, old_epoch, old_epoch_pk, predecessor,
+                         iss, child_id, lineage, old_anchor
+   ) @ #c) ∧
+  (OldEpochKeyErased( root_pk, old_epoch, old_epoch_pk, old_anchor
+   ) @ #c) ∧
+  (LaterEpochStarted( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                      later_epoch_pk, old_anchor
+   ) @ #n) ∧
+  (LaterEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk, later_epoch,
+                             later_epoch_pk
+   ) @ #k) ∧
+  (OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                               old_epoch_pk, predecessor, iss, child_id, lineage, later_epoch,
+                                               later_epoch_pk
+   ) @ #v)
+ ∧
+  (#c < #n) ∧ (#n < #k) ∧ (#k < #v)"
+*/
+simplify
+solve( OldEpochKeyLive( pk(~root_sk), old_epoch, ~old_sk ) ▶₀ #c )
+  case StartOldEpoch
+  solve( OldEpochReady( pk(~root_sk), ~old_epoch, pk(~old_sk), predecessor
+         ) ▶₁ #c )
+    case StartOldEpoch
+    solve( !OldEpochCredential( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                                'oclm-c3-genesis', credential, root_signature
+           ) ▶₂ #c )
+      case StartOldEpoch
+      solve( !RootSecret( ~root_sk ) ▶₀ #n )
+        case RootSetup
+        solve( NextEpochPermit( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                                h(<
+                                   <'oclm-c3-forward-secure-certificate-v1', pk(~root_sk), ~old_epoch, 
+                                    pk(~old_sk), 'oclm-c3-genesis', ~iss, 
+                                    h(<'oclm-c3-child-id', 
+                                       h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                          'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                      >), 
+                                    h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                       'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                   >, 
+                                   sign(<'oclm-c3-forward-secure-certificate-v1', pk(~root_sk), ~old_epoch, 
+                                         pk(~old_sk), 'oclm-c3-genesis', ~iss, 
+                                         h(<'oclm-c3-child-id', 
+                                            h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                               'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                           >), 
+                                         h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                            'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                        >,
+                                        ~old_sk)
+                                  >)
+               ) ▶₁ #n )
+          case IssueOldCertificateAndEraseKey
+          solve( LaterEpochKeyLive( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                                    ~later_epoch, ~later_sk
+                 ) ▶₀ #k )
+            case StartLaterEpoch
+            solve( !VerifiedEpochCredential( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                                             'oclm-c3-genesis'
+                   ) ▶₀ #v )
+              case VerifyEpochCredential
+              solve( !LaterEpochCompromiseActive( pk(~root_sk), ~old_epoch,
+                                                  pk(~old_sk), ~later_epoch, pk(~later_sk)
+                     ) ▶₁ #v )
+                case CompromiseLaterEpochKey
+                solve( !KU( ~iss ) @ #vk.16 )
+                  case IssueOldCertificateAndEraseKey
+                  solve( !KU( ~old_epoch ) @ #vk.10 )
+                    case IssueOldCertificateAndEraseKey_case_1
+                    solve( !KU( sign(<'oclm-c3-forward-secure-certificate-v1', pk(~root_sk), 
+                                      ~old_epoch, pk(~old_sk), 'oclm-c3-genesis', ~iss, 
+                                      h(<'oclm-c3-child-id', 
+                                         h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                            'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                        >), 
+                                      h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                         'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                     >,
+                                     ~old_sk)
+                           ) @ #vk.21 )
+                      case IssueOldCertificateAndEraseKey
+                      solve( !KU( sign(<'oclm-c3-epoch-credential-v1', pk(~root_sk), 
+                                        ~old_epoch, pk(~old_sk), 'oclm-c3-genesis'>,
+                                       ~root_sk)
+                             ) @ #vk.23 )
+                        case IssueOldCertificateAndEraseKey
+                        solve( !KU( pk(~root_sk) ) @ #vk.16 )
+                          case IssueOldCertificateAndEraseKey_case_1
+                          solve( !KU( pk(~old_sk) ) @ #vk.17 )
+                            case IssueOldCertificateAndEraseKey_case_1
+                            solve( !KU( h(<'oclm-c3-child-id', 
+                                           h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                              'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                          >)
+                                   ) @ #vk.21 )
+                              case IssueOldCertificateAndEraseKey
+                              solve( !KU( h(<'oclm-c3-lineage', pk(~root_sk), ~old_epoch, pk(~old_sk), 
+                                             'oclm-c3-genesis', ~iss, ~lineage_seed>)
+                                     ) @ #vk.22 )
+                                case IssueOldCertificateAndEraseKey
+                                SOLVED // trace found
+                              qed
+                            qed
+                          qed
+                        qed
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+lemma erased_old_epoch_key_cannot_be_compromised_later:
+  all-traces
+  "∀ root_pk old_epoch old_epoch_pk anchor #e.
+    (OldEpochKeyErased( root_pk, old_epoch, old_epoch_pk, anchor ) @ #e) ⇒
+    (¬(∃ #k.
+        (OldEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk ) @ #k) ∧
+        (#e < #k)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk old_epoch old_epoch_pk anchor #e.
+  (OldEpochKeyErased( root_pk, old_epoch, old_epoch_pk, anchor ) @ #e)
+ ∧
+  ∃ #k.
+   (OldEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk ) @ #k)
+  ∧
+   #e < #k"
+*/
+simplify
+solve( OldEpochKeyLive( root_pk, old_epoch, ~old_sk ) ▶₀ #e )
+  case StartOldEpoch
+  solve( OldEpochReady( pk(~root_sk), ~old_epoch, pk(~old_sk), predecessor
+         ) ▶₁ #e )
+    case StartOldEpoch
+    solve( !OldEpochCredential( pk(~root_sk), ~old_epoch, pk(~old_sk),
+                                'oclm-c3-genesis', credential, root_signature
+           ) ▶₂ #e )
+      case StartOldEpoch
+      by solve( OldEpochKeyLive( pk(~root_sk), ~old_epoch, ~old_sk ) ▶₀ #k )
+    qed
+  qed
+qed
+
+lemma accepted_epoch_credential_requires_issuance_or_root_compromise:
+  all-traces
+  "∀ root_pk epoch epoch_pk predecessor #v.
+    (EpochCredentialAccepted( root_pk, epoch, epoch_pk, predecessor ) @ #v) ⇒
+    ((∃ #i.
+       (EpochCredentialIssued( root_pk, epoch, epoch_pk, predecessor ) @ #i) ∧
+       (#i < #v)) ∨
+     (∃ #r. (RootKeyCompromised( root_pk ) @ #r) ∧ (#r < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk epoch epoch_pk predecessor #v.
+  (EpochCredentialAccepted( root_pk, epoch, epoch_pk, predecessor ) @ #v)
+ ∧
+  (∀ #i.
+    (EpochCredentialIssued( root_pk, epoch, epoch_pk, predecessor ) @ #i)
+   ⇒
+    ¬(#i < #v)) ∧
+  (∀ #r. (RootKeyCompromised( root_pk ) @ #r) ⇒ ¬(#r < #v))"
+*/
+simplify
+solve( !RootPublic( pk(x) ) ▶₀ #v )
+  case RootSetup
+  solve( !KU( sign(<'oclm-c3-epoch-credential-v1', pk(~root_sk), epoch, 
+                    epoch_pk, predecessor>,
+                   ~root_sk)
+         ) @ #vk.10 )
+    case IssueOldCertificateAndEraseKey
+    by contradiction /* from formulas */
+  next
+    case StartLaterEpoch
+    by contradiction /* from formulas */
+  next
+    case StartOldEpoch
+    by contradiction /* from formulas */
+  next
+    case c_sign
+    solve( !KU( ~root_sk ) @ #vk.11 )
+      case CompromiseRootKey
+      by contradiction /* from formulas */
+    qed
+  qed
+qed
+
+lemma accepted_old_certificate_requires_issuance_or_target_compromise:
+  all-traces
+  "∀ root_pk old_epoch old_epoch_pk predecessor iss child_id lineage
+     later_epoch later_epoch_pk #v.
+    (OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                                 old_epoch_pk, predecessor, iss, child_id, lineage,
+                                                 later_epoch, later_epoch_pk
+     ) @ #v) ⇒
+    (((∃ anchor #i.
+        (OldCertificateIssued( root_pk, old_epoch, old_epoch_pk, predecessor,
+                               iss, child_id, lineage, anchor
+         ) @ #i) ∧
+        (#i < #v)) ∨
+      (∃ #k.
+        (OldEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk ) @ #k) ∧
+        (#k < #v))) ∨
+     (∃ #r. (RootKeyCompromised( root_pk ) @ #r) ∧ (#r < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk old_epoch old_epoch_pk predecessor iss child_id lineage
+   later_epoch later_epoch_pk #v.
+  (OldCertificateAcceptedAfterLaterCompromise( root_pk, old_epoch,
+                                               old_epoch_pk, predecessor, iss, child_id, lineage, later_epoch,
+                                               later_epoch_pk
+   ) @ #v)
+ ∧
+  (∀ anchor #i.
+    (OldCertificateIssued( root_pk, old_epoch, old_epoch_pk, predecessor,
+                           iss, child_id, lineage, anchor
+     ) @ #i)
+   ⇒
+    ¬(#i < #v)) ∧
+  (∀ #k.
+    (OldEpochKeyCompromised( root_pk, old_epoch, old_epoch_pk ) @ #k)
+   ⇒
+    ¬(#k < #v)) ∧
+  (∀ #r. (RootKeyCompromised( root_pk ) @ #r) ⇒ ¬(#r < #v))"
+*/
+simplify
+solve( !VerifiedEpochCredential( root_pk, old_epoch, pk(x), predecessor
+       ) ▶₀ #v )
+  case VerifyEpochCredential
+  solve( !LaterEpochCompromiseActive( pk(~root_sk), old_epoch, pk(x),
+                                      later_epoch, later_epoch_pk
+         ) ▶₁ #v )
+    case CompromiseLaterEpochKey
+    solve( !KU( sign(<'oclm-c3-forward-secure-certificate-v1', pk(~root_sk), 
+                      ~old_epoch, pk(~old_sk), predecessor, iss, 
+                      h(<'oclm-c3-child-id', lineage>), lineage>,
+                     ~old_sk)
+           ) @ #vk.20 )
+      case IssueOldCertificateAndEraseKey
+      by contradiction /* from formulas */
+    next
+      case c_sign
+      by solve( !KU( ~old_sk ) @ #vk.24 )
+    qed
+  qed
+qed
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1c3a_forward_secure_epoch_core.spthy
+
+  processing time: 6.24s
+  
+  executable_old_certificate_after_later_epoch_compromise (exists-trace): verified (18 steps)
+  erased_old_epoch_key_cannot_be_compromised_later (all-traces): verified (5 steps)
+  accepted_epoch_credential_requires_issuance_or_root_compromise (all-traces): verified (8 steps)
+  accepted_old_certificate_requires_issuance_or_target_compromise (all-traces): verified (6 steps)
+
+==============================================================================

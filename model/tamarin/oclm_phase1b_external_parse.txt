@@ -1,0 +1,554 @@
+theory OCLM_Phase1B_External
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) OracleSetup:
+   [ Fr( ~oracle_sk ) ]
+  --[ OracleInitialized( pk(~oracle_sk) ) ]->
+   [
+   !OracleState( ~oracle_sk ), !OraclePublic( pk(~oracle_sk) ),
+   Out( pk(~oracle_sk) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) IssuePair:
+   [
+   !OracleState( ~oracle_sk ), Fr( ~iss ), Fr( ~credA ), Fr( ~credB ),
+   Fr( ~window ), Fr( ~space )
+   ]
+  --[
+  OracleIssued( pk(~oracle_sk), ~iss,
+                h(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                   ~window, ~space>),
+                $A, $B, h(~credA), h(~credB), ~window, ~space
+  ),
+  PairIssued( ~iss )
+  ]->
+   [
+   PairOpen( pk(~oracle_sk), ~iss, $A, $B, ~credA, ~credB, ~window, ~space,
+             <'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+              ~window, ~space>,
+             h(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                ~window, ~space>),
+             sign(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), 
+                   h(~credB), ~window, ~space>,
+                  ~oracle_sk)
+   ),
+   ParentACred( $A, ~iss, ~credA,
+                h(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                   ~window, ~space>)
+   ),
+   ParentBCred( $B, ~iss, ~credB,
+                h(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                   ~window, ~space>)
+   ),
+   !OracleRootRecord( pk(~oracle_sk), ~iss,
+                      <'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                       ~window, ~space>,
+                      h(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+                         ~window, ~space>),
+                      sign(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), 
+                            h(~credB), ~window, ~space>,
+                           ~oracle_sk)
+   ),
+   Out( <
+         <'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), h(~credB), 
+          ~window, ~space>, 
+         sign(<'oclm-root-v2', pk(~oracle_sk), ~iss, $A, $B, h(~credA), 
+               h(~credB), ~window, ~space>,
+              ~oracle_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAParticipate:
+   [ ParentACred( A, iss, credA, root_hash ), Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[ ParentAParticipated( iss, A, root_hash, h(credA), ~timeA, ~contextA )
+  ]->
+   [ ParentAReady( A, iss, credA, root_hash, ~timeA, ~contextA ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBParticipate:
+   [ ParentBCred( B, iss, credB, root_hash ), Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[ ParentBParticipated( iss, B, root_hash, h(credB), ~timeB, ~contextB )
+  ]->
+   [ ParentBReady( B, iss, credB, root_hash, ~timeB, ~contextB ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateChild:
+   [
+   !OracleState( ~oracle_sk ),
+   PairOpen( oracle_pk, iss, A, B, credA, credB, window, space, root_body,
+             root_hash, root_sig
+   ),
+   ParentAReady( A, iss, credA, root_hash, timeA, contextA ),
+   ParentBReady( B, iss, credB, root_hash, timeB, contextB ), Fr( ~timeC ),
+   Fr( ~interaction )
+   ]
+  --[
+  PairConsumed( iss ),
+  ChildGenerated( oracle_pk, iss,
+                  h(<'oclm-child-id-v2', 
+                     h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+                        h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                        ~interaction>)
+                    >),
+                  h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+                     h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                     ~interaction>),
+                  root_hash, A, B, h(credA), h(credB), timeA, timeB, ~timeC, window, space
+  )
+  ]->
+   [
+   Out( <root_body, root_sig, 
+         <'oclm-child-v2', oracle_pk, iss, 
+          h(<'oclm-child-id-v2', 
+             h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+                h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                ~interaction>)
+            >), 
+          h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+             h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+             ~interaction>), 
+          root_hash, A, B, h(credA), h(credB), timeA, timeB, ~timeC, window, space
+         >, 
+         sign(<'oclm-child-v2', oracle_pk, iss, 
+               h(<'oclm-child-id-v2', 
+                  h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+                     h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                     ~interaction>)
+                 >), 
+               h(<'oclm-lineage-v2', oracle_pk, iss, root_hash, A, B, h(credA), 
+                  h(credB), timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                  ~interaction>), 
+               root_hash, A, B, h(credA), h(credB), timeA, timeB, ~timeC, window, space
+              >,
+              ~oracle_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyExternalChild:
+   [
+   !OraclePublic( oracle_pk ),
+   In( <
+        <'oclm-root-v2', oracle_pk, iss, A, B, credA_hash, credB_hash, window, 
+         space>, 
+        root_sig, 
+        <'oclm-child-v2', oracle_pk, iss, child_id, lineage, root_hash, A, B, 
+         credA_hash, credB_hash, timeA, timeB, timeC, window, space>, 
+        child_sig>
+   )
+   ]
+  --[
+  Eq( verify(root_sig,
+             <'oclm-root-v2', oracle_pk, iss, A, B, credA_hash, credB_hash, window, 
+              space>,
+             oracle_pk),
+      true
+  ),
+  Eq( verify(child_sig,
+             <'oclm-child-v2', oracle_pk, iss, child_id, lineage, root_hash, A, B, 
+              credA_hash, credB_hash, timeA, timeB, timeC, window, space>,
+             oracle_pk),
+      true
+  ),
+  Eq( root_hash,
+      h(<'oclm-root-v2', oracle_pk, iss, A, B, credA_hash, credB_hash, window, 
+         space>)
+  ),
+  Eq( child_id, h(<'oclm-child-id-v2', lineage>) ),
+  ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                         B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /*
+  rule (modulo AC) VerifyExternalChild:
+     [
+     !OraclePublic( oracle_pk ),
+     In( <
+          <'oclm-root-v2', oracle_pk, iss, A, B, credA_hash, credB_hash, window, 
+           space>, 
+          root_sig, 
+          <'oclm-child-v2', oracle_pk, iss, child_id, lineage, root_hash, A, B, 
+           credA_hash, credB_hash, timeA, timeB, timeC, window, space>, 
+          child_sig>
+     )
+     ]
+    --[
+    Eq( z, true ), Eq( z.1, true ),
+    Eq( root_hash,
+        h(<'oclm-root-v2', oracle_pk, iss, A, B, credA_hash, credB_hash, window, 
+           space>)
+    ),
+    Eq( child_id, h(<'oclm-child-id-v2', lineage>) ),
+    ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                           B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+    )
+    ]->
+     [ ]
+    variants (modulo AC)
+    1. A     = A.37
+       B     = B.38
+       child_id
+             = child_id.39
+       child_sig
+             = child_sig.40
+       credA_hash
+             = credA_hash.41
+       credB_hash
+             = credB_hash.42
+       iss   = iss.43
+       lineage
+             = lineage.44
+       oracle_pk
+             = oracle_pk.45
+       root_hash
+             = root_hash.46
+       root_sig
+             = root_sig.47
+       space = space.48
+       timeA = timeA.49
+       timeB = timeB.50
+       timeC = timeC.51
+       window
+             = window.52
+       z     = verify(root_sig.47,
+                      <'oclm-root-v2', oracle_pk.45, iss.43, A.37, B.38, credA_hash.41, 
+                       credB_hash.42, window.52, space.48>,
+                      oracle_pk.45)
+       z.1   = verify(child_sig.40,
+                      <'oclm-child-v2', oracle_pk.45, iss.43, child_id.39, lineage.44, 
+                       root_hash.46, A.37, B.38, credA_hash.41, credB_hash.42, timeA.49, 
+                       timeB.50, timeC.51, window.52, space.48>,
+                      oracle_pk.45)
+    
+    2. A     = A.67
+       B     = B.68
+       child_id
+             = child_id.69
+       child_sig
+             = sign(<'oclm-child-v2', pk(x.132), iss.73, child_id.69, lineage.74, 
+                     root_hash.76, A.67, B.68, credA_hash.71, credB_hash.72, timeA.79, 
+                     timeB.80, timeC.81, window.82, space.78>,
+                    x.132)
+       credA_hash
+             = credA_hash.71
+       credB_hash
+             = credB_hash.72
+       iss   = iss.73
+       lineage
+             = lineage.74
+       oracle_pk
+             = pk(x.132)
+       root_hash
+             = root_hash.76
+       root_sig
+             = root_sig.77
+       space = space.78
+       timeA = timeA.79
+       timeB = timeB.80
+       timeC = timeC.81
+       window
+             = window.82
+       z     = verify(root_sig.77,
+                      <'oclm-root-v2', pk(x.132), iss.73, A.67, B.68, credA_hash.71, 
+                       credB_hash.72, window.82, space.78>,
+                      pk(x.132))
+       z.1   = true
+    
+    3. A     = A.67
+       B     = B.68
+       child_id
+             = child_id.69
+       child_sig
+             = sign(<'oclm-child-v2', pk(x.132), iss.73, child_id.69, lineage.74, 
+                     root_hash.76, A.67, B.68, credA_hash.71, credB_hash.72, timeA.79, 
+                     timeB.80, timeC.81, window.82, space.78>,
+                    x.132)
+       credA_hash
+             = credA_hash.71
+       credB_hash
+             = credB_hash.72
+       iss   = iss.73
+       lineage
+             = lineage.74
+       oracle_pk
+             = pk(x.132)
+       root_hash
+             = root_hash.76
+       root_sig
+             = sign(<'oclm-root-v2', pk(x.132), iss.73, A.67, B.68, credA_hash.71, 
+                     credB_hash.72, window.82, space.78>,
+                    x.132)
+       space = space.78
+       timeA = timeA.79
+       timeB = timeB.80
+       timeC = timeC.81
+       window
+             = window.82
+       z     = true
+       z.1   = true
+    
+    4. A     = A.72
+       B     = B.73
+       child_id
+             = child_id.74
+       child_sig
+             = child_sig.75
+       credA_hash
+             = credA_hash.76
+       credB_hash
+             = credB_hash.77
+       iss   = iss.78
+       lineage
+             = lineage.79
+       oracle_pk
+             = pk(x.142)
+       root_hash
+             = root_hash.81
+       root_sig
+             = sign(<'oclm-root-v2', pk(x.142), iss.78, A.72, B.73, credA_hash.76, 
+                     credB_hash.77, window.87, space.83>,
+                    x.142)
+       space = space.83
+       timeA = timeA.84
+       timeB = timeB.85
+       timeC = timeC.86
+       window
+             = window.87
+       z     = true
+       z.1   = verify(child_sig.75,
+                      <'oclm-child-v2', pk(x.142), iss.78, child_id.74, lineage.79, 
+                       root_hash.81, A.72, B.73, credA_hash.76, credB_hash.77, timeA.84, 
+                       timeB.85, timeC.86, window.87, space.83>,
+                      pk(x.142))
+  */
+
+rule (modulo E) PublishClaim:
+   [ In( <iss, claimant, claim> ) ]
+  --[ ClaimPublished( iss, claimant, claim ) ]->
+   [ ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) KeyCompromise:
+   [ !OracleState( oracle_sk ) ]
+  --[ OracleKeyCompromised( pk(oracle_sk) ) ]->
+   [ Out( oracle_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_external_acceptance:
+  exists-trace
+  "∃ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+     timeA timeB timeC window space #i.
+    ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                           B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+    ) @ #i"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+   timeA timeB timeC window space #i.
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                          B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+   ) @ #i)"
+*/
+by sorry
+
+lemma external_acceptance_requires_generation_or_compromise:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+     timeA timeB timeC window space #i.
+    (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                            B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+     ) @ #i) ⇒
+    ((∃ #j.
+       (ChildGenerated( oracle_pk, iss, child_id, lineage, root_hash, A, B,
+                        credA_hash, credB_hash, timeA, timeB, timeC, window, space
+        ) @ #j) ∧
+       (#j < #i)) ∨
+     (∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #i)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+   timeA timeB timeC window space #i.
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                          B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+   ) @ #i)
+ ∧
+  (∀ #j.
+    (ChildGenerated( oracle_pk, iss, child_id, lineage, root_hash, A, B,
+                     credA_hash, credB_hash, timeA, timeB, timeC, window, space
+     ) @ #j)
+   ⇒
+    ¬(#j < #i)) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #i))"
+*/
+by sorry
+
+lemma external_acceptance_requires_issue_or_compromise:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+     timeA timeB timeC window space #i.
+    (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                            B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+     ) @ #i) ⇒
+    ((∃ #j.
+       (OracleIssued( oracle_pk, iss, root_hash, A, B, credA_hash, credB_hash,
+                      window, space
+        ) @ #j) ∧
+       (#j < #i)) ∨
+     (∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #i)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root_hash A B credA_hash credB_hash
+   timeA timeB timeC window space #i.
+  (ChildAcceptedExternal( oracle_pk, iss, child_id, lineage, root_hash, A,
+                          B, credA_hash, credB_hash, timeA, timeB, timeC, window, space
+   ) @ #i)
+ ∧
+  (∀ #j.
+    (OracleIssued( oracle_pk, iss, root_hash, A, B, credA_hash, credB_hash,
+                   window, space
+     ) @ #j)
+   ⇒
+    ¬(#j < #i)) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #i))"
+*/
+by sorry
+
+lemma external_child_lineage_is_bound_or_compromised:
+  all-traces
+  "∀ oracle_pk child_id iss1 lineage1 root1 A1 B1 credA1 credB1 timeA1
+     timeB1 timeC1 window1 space1 iss2 lineage2 root2 A2 B2 credA2 credB2
+     timeA2 timeB2 timeC2 window2 space2 #i #j.
+    ((ChildAcceptedExternal( oracle_pk, iss1, child_id, lineage1, root1, A1,
+                             B1, credA1, credB1, timeA1, timeB1, timeC1, window1, space1
+      ) @ #i) ∧
+     (ChildAcceptedExternal( oracle_pk, iss2, child_id, lineage2, root2, A2,
+                             B2, credA2, credB2, timeA2, timeB2, timeC2, window2, space2
+      ) @ #j)) ⇒
+    (((((((((((((iss1 = iss2) ∧ (lineage1 = lineage2)) ∧ (root1 = root2)) ∧
+              (A1 = A2)) ∧
+             (B1 = B2)) ∧
+            (credA1 = credA2)) ∧
+           (credB1 = credB2)) ∧
+          (timeA1 = timeA2)) ∧
+         (timeB1 = timeB2)) ∧
+        (timeC1 = timeC2)) ∧
+       (window1 = window2)) ∧
+      (space1 = space2)) ∨
+     (∃ #k.
+       (OracleKeyCompromised( oracle_pk ) @ #k) ∧ ((#k < #i) ∨ (#k < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk child_id iss1 lineage1 root1 A1 B1 credA1 credB1 timeA1
+   timeB1 timeC1 window1 space1 iss2 lineage2 root2 A2 B2 credA2 credB2
+   timeA2 timeB2 timeC2 window2 space2 #i #j.
+  (ChildAcceptedExternal( oracle_pk, iss1, child_id, lineage1, root1, A1,
+                          B1, credA1, credB1, timeA1, timeB1, timeC1, window1, space1
+   ) @ #i) ∧
+  (ChildAcceptedExternal( oracle_pk, iss2, child_id, lineage2, root2, A2,
+                          B2, credA2, credB2, timeA2, timeB2, timeC2, window2, space2
+   ) @ #j)
+ ∧
+  (((¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(root1 = root2)) ∨
+    (¬(A1 = A2)) ∨
+    (¬(B1 = B2)) ∨
+    (¬(credA1 = credA2)) ∨
+    (¬(credB1 = credB2)) ∨
+    (¬(timeA1 = timeA2)) ∨
+    (¬(timeB1 = timeB2)) ∨
+    (¬(timeC1 = timeC2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #k.
+    (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ (¬(#k < #i)) ∧ (¬(#k < #j)))"
+*/
+by sorry
+
+lemma external_model_pair_is_single_use:
+  all-traces
+  "∀ oracle_pk1 oracle_pk2 iss child1 lineage1 root1 A1 B1 credA1 credB1
+     timeA1 timeB1 timeC1 window1 space1 child2 lineage2 root2 A2 B2 credA2
+     credB2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+    ((ChildGenerated( oracle_pk1, iss, child1, lineage1, root1, A1, B1,
+                      credA1, credB1, timeA1, timeB1, timeC1, window1, space1
+      ) @ #i) ∧
+     (ChildGenerated( oracle_pk2, iss, child2, lineage2, root2, A2, B2,
+                      credA2, credB2, timeA2, timeB2, timeC2, window2, space2
+      ) @ #j)) ⇒
+    (#i = #j)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk1 oracle_pk2 iss child1 lineage1 root1 A1 B1 credA1 credB1
+   timeA1 timeB1 timeC1 window1 space1 child2 lineage2 root2 A2 B2 credA2
+   credB2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+  (ChildGenerated( oracle_pk1, iss, child1, lineage1, root1, A1, B1,
+                   credA1, credB1, timeA1, timeB1, timeC1, window1, space1
+   ) @ #i) ∧
+  (ChildGenerated( oracle_pk2, iss, child2, lineage2, root2, A2, B2,
+                   credA2, credB2, timeA2, timeB2, timeC2, window2, space2
+   ) @ #j)
+ ∧
+  ¬(#i = #j)"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1b_external.spthy
+
+  processing time: 3.31s
+  
+  executable_external_acceptance (exists-trace): analysis incomplete (1 steps)
+  external_acceptance_requires_generation_or_compromise (all-traces): analysis incomplete (1 steps)
+  external_acceptance_requires_issue_or_compromise (all-traces): analysis incomplete (1 steps)
+  external_child_lineage_is_bound_or_compromised (all-traces): analysis incomplete (1 steps)
+  external_model_pair_is_single_use (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

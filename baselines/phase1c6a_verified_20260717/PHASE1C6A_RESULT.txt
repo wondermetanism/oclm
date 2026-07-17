@@ -1,0 +1,98 @@
+OCLM Phase 1-C6A
+Multi-Epoch Generalization Core
+
+Status:
+FORMALLY VERIFIED
+
+Verification date:
+2026-07-17
+
+Verification environment:
+Tamarin Prover 1.12.0
+Maude 3.5.1
+macOS 26.5.2 arm64
+
+Model:
+oclm_phase1c6a_multi_epoch_generalization_core.spthy
+
+Model SHA-256:
+4d64899ae1b4bc49800110adde9b04eb8568d9edd384e8dde4e1a5ce40aef0d9
+
+Final all-lemma proof result:
+phase1c6a_all_lemmas_20260717.txt
+
+Final proof SHA-256:
+35607117a6adeee96a6e5594a35c3e290bd834a8a722d30e4bdf23798a0a0725
+
+Final processing time:
+3.50 seconds
+
+Verified lemmas:
+
+1. executable_generalized_multi_epoch_lifecycle
+   exists-trace
+   verified (32 steps)
+
+2. accepted_epoch_requires_matching_prior_issuance
+   all-traces
+   verified (18 steps)
+
+3. current_epoch_acceptance_has_current_evidence
+   all-traces
+   verified (3 steps)
+
+4. stale_epoch_acceptance_requires_prior_verifier_compromise
+   all-traces
+   verified (7 steps)
+
+5. generalized_epoch_rollback_requires_prior_verifier_compromise
+   all-traces
+   verified (6 steps)
+
+6. recorded_epoch_transition_never_rolls_back_without_compromise
+   all-traces
+   verified (17 steps)
+
+7. conflicting_direct_epoch_acceptances_require_prior_compromise
+   all-traces
+   verified (32 steps)
+
+Verified guarantee:
+
+The fixed e0 -> e1 -> e2 construction is replaced by a reusable fresh
+successor rule that may be applied repeatedly to construct finite traces
+of arbitrary epoch-chain length.
+
+Every accepted epoch requires matching prior issuance.
+
+Current acceptance carries matching current-epoch evidence.
+
+Stale acceptance and every backward traversal of a recorded epoch edge
+require prior compromise of the corresponding generalized verifier.
+
+Conflicting direct-edge acceptance histories require prior verifier
+compromise.
+
+Generalization method:
+
+The model proves local transition invariants over a generic
+lower_epoch -> higher_epoch edge. Repeated application covers longer
+finite epoch chains without enumerating fixed epoch names.
+
+Explicit scope:
+
+- reusable fresh epoch-successor transition
+- finite traces of unbounded selected length
+- generic current-epoch acceptance
+- persistent verifier compromise
+- repeated one-edge rollback after compromise
+- stale acceptance after one or more rollback steps
+- local transition safety invariants
+
+Excluded from this phase:
+
+- arithmetic epoch numbering
+- induction inside Tamarin over natural numbers
+- C5C revocation/transparency composition
+- unrelated-contract global ordering
+- implementation-level key storage

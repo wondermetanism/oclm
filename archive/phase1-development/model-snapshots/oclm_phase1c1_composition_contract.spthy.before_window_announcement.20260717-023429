@@ -1,0 +1,1038 @@
+theory OCLM_Phase1C1_CompositionContract
+begin
+
+builtins: hashing
+
+
+/* =========================================================
+   Oracle foundation
+   ========================================================= */
+
+rule OracleSetup:
+  [ Fr(~oracle_seed) ]
+  --[
+      OracleInitialized(
+        h(~oracle_seed)
+      )
+    ]->
+  [
+      !OracleState(~oracle_seed),
+      !OraclePublic(h(~oracle_seed)),
+      Out(h(~oracle_seed))
+  ]
+
+
+/* =========================================================
+   Open one Oracle-authorized generation window
+   ========================================================= */
+
+rule OpenWindow:
+  let
+    root =
+      h(
+        <'oclm-c1-root',
+         h(~oracle_seed),
+         ~iss,
+         $A,
+         $B,
+         ~window,
+         ~space>
+      )
+  in
+
+  [
+      !OracleState(~oracle_seed),
+
+      Fr(~iss),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      WindowOpened(
+        h(~oracle_seed),
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      )
+    ]->
+  [
+      WindowNone(
+        h(~oracle_seed),
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      )
+  ]
+
+
+/* =========================================================
+   Parent A participates first
+   ========================================================= */
+
+rule ParentAFirst:
+  [
+      WindowNone(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowAReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent B participates first
+   ========================================================= */
+
+rule ParentBFirst:
+  [
+      WindowNone(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent B joins after A
+   ========================================================= */
+
+rule ParentBJoins:
+  [
+      WindowAReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent A joins after B
+   ========================================================= */
+
+rule ParentAJoins:
+  [
+      WindowBReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Generate Child inside the open window
+   ========================================================= */
+
+rule GenerateChild:
+  let
+    lineage =
+      h(
+        <'oclm-c1-lineage',
+         oracle_pk,
+         iss,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         ~timeC,
+         window,
+         space,
+         contextA,
+         contextB,
+         ~interaction>
+      )
+
+    child_id =
+      h(
+        <'oclm-c1-child',
+         lineage>
+      )
+  in
+
+  [
+      WindowBothReady(
+        oracle_pk,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeC),
+      Fr(~interaction)
+  ]
+  --[
+      ChildGeneratedInsideWindow(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowGenerated(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Close the matching window after generation
+
+   This produces the interface guarantee consumed by the
+   external-authenticity layer.
+   ========================================================= */
+
+rule CloseGeneratedWindow:
+  [
+      WindowGenerated(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosedAfterGeneration(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+    ]->
+  [
+      !AuthenticatedGenerationContract(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Arbitrary Parent and Consensus claims
+   ========================================================= */
+
+rule PublishParentAClaim:
+  [
+      In(
+        <'claim-a',
+         iss,
+         A,
+         claimA>
+      )
+  ]
+  --[
+      ParentAClaimPublished(
+        iss,
+        A,
+        claimA
+      )
+    ]->
+  [
+      !ParentAClaim(
+        iss,
+        A,
+        claimA
+      )
+  ]
+
+
+rule PublishParentBClaim:
+  [
+      In(
+        <'claim-b',
+         iss,
+         B,
+         claimB>
+      )
+  ]
+  --[
+      ParentBClaimPublished(
+        iss,
+        B,
+        claimB
+      )
+    ]->
+  [
+      !ParentBClaim(
+        iss,
+        B,
+        claimB
+      )
+  ]
+
+
+rule PublishConsensusDecision:
+  [
+      In(
+        <'consensus',
+         iss,
+         decision>
+      )
+  ]
+  --[
+      ConsensusDecisionPublished(
+        iss,
+        decision
+      )
+    ]->
+  [
+      !ConsensusDecision(
+        iss,
+        decision
+      )
+  ]
+
+
+/* =========================================================
+   Declare operating-assumption collapse
+   ========================================================= */
+
+rule DeclareClaimCollapse:
+  [
+      !ParentAClaim(
+        iss,
+        A,
+        claimA
+      ),
+
+      !ParentBClaim(
+        iss,
+        B,
+        claimB
+      ),
+
+      !ConsensusDecision(
+        iss,
+        decision
+      )
+  ]
+  --[
+      ClaimCollapseDeclared(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      )
+    ]->
+  [
+      !CollapseActive(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      )
+  ]
+
+
+/* =========================================================
+   Honest composed acceptance
+
+   Parent and Consensus values establish only that the
+   operating layer collapsed.
+
+   They do not determine the accepted Child lineage.
+   ========================================================= */
+
+rule AcceptAuthenticAfterCollapse:
+  [
+      !CollapseActive(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      ),
+
+      !AuthenticatedGenerationContract(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+  ]
+  --[
+      ComposedChildAccepted(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Explicit Oracle compromise
+   ========================================================= */
+
+rule OracleKeyCompromise:
+  [
+      !OracleState(oracle_seed)
+  ]
+  --[
+      OracleKeyCompromised(
+        h(oracle_seed)
+      )
+    ]->
+  [
+      !CompromisedOracle(
+        h(oracle_seed)
+      ),
+
+      Out(oracle_seed)
+  ]
+
+
+/* =========================================================
+   Acceptance through compromised Oracle authority
+
+   Once compromised, arbitrary lineage values may be accepted.
+   ========================================================= */
+
+rule AcceptCompromisedAfterCollapse:
+  [
+      !CompromisedOracle(oracle_pk),
+
+      !CollapseActive(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      ),
+
+      In(
+        <'compromised-child',
+         child_id,
+         lineage,
+         root,
+         timeA,
+         timeB,
+         timeC,
+         window,
+         space>
+      )
+  ]
+  --[
+      ComposedChildAccepted(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Complete honest composed lifecycle is executable
+   ========================================================= */
+
+lemma executable_honest_composed_lifecycle:
+  exists-trace
+  "Ex oracle_pk iss child_id lineage root
+      A B timeA timeB timeC
+      contextA contextB
+      window space
+      claimA claimB decision
+      #o #a #b #g #c #d #v.
+
+     WindowOpened(
+       oracle_pk,
+       iss,
+       root,
+       A,
+       B,
+       window,
+       space
+     ) @ o
+
+     &
+
+     ParentAParticipated(
+       oracle_pk,
+       iss,
+       root,
+       A,
+       B,
+       timeA,
+       contextA,
+       window,
+       space
+     ) @ a
+
+     &
+
+     ParentBParticipated(
+       oracle_pk,
+       iss,
+       root,
+       A,
+       B,
+       timeB,
+       contextB,
+       window,
+       space
+     ) @ b
+
+     &
+
+     ChildGeneratedInsideWindow(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     &
+
+     WindowClosedAfterGeneration(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ c
+
+     &
+
+     ClaimCollapseDeclared(
+       iss,
+       A,
+       B,
+       claimA,
+       claimB,
+       decision
+     ) @ d
+
+     &
+
+     ComposedChildAccepted(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ v
+
+     & o < a
+     & o < b
+     & a < g
+     & b < g
+     & g < c
+     & d < v
+     & c < v
+
+     & not (
+         Ex #k.
+           OracleKeyCompromised(
+             oracle_pk
+           ) @ k
+           & k < v
+       )"
+
+
+/* =========================================================
+   Main composition theorem
+
+   Every final acceptance has either:
+   - a matching closed generation contract, or
+   - prior Oracle compromise.
+   ========================================================= */
+
+lemma composed_acceptance_requires_closed_generation_or_compromise:
+  "All oracle_pk iss child_id lineage root
+       A B timeA timeB timeC window space
+       #v.
+
+     ComposedChildAccepted(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ v
+
+     ==>
+
+     (
+       Ex #c.
+         WindowClosedAfterGeneration(
+           oracle_pk,
+           iss,
+           child_id,
+           lineage,
+           root,
+           A,
+           B,
+           timeA,
+           timeB,
+           timeC,
+           window,
+           space
+         ) @ c
+         & c < v
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & k < v
+     )"
+
+
+/* =========================================================
+   Honest final acceptance has the entire causal chain
+   ========================================================= */
+
+lemma uncompromised_acceptance_has_full_composed_ancestry:
+  "All oracle_pk iss child_id lineage root
+       A B timeA timeB timeC window space
+       #v.
+
+     ComposedChildAccepted(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ v
+
+     & not (
+         Ex #k.
+           OracleKeyCompromised(
+             oracle_pk
+           ) @ k
+           & k < v
+       )
+
+     ==>
+
+     Ex contextA contextB
+        #o #a #b #g #c.
+
+       WindowOpened(
+         oracle_pk,
+         iss,
+         root,
+         A,
+         B,
+         window,
+         space
+       ) @ o
+
+       &
+
+       ParentAParticipated(
+         oracle_pk,
+         iss,
+         root,
+         A,
+         B,
+         timeA,
+         contextA,
+         window,
+         space
+       ) @ a
+
+       &
+
+       ParentBParticipated(
+         oracle_pk,
+         iss,
+         root,
+         A,
+         B,
+         timeB,
+         contextB,
+         window,
+         space
+       ) @ b
+
+       &
+
+       ChildGeneratedInsideWindow(
+         oracle_pk,
+         iss,
+         child_id,
+         lineage,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         timeC,
+         window,
+         space
+       ) @ g
+
+       &
+
+       WindowClosedAfterGeneration(
+         oracle_pk,
+         iss,
+         child_id,
+         lineage,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         timeC,
+         window,
+         space
+       ) @ c
+
+       & o < a
+       & o < b
+       & a < g
+       & b < g
+       & g < c
+       & c < v"
+
+
+/* =========================================================
+   Claims and Consensus cannot substitute one Child lineage
+   for another before Oracle compromise.
+   ========================================================= */
+
+lemma composed_child_identity_is_bound_or_compromised:
+  "All oracle_pk child_id
+       iss1 lineage1 root1 A1 B1
+       timeA1 timeB1 timeC1 window1 space1
+       iss2 lineage2 root2 A2 B2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+
+     ComposedChildAccepted(
+       oracle_pk,
+       iss1,
+       child_id,
+       lineage1,
+       root1,
+       A1,
+       B1,
+       timeA1,
+       timeB1,
+       timeC1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ComposedChildAccepted(
+       oracle_pk,
+       iss2,
+       child_id,
+       lineage2,
+       root2,
+       A2,
+       B2,
+       timeA2,
+       timeB2,
+       timeC2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     (
+       iss1 = iss2
+       & lineage1 = lineage2
+       & root1 = root2
+       & A1 = A2
+       & B1 = B2
+       & timeA1 = timeA2
+       & timeB1 = timeB2
+       & timeC1 = timeC2
+       & window1 = window2
+       & space1 = space2
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & (
+             k < i
+             | k < j
+           )
+     )"
+
+end

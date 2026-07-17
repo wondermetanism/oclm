@@ -1,0 +1,757 @@
+theory OCLM_Phase1C5A_Revocation_State_Core
+begin
+
+/*
+ * OCLM Phase 1-C5A
+ * Revocation State Core
+ *
+ * Scope:
+ *
+ * - certificate state: active -> revoked
+ * - revocation verifier checkpoint: r0 -> r1
+ * - acceptance before revocation
+ * - stale acceptance while the published update is missing
+ * - rejection under the current r1 verifier state
+ * - verifier compromise and rollback r1 -> r0
+ * - stale acceptance after compromised rollback
+ * - revocation-authority compromise exception
+ * - reactivation only after authority compromise
+ *
+ * Out of scope:
+ *
+ * - transparency logs
+ * - split-view consistency
+ * - C4B lineage composition
+ * - unbounded revocation versions
+ * - implementation-level storage and distribution
+ */
+
+
+/* =========================================================================
+ * Initialization
+ * ========================================================================= */
+
+rule Initialize_Revocation_Lifecycle:
+  [
+    Fr(~certificate),
+    Fr(~verifier)
+  ]
+  --[
+    RevocationLifecycleInitialized(
+      ~certificate,
+      ~verifier
+    ),
+
+    CertificateStateObserved(
+      ~certificate,
+      'active'
+    ),
+
+    VerifierRevocationStateObserved(
+      ~verifier,
+      'r0'
+    )
+  ]->
+  [
+    CertificateState(
+      ~certificate,
+      'active'
+    ),
+
+    RevocationAuthorityState(
+      ~certificate,
+      'honest'
+    ),
+
+    VerifierRevocationState(
+      ~verifier,
+      'r0',
+      'honest'
+    ),
+
+    AcceptActivePermit(
+      ~certificate,
+      ~verifier
+    ),
+
+    RevokePermit(
+      ~certificate
+    ),
+
+    MissingUpdateAcceptancePermit(
+      ~certificate,
+      ~verifier
+    ),
+
+    ApplyRevocationUpdatePermit(
+      ~certificate,
+      ~verifier
+    ),
+
+    RejectRevokedPermit(
+      ~certificate,
+      ~verifier
+    ),
+
+    CompromiseVerifierPermit(
+      ~verifier
+    ),
+
+    RollbackVerifierPermit(
+      ~verifier
+    ),
+
+    CompromisedStaleAcceptancePermit(
+      ~certificate,
+      ~verifier
+    ),
+
+    CompromiseAuthorityPermit(
+      ~certificate
+    ),
+
+    ReactivateCertificatePermit(
+      ~certificate
+    )
+  ]
+
+
+/* =========================================================================
+ * Acceptance while active
+ * ========================================================================= */
+
+rule Accept_Active_Certificate:
+  [
+    CertificateState(
+      certificate,
+      'active'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'honest'
+    ),
+
+    AcceptActivePermit(
+      certificate,
+      verifier
+    )
+  ]
+  --[
+    ActiveCertificateAccepted(
+      certificate,
+      verifier,
+      'r0'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'active'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Monotonic certificate revocation
+ * ========================================================================= */
+
+rule Revoke_Certificate:
+  [
+    CertificateState(
+      certificate,
+      'active'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'honest'
+    ),
+
+    RevokePermit(
+      certificate
+    )
+  ]
+  --[
+    CertificateRevoked(
+      certificate
+    ),
+
+    CertificateStateObserved(
+      certificate,
+      'revoked'
+    ),
+
+    RevocationUpdatePublished(
+      certificate,
+      'r0',
+      'r1'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'honest'
+    ),
+
+    !RevocationUpdate(
+      certificate,
+      'r0',
+      'r1'
+    )
+  ]
+
+
+/* =========================================================================
+ * Stale acceptance while update has not been applied
+ * ========================================================================= */
+
+rule Accept_Revoked_Certificate_While_Update_Missing:
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'honest'
+    ),
+
+    !RevocationUpdate(
+      certificate,
+      'r0',
+      'r1'
+    ),
+
+    MissingUpdateAcceptancePermit(
+      certificate,
+      verifier
+    )
+  ]
+  --[
+    RevocationUpdateMissing(
+      certificate,
+      verifier,
+      'r0',
+      'r1'
+    ),
+
+    RevokedCertificateAccepted(
+      certificate,
+      verifier,
+      'r0'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest verifier update
+ * ========================================================================= */
+
+rule Apply_Revocation_Update:
+  [
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'honest'
+    ),
+
+    !RevocationUpdate(
+      certificate,
+      'r0',
+      'r1'
+    ),
+
+    ApplyRevocationUpdatePermit(
+      certificate,
+      verifier
+    )
+  ]
+  --[
+    VerifierRevocationStateAdvanced(
+      verifier,
+      'r0',
+      'r1'
+    ),
+
+    VerifierRevocationStateObserved(
+      verifier,
+      'r1'
+    )
+  ]->
+  [
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Current-state rejection
+ * ========================================================================= */
+
+rule Reject_Revoked_Certificate_At_Current_State:
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'honest'
+    ),
+
+    RejectRevokedPermit(
+      certificate,
+      verifier
+    )
+  ]
+  --[
+    RevokedCertificateRejected(
+      certificate,
+      verifier,
+      'r1'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Explicit persistent verifier compromise
+ * ========================================================================= */
+
+rule Compromise_Revocation_Verifier:
+  [
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'honest'
+    ),
+
+    CompromiseVerifierPermit(
+      verifier
+    )
+  ]
+  --[
+    RevocationVerifierCompromised(
+      verifier,
+      'r1'
+    )
+  ]->
+  [
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Rollback after verifier compromise
+ * ========================================================================= */
+
+rule Roll_Back_Revocation_Verifier_After_Compromise:
+  [
+    VerifierRevocationState(
+      verifier,
+      'r1',
+      'compromised'
+    ),
+
+    RollbackVerifierPermit(
+      verifier
+    )
+  ]
+  --[
+    RevocationVerifierRolledBack(
+      verifier,
+      'r1',
+      'r0'
+    ),
+
+    VerifierRevocationStateObserved(
+      verifier,
+      'r0'
+    )
+  ]->
+  [
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Stale acceptance after compromised rollback
+ * ========================================================================= */
+
+rule Accept_Revoked_Certificate_After_Compromised_Rollback:
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'compromised'
+    ),
+
+    CompromisedStaleAcceptancePermit(
+      certificate,
+      verifier
+    )
+  ]
+  --[
+    CompromisedRevokedAcceptance(
+      certificate,
+      verifier,
+      'r0'
+    ),
+
+    RevokedCertificateAccepted(
+      certificate,
+      verifier,
+      'r0'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    VerifierRevocationState(
+      verifier,
+      'r0',
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Explicit revocation-authority compromise
+ * ========================================================================= */
+
+rule Compromise_Revocation_Authority:
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'honest'
+    ),
+
+    CompromiseAuthorityPermit(
+      certificate
+    )
+  ]
+  --[
+    RevocationAuthorityCompromised(
+      certificate
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Reactivation only after authority compromise
+ * ========================================================================= */
+
+rule Reactivate_Certificate_After_Authority_Compromise:
+  [
+    CertificateState(
+      certificate,
+      'revoked'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'compromised'
+    ),
+
+    ReactivateCertificatePermit(
+      certificate
+    )
+  ]
+  --[
+    CertificateReactivated(
+      certificate
+    ),
+
+    CertificateStateObserved(
+      certificate,
+      'active'
+    )
+  ]->
+  [
+    CertificateState(
+      certificate,
+      'active'
+    ),
+
+    RevocationAuthorityState(
+      certificate,
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Executability
+ * ========================================================================= */
+
+lemma executable_revocation_lifecycle:
+  exists-trace
+  "
+    Ex certificate verifier
+       #i0 #i1 #i2 #i3 #i4 #i5 #i6 #i7 #i8 #i9.
+
+         RevocationLifecycleInitialized(
+           certificate,
+           verifier
+         ) @ #i0
+
+       & ActiveCertificateAccepted(
+           certificate,
+           verifier,
+           'r0'
+         ) @ #i1
+
+       & CertificateRevoked(
+           certificate
+         ) @ #i2
+
+       & RevokedCertificateAccepted(
+           certificate,
+           verifier,
+           'r0'
+         ) @ #i3
+
+       & VerifierRevocationStateAdvanced(
+           verifier,
+           'r0',
+           'r1'
+         ) @ #i4
+
+       & RevokedCertificateRejected(
+           certificate,
+           verifier,
+           'r1'
+         ) @ #i5
+
+       & RevocationVerifierCompromised(
+           verifier,
+           'r1'
+         ) @ #i6
+
+       & RevocationVerifierRolledBack(
+           verifier,
+           'r1',
+           'r0'
+         ) @ #i7
+
+       & CompromisedRevokedAcceptance(
+           certificate,
+           verifier,
+           'r0'
+         ) @ #i8
+
+       & RevocationAuthorityCompromised(
+           certificate
+         ) @ #i9
+
+       & #i0 < #i1
+       & #i1 < #i2
+       & #i2 < #i3
+       & #i3 < #i4
+       & #i4 < #i5
+       & #i5 < #i6
+       & #i6 < #i7
+       & #i7 < #i8
+       & #i8 < #i9
+  "
+
+
+/* =========================================================================
+ * Revocation cannot be reversed without authority compromise
+ * ========================================================================= */
+
+lemma certificate_reactivation_requires_prior_authority_compromise:
+  "
+    All certificate #ir #ia.
+
+          CertificateRevoked(
+            certificate
+          ) @ #ir
+
+        & CertificateReactivated(
+            certificate
+          ) @ #ia
+
+        & #ir < #ia
+
+      ==>
+
+      (Ex #ic.
+
+          RevocationAuthorityCompromised(
+            certificate
+          ) @ #ic
+
+        & #ir < #ic
+        & #ic < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * The current verifier state cannot accept a revoked certificate
+ * ========================================================================= */
+
+lemma current_verifier_state_never_accepts_revoked_certificate:
+  "
+    not (
+      Ex certificate verifier #ia.
+
+        RevokedCertificateAccepted(
+          certificate,
+          verifier,
+          'r1'
+        ) @ #ia
+    )
+  "
+
+
+/* =========================================================================
+ * Revoked acceptance has an explicit exception
+ * ========================================================================= */
+
+lemma revoked_acceptance_requires_missing_update_or_verifier_compromise:
+  "
+    All certificate verifier verifier_state #ia.
+
+      RevokedCertificateAccepted(
+        certificate,
+        verifier,
+        verifier_state
+      ) @ #ia
+
+      ==>
+
+      (
+        RevocationUpdateMissing(
+          certificate,
+          verifier,
+          'r0',
+          'r1'
+        ) @ #ia
+
+        |
+
+        (Ex compromised_state #ic.
+
+          RevocationVerifierCompromised(
+            verifier,
+            compromised_state
+          ) @ #ic
+
+          & #ic < #ia
+        )
+      )
+  "
+
+
+/* =========================================================================
+ * Applied verifier revocation state is monotonic without compromise
+ * ========================================================================= */
+
+lemma verifier_revocation_state_never_rolls_back_without_compromise:
+  "
+    All verifier #inew #iold.
+
+          VerifierRevocationStateObserved(
+            verifier,
+            'r1'
+          ) @ #inew
+
+        & VerifierRevocationStateObserved(
+            verifier,
+            'r0'
+          ) @ #iold
+
+        & #inew < #iold
+
+      ==>
+
+      (Ex compromised_state #ic.
+
+          RevocationVerifierCompromised(
+            verifier,
+            compromised_state
+          ) @ #ic
+
+        & #inew < #ic
+        & #ic < #iold
+      )
+  "
+
+end

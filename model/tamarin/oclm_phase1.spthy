@@ -1,0 +1,352 @@
+theory OCLM_Phase1
+begin
+
+builtins: hashing
+
+/* ============================================================
+   OCLM Phase 1
+   Minimal symbolic state machine
+
+   Phase 1 scope:
+   - Oracle issuance
+   - complementary parent credentials
+   - parent participation
+   - child generation
+   - one-time pair consumption
+   - lineage verification
+   - claim-independent acceptance
+   - time ordering through Tamarin trace timepoints
+
+   Important:
+   Fresh timeA/timeB/timeC values are observation tokens.
+   Actual causal ordering is represented by trace points #i.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   Oracle setup
+   ------------------------------------------------------------ */
+
+rule OracleSetup:
+  [ Fr(~oracle_seed) ]
+  --[ OracleInitialized(h(~oracle_seed)) ]->
+  [ !OracleState(~oracle_seed)
+  , !OraclePublicRoot(h(~oracle_seed))
+  , Out(h(~oracle_seed))
+  ]
+
+
+/* ------------------------------------------------------------
+   Oracle issues one complementary pair.
+
+   A and B are dynamic roles for this issuance.
+   They are not permanent male/female attributes.
+   ------------------------------------------------------------ */
+
+rule IssuePair:
+  let
+    root =
+      h(<'oclm-root-v1',
+         ~oracle_seed,
+         ~iss,
+         $A,
+         $B,
+         ~credA,
+         ~credB,
+         ~window,
+         ~space>)
+  in
+  [ !OracleState(~oracle_seed)
+  , Fr(~iss)
+  , Fr(~credA)
+  , Fr(~credB)
+  , Fr(~window)
+  , Fr(~space)
+  ]
+  --[ OracleIssued(~iss, root, $A, $B, ~window, ~space)
+    , PairIssued(~iss)
+    ]->
+  [ !OracleRoot(~iss, root, $A, $B, ~window, ~space)
+  , PairOpen(~iss, $A, $B, ~credA, ~credB,
+             ~window, ~space, root)
+  , ParentACred($A, ~iss, ~credA, root)
+  , ParentBCred($B, ~iss, ~credB, root)
+  , Out(<~iss, root, $A, $B, ~window, ~space>)
+  ]
+
+
+/* ------------------------------------------------------------
+   Parent A participation
+   ------------------------------------------------------------ */
+
+rule ParentAParticipate:
+  [ ParentACred(A, iss, credA, root)
+  , Fr(~timeA)
+  , Fr(~contextA)
+  ]
+  --[ ParentAParticipated(
+        iss, A, root, ~timeA, ~contextA)
+    ]->
+  [ ParentAReady(
+      A, iss, credA, root, ~timeA, ~contextA)
+  ]
+
+
+/* ------------------------------------------------------------
+   Parent B participation
+   ------------------------------------------------------------ */
+
+rule ParentBParticipate:
+  [ ParentBCred(B, iss, credB, root)
+  , Fr(~timeB)
+  , Fr(~contextB)
+  ]
+  --[ ParentBParticipated(
+        iss, B, root, ~timeB, ~contextB)
+    ]->
+  [ ParentBReady(
+      B, iss, credB, root, ~timeB, ~contextB)
+  ]
+
+
+/* ------------------------------------------------------------
+   Child generation
+
+   PairOpen is linear and is consumed here.
+   Therefore one issuance pair cannot generate two children.
+   ------------------------------------------------------------ */
+
+rule GenerateChild:
+  let
+    child =
+      h(<'oclm-child-v1',
+         iss,
+         root,
+         A,
+         B,
+         credA,
+         credB,
+         timeA,
+         timeB,
+         ~timeC,
+         window,
+         space,
+         contextA,
+         contextB>)
+  in
+  [ PairOpen(
+      iss, A, B, credA, credB,
+      window, space, root)
+  , ParentAReady(
+      A, iss, credA, root, timeA, contextA)
+  , ParentBReady(
+      B, iss, credB, root, timeB, contextB)
+  , Fr(~timeC)
+  ]
+  --[ PairConsumed(iss)
+    , ChildGenerated(
+        iss, child, root, A, B,
+        timeA, timeB, ~timeC,
+        window, space)
+    ]->
+  [ !ChildRecord(
+      iss, child, root, A, B,
+      timeA, timeB, ~timeC,
+      window, space)
+  , Out(<iss, child, root, A, B,
+         ~timeC, window, space>)
+  ]
+
+
+/* ------------------------------------------------------------
+   Independent child verification
+
+   Parent claims and node votes are deliberately absent.
+   ------------------------------------------------------------ */
+
+rule VerifyChild:
+  [ !ChildRecord(
+      iss, child, root, A, B,
+      timeA, timeB, timeC,
+      window, space)
+  , !OracleRoot(
+      iss, root, A, B,
+      window, space)
+  ]
+  --[ ChildAccepted(
+        iss, child, root, A, B,
+        timeA, timeB, timeC,
+        window, space)
+    ]->
+  [ ]
+
+
+/* ------------------------------------------------------------
+   Claims may be published by anyone.
+
+   They do not participate in VerifyChild.
+   ------------------------------------------------------------ */
+
+rule PublishClaim:
+  [ In(<iss, claim>) ]
+  --[ ClaimPublished(iss, claim) ]->
+  [ ]
+
+
+/* ------------------------------------------------------------
+   Later Oracle key compromise placeholder.
+
+   Phase 1 records compromise but does not yet model
+   forward-secure key evolution.
+   ------------------------------------------------------------ */
+
+rule KeyCompromise:
+  [ !OracleState(oracle_seed) ]
+  --[ OracleKeyCompromised(h(oracle_seed)) ]->
+  [ Out(oracle_seed) ]
+
+
+/* ------------------------------------------------------------
+   Oracle equivocation placeholder.
+
+   A contradictory root becomes publicly observable.
+   It does not acquire a ChildRecord automatically.
+   ------------------------------------------------------------ */
+
+rule OracleEquivocation:
+  [ !OracleRoot(
+      iss, root1, A, B,
+      window, space)
+  , Fr(~root2)
+  ]
+  --[ OracleEquivocated(iss, root1, ~root2)
+    , EquivocationEvidence(iss, root1, ~root2)
+    ]->
+  [ Out(<iss, root1, ~root2>) ]
+
+
+/* ============================================================
+   Lemmas
+   ============================================================ */
+
+
+/* A normal OCLM execution exists. */
+
+lemma executable:
+  exists-trace
+  "Ex iss child root A B
+      timeA timeB timeC window space #i.
+     ChildAccepted(
+       iss, child, root, A, B,
+       timeA, timeB, timeC,
+       window, space) @ i"
+
+
+/* Every accepted Child was previously generated. */
+
+lemma accepted_child_was_generated:
+  "All iss child root A B
+       timeA timeB timeC window space #i.
+     ChildAccepted(
+       iss, child, root, A, B,
+       timeA, timeB, timeC,
+       window, space) @ i
+     ==>
+     (Ex #j.
+       ChildGenerated(
+         iss, child, root, A, B,
+         timeA, timeB, timeC,
+         window, space) @ j
+       & j < i)"
+
+
+/* Every generated Child has an earlier Oracle issuance
+   and earlier participation by both Parents. */
+
+lemma generated_child_has_full_ancestry:
+  "All iss child root A B
+       timeA timeB timeC window space #i.
+     ChildGenerated(
+       iss, child, root, A, B,
+       timeA, timeB, timeC,
+       window, space) @ i
+     ==>
+     (Ex contextA contextB #o #a #b.
+       OracleIssued(
+         iss, root, A, B,
+         window, space) @ o
+       & ParentAParticipated(
+           iss, A, root,
+           timeA, contextA) @ a
+       & ParentBParticipated(
+           iss, B, root,
+           timeB, contextB) @ b
+       & o < a
+       & o < b
+       & a < i
+       & b < i)"
+
+
+/* One issuance pair can produce at most one Child. */
+
+lemma complementary_pair_is_single_use:
+  "All iss
+       child1 root1 A1 B1
+       timeA1 timeB1 timeC1 window1 space1
+       child2 root2 A2 B2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+     ChildGenerated(
+       iss, child1, root1, A1, B1,
+       timeA1, timeB1, timeC1,
+       window1, space1) @ i
+     & ChildGenerated(
+       iss, child2, root2, A2, B2,
+       timeA2, timeB2, timeC2,
+       window2, space2) @ j
+     ==> #i = #j"
+
+
+/* The same Child cannot be accepted under two
+   different Oracle–Parent–Time–Space lineages. */
+
+lemma child_lineage_is_bound:
+  "All child
+       iss1 root1 A1 B1
+       timeA1 timeB1 timeC1 window1 space1
+       iss2 root2 A2 B2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+     ChildAccepted(
+       iss1, child, root1, A1, B1,
+       timeA1, timeB1, timeC1,
+       window1, space1) @ i
+     & ChildAccepted(
+       iss2, child, root2, A2, B2,
+       timeA2, timeB2, timeC2,
+       window2, space2) @ j
+     ==>
+       iss1 = iss2
+       & root1 = root2
+       & A1 = A2
+       & B1 = B2
+       & timeA1 = timeA2
+       & timeB1 = timeB2
+       & timeC1 = timeC2
+       & window1 = window2
+       & space1 = space2"
+
+
+/* Oracle equivocation cannot remain invisible
+   inside this Phase 1 model. */
+
+lemma oracle_equivocation_is_evidenced:
+  "All iss root1 root2 #i.
+     OracleEquivocated(
+       iss, root1, root2) @ i
+     ==>
+     EquivocationEvidence(
+       iss, root1, root2) @ i"
+
+
+end

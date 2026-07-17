@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use or reference OCLM Phase 1, please cite it using these metadata."
+title: "Oracle–Child Lineage Model (OCLM) Phase 1: Formally Verified Lineage-Substitution Resistance Core"
+type: software
+authors:
+  - family-names: "Kureha"
+    given-names: "Hirofumi"
+    alias: "HiRO"
+    affiliation: "WonderMetanism Inc."
+    orcid: "https://orcid.org/0009-0006-6182-534X"
+version: "1.0.0"
+date-released: "2026-07-18"
+doi: "10.5281/zenodo.21416118"
+repository-code: "https://github.com/wondermetanism/oclm"
+url: "https://www.wonder-metanism.com"
+abstract: >-
+  Oracle–Child Lineage Model (OCLM) is a formal model for determining
+  whether a state, record, right, or lineage can be accepted as a legitimate
+  continuation of an original truth relationship. OCLM Phase 1 provides a
+  formally verified lineage-substitution resistance core.
+keywords:
+  - "OCLM"
+  - "Oracle–Child Lineage Model"
+  - "lineage"
+  - "formal verification"
+  - "Tamarin"
+  - "authenticity"

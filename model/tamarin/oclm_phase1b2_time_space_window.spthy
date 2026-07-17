@@ -1,0 +1,893 @@
+theory OCLM_Phase1B2_TimeSpaceWindow
+begin
+
+builtins: hashing
+
+
+/* =========================================================
+   Oracle setup
+   ========================================================= */
+
+rule OracleSetup:
+  [ Fr(~oracle_seed) ]
+  --[
+      OracleInitialized(
+        h(~oracle_seed)
+      )
+    ]->
+  [
+      !OracleState(~oracle_seed),
+      !OraclePublicRoot(h(~oracle_seed)),
+      Out(h(~oracle_seed))
+  ]
+
+
+/* =========================================================
+   Open one Oracle-authorized Time–Space window
+
+   WindowNone is linear.
+   It represents an open window with no Parent participation.
+   ========================================================= */
+
+rule OpenWindow:
+  let
+    root =
+      h(
+        <'oclm-window-root-v1',
+         h(~oracle_seed),
+         ~iss,
+         $A,
+         $B,
+         ~window,
+         ~space>
+      )
+  in
+
+  [
+      !OracleState(~oracle_seed),
+
+      Fr(~iss),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      WindowOpened(
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      )
+    ]->
+  [
+      WindowNone(
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      ),
+
+      !WindowRoot(
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      ),
+
+      Out(
+        <~iss,
+         root,
+         $A,
+         $B,
+         ~window,
+         ~space>
+      )
+  ]
+
+
+/* =========================================================
+   Parent A participates first
+   ========================================================= */
+
+rule ParentAParticipatesFirst:
+  [
+      WindowNone(
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        iss,
+        'A',
+        A,
+        root,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowAReady(
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent B participates first
+   ========================================================= */
+
+rule ParentBParticipatesFirst:
+  [
+      WindowNone(
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        iss,
+        'B',
+        B,
+        root,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBReady(
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent B joins after Parent A
+   ========================================================= */
+
+rule ParentBJoinsAfterA:
+  [
+      WindowAReady(
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        iss,
+        'B',
+        B,
+        root,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Parent A joins after Parent B
+   ========================================================= */
+
+rule ParentAJoinsAfterB:
+  [
+      WindowBReady(
+        iss,
+        root,
+        A,
+        B,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        iss,
+        'A',
+        A,
+        root,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Generate Child while the window remains open
+
+   WindowBothReady is linear and consumed here.
+   ========================================================= */
+
+rule GenerateChildInsideWindow:
+  let
+    child =
+      h(
+        <'oclm-window-child-v1',
+         iss,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         ~timeC,
+         window,
+         space,
+         contextA,
+         contextB,
+         ~interaction>
+      )
+  in
+
+  [
+      WindowBothReady(
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeC),
+      Fr(~interaction)
+  ]
+  --[
+      ChildGeneratedInsideWindow(
+        iss,
+        child,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowGenerated(
+        iss,
+        child,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      ),
+
+      !ChildRecord(
+        iss,
+        child,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      ),
+
+      Out(
+        <iss,
+         child,
+         root,
+         A,
+         B,
+         ~timeC,
+         window,
+         space>
+      )
+  ]
+
+
+/* =========================================================
+   Window closure before any Parent participates
+   ========================================================= */
+
+rule CloseBeforeParticipation:
+  [
+      WindowNone(
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosed(
+        iss,
+        root,
+        window,
+        space
+      )
+    ]->
+  [
+      !ClosedWindow(
+        iss,
+        root,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Window closure after only Parent A participates
+   ========================================================= */
+
+rule CloseAfterOnlyParentA:
+  [
+      WindowAReady(
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosed(
+        iss,
+        root,
+        window,
+        space
+      )
+    ]->
+  [
+      !ClosedWindow(
+        iss,
+        root,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Window closure after only Parent B participates
+   ========================================================= */
+
+rule CloseAfterOnlyParentB:
+  [
+      WindowBReady(
+        iss,
+        root,
+        A,
+        B,
+        timeB,
+        contextB,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosed(
+        iss,
+        root,
+        window,
+        space
+      )
+    ]->
+  [
+      !ClosedWindow(
+        iss,
+        root,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Window closure after both Parents but before Child
+   ========================================================= */
+
+rule CloseAfterBothParents:
+  [
+      WindowBothReady(
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosed(
+        iss,
+        root,
+        window,
+        space
+      )
+    ]->
+  [
+      !ClosedWindow(
+        iss,
+        root,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Normal window closure after Child generation
+   ========================================================= */
+
+rule CloseAfterGeneration:
+  [
+      WindowGenerated(
+        iss,
+        child,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+  ]
+  --[
+      WindowClosed(
+        iss,
+        root,
+        window,
+        space
+      ),
+
+      GeneratedWindowClosed(
+        iss,
+        child,
+        root,
+        window,
+        space
+      )
+    ]->
+  [
+      !ClosedWindow(
+        iss,
+        root,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Executability:
+   complete Oracle–Parents–Child–Close lifecycle
+   ========================================================= */
+
+lemma executable_complete_window_lifecycle:
+  exists-trace
+  "Ex iss child root A B
+      timeA timeB timeC
+      contextA contextB
+      window space
+      #o #a #b #g #c.
+
+     WindowOpened(
+       iss,
+       root,
+       A,
+       B,
+       window,
+       space
+     ) @ o
+
+     &
+
+     ParentAParticipated(
+       iss,
+       'A',
+       A,
+       root,
+       timeA,
+       contextA,
+       window,
+       space
+     ) @ a
+
+     &
+
+     ParentBParticipated(
+       iss,
+       'B',
+       B,
+       root,
+       timeB,
+       contextB,
+       window,
+       space
+     ) @ b
+
+     &
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     &
+
+     WindowClosed(
+       iss,
+       root,
+       window,
+       space
+     ) @ c
+
+     & o < a
+     & o < b
+     & a < g
+     & b < g
+     & g < c"
+
+
+/* =========================================================
+   Every generated Child has full open-window ancestry
+   ========================================================= */
+
+lemma generated_child_has_open_window_ancestry:
+  "All iss child root A B
+       timeA timeB timeC
+       window space
+       #g.
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     ==>
+
+     Ex contextA contextB
+        #o #a #b.
+
+       WindowOpened(
+         iss,
+         root,
+         A,
+         B,
+         window,
+         space
+       ) @ o
+
+       &
+
+       ParentAParticipated(
+         iss,
+         'A',
+         A,
+         root,
+         timeA,
+         contextA,
+         window,
+         space
+       ) @ a
+
+       &
+
+       ParentBParticipated(
+         iss,
+         'B',
+         B,
+         root,
+         timeB,
+         contextB,
+         window,
+         space
+       ) @ b
+
+       & o < a
+       & o < b
+       & a < g
+       & b < g"
+
+
+/* =========================================================
+   A matching close event can only occur after generation
+
+   If the window closed earlier, the linear open state was
+   consumed and Child generation could not occur.
+   ========================================================= */
+
+lemma generated_child_precedes_matching_close:
+  "All iss child root A B
+       timeA timeB timeC
+       window space
+       #g #c.
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     &
+
+     WindowClosed(
+       iss,
+       root,
+       window,
+       space
+     ) @ c
+
+     ==>
+
+     g < c"
+
+
+/* =========================================================
+   Parent A participation precedes matching closure
+   whenever a Child is generated.
+   ========================================================= */
+
+lemma generated_parent_a_precedes_close:
+  "All iss child root A B
+       timeA timeB timeC
+       window space
+       #g #c.
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     &
+
+     WindowClosed(
+       iss,
+       root,
+       window,
+       space
+     ) @ c
+
+     ==>
+
+     Ex contextA #a.
+       ParentAParticipated(
+         iss,
+         'A',
+         A,
+         root,
+         timeA,
+         contextA,
+         window,
+         space
+       ) @ a
+
+       & a < g
+       & g < c"
+
+
+/* =========================================================
+   Parent B participation precedes matching closure
+   whenever a Child is generated.
+   ========================================================= */
+
+lemma generated_parent_b_precedes_close:
+  "All iss child root A B
+       timeA timeB timeC
+       window space
+       #g #c.
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ g
+
+     &
+
+     WindowClosed(
+       iss,
+       root,
+       window,
+       space
+     ) @ c
+
+     ==>
+
+     Ex contextB #b.
+       ParentBParticipated(
+         iss,
+         'B',
+         B,
+         root,
+         timeB,
+         contextB,
+         window,
+         space
+       ) @ b
+
+       & b < g
+       & g < c"
+
+
+/* =========================================================
+   One issuance window generates at most one Child
+   ========================================================= */
+
+lemma window_generates_at_most_once:
+  "All iss
+       child1 root1 A1 B1
+       timeA1 timeB1 timeC1 window1 space1
+       child2 root2 A2 B2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child1,
+       root1,
+       A1,
+       B1,
+       timeA1,
+       timeB1,
+       timeC1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ChildGeneratedInsideWindow(
+       iss,
+       child2,
+       root2,
+       A2,
+       B2,
+       timeA2,
+       timeB2,
+       timeC2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     #i = #j"
+
+end

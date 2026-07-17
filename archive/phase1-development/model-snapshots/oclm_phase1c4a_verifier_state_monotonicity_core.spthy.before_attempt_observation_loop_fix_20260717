@@ -1,0 +1,324 @@
+theory OCLM_Phase1C4A_Verifier_State_Monotonicity_Core
+begin
+
+/*
+ * Oracle–Child Lineage Model
+ * Phase 1-C4A — Verifier State Monotonicity Core
+ *
+ * Scope:
+ *   - linear verifier state
+ *   - monotonic epoch advancement
+ *   - non-mutating rollback attempts
+ *   - explicit verifier-compromise exception
+ *   - rollback only after compromise
+ *
+ * Deliberately excluded:
+ *   - certificates
+ *   - Composition ancestry
+ *   - revocation
+ *   - transparency
+ *   - network delivery
+ *   - missing-update semantics
+ *   - C3B integration
+ */
+
+
+/* -------------------------------------------------------------------------
+ * Verifier initialization
+ *
+ * VState is linear. Every state transition must consume the current state
+ * before producing the next state.
+ * ---------------------------------------------------------------------- */
+
+rule Initialize_Verifier:
+  [ Fr(~v) ]
+  --[
+      VerifierInitialized(~v),
+      VerifierState(~v, 'e0')
+    ]->
+  [
+      VState(~v, 'e0', 'honest')
+  ]
+
+
+/* -------------------------------------------------------------------------
+ * Honest monotonic advancement
+ * ---------------------------------------------------------------------- */
+
+rule Advance_e0_to_e1:
+  [
+      VState(v, 'e0', 'honest')
+  ]
+  --[
+      EpochAdvanced(v, 'e0', 'e1'),
+      VerifierCheckpoint(v, 'e1'),
+      VerifierState(v, 'e1')
+    ]->
+  [
+      VState(v, 'e1', 'honest')
+  ]
+
+
+rule Advance_e1_to_e2:
+  [
+      VState(v, 'e1', 'honest')
+  ]
+  --[
+      EpochAdvanced(v, 'e1', 'e2'),
+      VerifierCheckpoint(v, 'e2'),
+      VerifierState(v, 'e2')
+    ]->
+  [
+      VState(v, 'e2', 'honest')
+  ]
+
+
+/* -------------------------------------------------------------------------
+ * Rollback attempts
+ *
+ * An honest rollback attempt is independently observable but does not
+ * mutate verifier state.
+ * ---------------------------------------------------------------------- */
+
+rule Attempt_Rollback_e1_to_e0:
+  [
+      VState(v, 'e1', 'honest')
+  ]
+  --[
+      RollbackAttempt(v, 'e1', 'e0'),
+      VerifierState(v, 'e1')
+    ]->
+  [
+      VState(v, 'e1', 'honest')
+  ]
+
+
+rule Attempt_Rollback_e2_to_e1:
+  [
+      VState(v, 'e2', 'honest')
+  ]
+  --[
+      RollbackAttempt(v, 'e2', 'e1'),
+      VerifierState(v, 'e2')
+    ]->
+  [
+      VState(v, 'e2', 'honest')
+  ]
+
+
+rule Attempt_Rollback_e2_to_e0:
+  [
+      VState(v, 'e2', 'honest')
+  ]
+  --[
+      RollbackAttempt(v, 'e2', 'e0'),
+      VerifierState(v, 'e2')
+    ]->
+  [
+      VState(v, 'e2', 'honest')
+  ]
+
+
+/* -------------------------------------------------------------------------
+ * Explicit verifier compromise
+ *
+ * The transition is one-way:
+ *
+ *   honest -> compromised
+ *
+ * There is no rule restoring a compromised verifier to honest state.
+ * ---------------------------------------------------------------------- */
+
+rule Compromise_Verifier:
+  [
+      VState(v, e, 'honest')
+  ]
+  --[
+      VerifierCompromised(v, e)
+    ]->
+  [
+      VState(v, e, 'compromised')
+  ]
+
+
+/* -------------------------------------------------------------------------
+ * Rollback after verifier compromise
+ *
+ * These are the only rules that lower the verifier epoch.
+ * ---------------------------------------------------------------------- */
+
+rule Compromised_Rollback_e1_to_e0:
+  [
+      VState(v, 'e1', 'compromised')
+  ]
+  --[
+      RollbackSucceeded(v, 'e1', 'e0'),
+      VerifierState(v, 'e0')
+    ]->
+  [
+      VState(v, 'e0', 'compromised')
+  ]
+
+
+rule Compromised_Rollback_e2_to_e1:
+  [
+      VState(v, 'e2', 'compromised')
+  ]
+  --[
+      RollbackSucceeded(v, 'e2', 'e1'),
+      VerifierState(v, 'e1')
+    ]->
+  [
+      VState(v, 'e1', 'compromised')
+  ]
+
+
+rule Compromised_Rollback_e2_to_e0:
+  [
+      VState(v, 'e2', 'compromised')
+  ]
+  --[
+      RollbackSucceeded(v, 'e2', 'e0'),
+      VerifierState(v, 'e0')
+    ]->
+  [
+      VState(v, 'e0', 'compromised')
+  ]
+
+
+/* =========================================================================
+ * Executability
+ * ========================================================================= */
+
+lemma executable_monotonic_verifier_lifecycle:
+  exists-trace
+  "
+    Ex v
+       #i0 #i1 #i2 #ia #ic #ir.
+
+         VerifierInitialized(v) @ #i0
+
+       & EpochAdvanced(v, 'e0', 'e1') @ #i1
+       & EpochAdvanced(v, 'e1', 'e2') @ #i2
+
+       & RollbackAttempt(v, 'e2', 'e1') @ #ia
+
+       & VerifierCompromised(v, 'e2') @ #ic
+       & RollbackSucceeded(v, 'e2', 'e1') @ #ir
+
+       & #i0 < #i1
+       & #i1 < #i2
+       & #i2 < #ia
+       & #ia < #ic
+       & #ic < #ir
+  "
+
+
+/* =========================================================================
+ * Rollback success requires prior verifier compromise
+ * ========================================================================= */
+
+lemma rollback_success_requires_prior_verifier_compromise [reuse]:
+  "
+    All v from_epoch to_epoch #ir.
+
+      RollbackSucceeded(v, from_epoch, to_epoch) @ #ir
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+          VerifierCompromised(v, compromised_epoch) @ #ic
+
+        & #ic < #ir
+      )
+  "
+
+
+/* =========================================================================
+ * Verifier state cannot move backward without compromise
+ *
+ * C4A uses the finite e0 -> e1 -> e2 chain.
+ * Multi-epoch generalization is intentionally deferred to Phase 1-C6.
+ * ========================================================================= */
+
+lemma verifier_state_e1_never_rolls_back_to_e0_without_compromise:
+  "
+    All v #inew #iold.
+
+          VerifierState(v, 'e1') @ #inew
+        & VerifierState(v, 'e0') @ #iold
+        & #inew < #iold
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+          VerifierCompromised(v, compromised_epoch) @ #ic
+        & #ic < #iold
+      )
+  "
+
+
+lemma verifier_state_e2_never_rolls_back_to_e1_without_compromise:
+  "
+    All v #inew #iold.
+
+          VerifierState(v, 'e2') @ #inew
+        & VerifierState(v, 'e1') @ #iold
+        & #inew < #iold
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+          VerifierCompromised(v, compromised_epoch) @ #ic
+        & #ic < #iold
+      )
+  "
+
+
+lemma verifier_state_e2_never_rolls_back_to_e0_without_compromise:
+  "
+    All v #inew #iold.
+
+          VerifierState(v, 'e2') @ #inew
+        & VerifierState(v, 'e0') @ #iold
+        & #inew < #iold
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+          VerifierCompromised(v, compromised_epoch) @ #ic
+        & #ic < #iold
+      )
+  "
+
+
+/* =========================================================================
+ * A rollback attempt alone cannot lower verifier state
+ * ========================================================================= */
+
+lemma rollback_attempt_cannot_lower_state_without_later_compromise:
+  "
+    All v current_epoch target_epoch #ia #itarget.
+
+          RollbackAttempt(v, current_epoch, target_epoch) @ #ia
+
+        & VerifierState(v, target_epoch) @ #itarget
+
+        & #ia < #itarget
+
+      ==>
+
+      (Ex compromised_epoch #ic.
+
+          VerifierCompromised(v, compromised_epoch) @ #ic
+
+        & #ia < #ic
+        & #ic < #itarget
+      )
+  "
+
+end

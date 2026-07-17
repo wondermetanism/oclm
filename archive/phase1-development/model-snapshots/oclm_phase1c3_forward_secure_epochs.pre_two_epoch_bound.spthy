@@ -1,0 +1,1539 @@
+theory OCLM_Phase1C3_ForwardSecureEpochs
+begin
+
+builtins: hashing, signing
+
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================
+   Long-term Oracle root authority
+   ========================================================= */
+
+rule OracleRootSetup:
+  [ Fr(~root_sk) ]
+  --[
+      OracleRootInitialized(
+        pk(~root_sk)
+      )
+    ]->
+  [
+      !RootSecret(~root_sk),
+      !RootPublic(pk(~root_sk)),
+
+      GenesisEpochAvailable(
+        pk(~root_sk)
+      ),
+
+      Out(
+        pk(~root_sk)
+      )
+  ]
+
+
+/* =========================================================
+   Genesis epoch
+
+   The root signs only the epoch public-key credential.
+   The epoch key signs the Composition Certificate.
+   ========================================================= */
+
+rule StartGenesisEpoch:
+  let
+    predecessor =
+      'oclm-genesis-predecessor'
+
+    epoch_credential =
+      <'oclm-epoch-key-credential-v1',
+       pk(~root_sk),
+       ~epoch,
+       pk(~epoch_sk),
+       predecessor>
+
+    root_signature =
+      sign(
+        epoch_credential,
+        ~root_sk
+      )
+  in
+
+  [
+      !RootSecret(~root_sk),
+
+      GenesisEpochAvailable(
+        pk(~root_sk)
+      ),
+
+      Fr(~epoch),
+      Fr(~epoch_sk)
+  ]
+  --[
+      EpochKeyCredentialIssued(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      ),
+
+      EpochStarted(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      )
+    ]->
+  [
+      !EpochCredential(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor,
+        epoch_credential,
+        root_signature
+      ),
+
+      EpochKeyLive(
+        pk(~root_sk),
+        ~epoch,
+        ~epoch_sk
+      ),
+
+      EpochReady(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      ),
+
+      Out(
+        <epoch_credential,
+         root_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Start the next epoch only after the previous epoch
+   certificate has been issued and its key erased.
+   ========================================================= */
+
+rule StartNextEpoch:
+  let
+    predecessor =
+      previous_anchor
+
+    epoch_credential =
+      <'oclm-epoch-key-credential-v1',
+       pk(~root_sk),
+       ~epoch,
+       pk(~epoch_sk),
+       predecessor>
+
+    root_signature =
+      sign(
+        epoch_credential,
+        ~root_sk
+      )
+  in
+
+  [
+      !RootSecret(~root_sk),
+
+      EpochCompleted(
+        pk(~root_sk),
+        previous_epoch,
+        previous_epoch_pk,
+        previous_anchor
+      ),
+
+      Fr(~epoch),
+      Fr(~epoch_sk)
+  ]
+  --[
+      EpochKeyCredentialIssued(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      ),
+
+      EpochStarted(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      )
+    ]->
+  [
+      !EpochCredential(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor,
+        epoch_credential,
+        root_signature
+      ),
+
+      EpochKeyLive(
+        pk(~root_sk),
+        ~epoch,
+        ~epoch_sk
+      ),
+
+      EpochReady(
+        pk(~root_sk),
+        ~epoch,
+        pk(~epoch_sk),
+        predecessor
+      ),
+
+      Out(
+        <epoch_credential,
+         root_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Open a Time–Space generation window inside an epoch
+   ========================================================= */
+
+rule OpenEpochWindow:
+  let
+    root =
+      h(
+        <'oclm-c3-window-root',
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         ~iss,
+         $A,
+         $B,
+         ~window,
+         ~space>
+      )
+  in
+
+  [
+      EpochReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor
+      ),
+
+      Fr(~iss),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      WindowOpened(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      )
+    ]->
+  [
+      WindowNone(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        ~iss,
+        root,
+        $A,
+        $B,
+        ~window,
+        ~space
+      ),
+
+      Out(
+        <'oclm-c3-window-opened',
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         ~iss,
+         root,
+         $A,
+         $B,
+         ~window,
+         ~space>
+      )
+  ]
+
+
+/* =========================================================
+   Parent participation
+   ========================================================= */
+
+rule ParentAFirst:
+  [
+      WindowNone(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowAReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+  ]
+
+
+rule ParentBFirst:
+  [
+      WindowNone(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+rule ParentBJoinsAfterA:
+  [
+      WindowAReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        window,
+        space
+      ),
+
+      Fr(~timeB),
+      Fr(~contextB)
+  ]
+  --[
+      ParentBParticipated(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        ~timeB,
+        ~contextB,
+        window,
+        space
+      )
+  ]
+
+
+rule ParentAJoinsAfterB:
+  [
+      WindowBReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeA),
+      Fr(~contextA)
+  ]
+  --[
+      ParentAParticipated(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowBothReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        ~timeA,
+        ~contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Generate the Child inside the epoch window
+   ========================================================= */
+
+rule GenerateChildInsideEpoch:
+  let
+    lineage =
+      h(
+        <'oclm-c3-lineage',
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         ~timeC,
+         window,
+         space,
+         contextA,
+         contextB,
+         ~interaction>
+      )
+
+    child_id =
+      h(
+        <'oclm-c3-child-id',
+         lineage>
+      )
+  in
+
+  [
+      WindowBothReady(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        root,
+        A,
+        B,
+        timeA,
+        contextA,
+        timeB,
+        contextB,
+        window,
+        space
+      ),
+
+      Fr(~timeC),
+      Fr(~interaction)
+  ]
+  --[
+      ChildGeneratedInsideEpoch(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+    ]->
+  [
+      WindowGenerated(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        ~timeC,
+        window,
+        space
+      )
+  ]
+
+
+/* =========================================================
+   Issue the certificate and atomically erase the epoch key.
+
+   No fact containing epoch_sk survives this rule.
+   ========================================================= */
+
+rule IssueCertificateAndEraseEpochKey:
+  let
+    certificate =
+      <'oclm-forward-secure-composition-certificate-v1',
+       root_pk,
+       epoch,
+       pk(~epoch_sk),
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space>
+
+    certificate_signature =
+      sign(
+        certificate,
+        ~epoch_sk
+      )
+
+    certificate_anchor =
+      h(
+        <certificate,
+         certificate_signature>
+      )
+  in
+
+  [
+      EpochKeyLive(
+        root_pk,
+        epoch,
+        ~epoch_sk
+      ),
+
+      !EpochCredential(
+        root_pk,
+        epoch,
+        pk(~epoch_sk),
+        predecessor,
+        epoch_credential,
+        root_signature
+      ),
+
+      WindowGenerated(
+        root_pk,
+        epoch,
+        pk(~epoch_sk),
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+  ]
+  --[
+      CompositionCertificateIssued(
+        root_pk,
+        epoch,
+        pk(~epoch_sk),
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      ),
+
+      EpochKeyErased(
+        root_pk,
+        epoch,
+        pk(~epoch_sk),
+        certificate_anchor
+      )
+    ]->
+  [
+      EpochCompleted(
+        root_pk,
+        epoch,
+        pk(~epoch_sk),
+        certificate_anchor
+      ),
+
+      Out(
+        <epoch_credential,
+         root_signature,
+         certificate,
+         certificate_signature>
+      )
+  ]
+
+
+/* =========================================================
+   Compromise applies only while an epoch key is live.
+
+   Once IssueCertificateAndEraseEpochKey consumes EpochKeyLive,
+   that epoch key can no longer be compromised.
+   ========================================================= */
+
+rule CompromiseLiveEpochKey:
+  [
+      EpochKeyLive(
+        root_pk,
+        epoch,
+        epoch_sk
+      )
+  ]
+  --[
+      EpochKeyCompromised(
+        root_pk,
+        epoch,
+        pk(epoch_sk)
+      )
+    ]->
+  [
+      Out(epoch_sk)
+  ]
+
+
+/* =========================================================
+   Long-term root compromise remains a separate exception.
+   ========================================================= */
+
+rule CompromiseRootKey:
+  [
+      !RootSecret(root_sk)
+  ]
+  --[
+      RootKeyCompromised(
+        pk(root_sk)
+      )
+    ]->
+  [
+      Out(root_sk)
+  ]
+
+
+/* =========================================================
+   Arbitrary claims and Consensus
+   ========================================================= */
+
+rule PublishParentAClaim:
+  [
+      In(
+        <'oclm-c3-claim-a',
+         iss,
+         A,
+         claimA>
+      )
+  ]
+  --[
+      ParentAClaimPublished(
+        iss,
+        A,
+        claimA
+      )
+    ]->
+  [
+      !ParentAClaim(
+        iss,
+        A,
+        claimA
+      )
+  ]
+
+
+rule PublishParentBClaim:
+  [
+      In(
+        <'oclm-c3-claim-b',
+         iss,
+         B,
+         claimB>
+      )
+  ]
+  --[
+      ParentBClaimPublished(
+        iss,
+        B,
+        claimB
+      )
+    ]->
+  [
+      !ParentBClaim(
+        iss,
+        B,
+        claimB
+      )
+  ]
+
+
+rule PublishConsensusDecision:
+  [
+      In(
+        <'oclm-c3-consensus',
+         iss,
+         decision>
+      )
+  ]
+  --[
+      ConsensusDecisionPublished(
+        iss,
+        decision
+      )
+    ]->
+  [
+      !ConsensusDecision(
+        iss,
+        decision
+      )
+  ]
+
+
+rule DeclareClaimCollapse:
+  [
+      !ParentAClaim(
+        iss,
+        A,
+        claimA
+      ),
+
+      !ParentBClaim(
+        iss,
+        B,
+        claimB
+      ),
+
+      !ConsensusDecision(
+        iss,
+        decision
+      )
+  ]
+  --[
+      ClaimCollapseDeclared(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      )
+    ]->
+  [
+      !CollapseActive(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      )
+  ]
+
+
+/* =========================================================
+   External verification
+
+   The verifier checks:
+   1. root signature on the epoch credential
+   2. epoch signature on the Composition Certificate
+   3. Child ID / lineage binding
+   ========================================================= */
+
+rule VerifyForwardSecureCertificateAfterCollapse:
+  let
+    epoch_credential =
+      <'oclm-epoch-key-credential-v1',
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor>
+
+    certificate =
+      <'oclm-forward-secure-composition-certificate-v1',
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space>
+  in
+
+  [
+      !RootPublic(root_pk),
+
+      !CollapseActive(
+        iss,
+        A,
+        B,
+        claimA,
+        claimB,
+        decision
+      ),
+
+      In(
+        <epoch_credential,
+         root_signature,
+         certificate,
+         certificate_signature>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          root_signature,
+          epoch_credential,
+          root_pk
+        ),
+        true
+      ),
+
+      Eq(
+        verify(
+          certificate_signature,
+          certificate,
+          epoch_pk
+        ),
+        true
+      ),
+
+      Eq(
+        child_id,
+        h(
+          <'oclm-c3-child-id',
+           lineage>
+        )
+      ),
+
+      ForwardSecureChildAccepted(
+        root_pk,
+        epoch,
+        epoch_pk,
+        predecessor,
+        iss,
+        child_id,
+        lineage,
+        root,
+        A,
+        B,
+        timeA,
+        timeB,
+        timeC,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Executability theorem
+
+   An old certificate remains verifiable after:
+   - old epoch-key erasure
+   - next epoch creation
+   - next epoch-key compromise
+   ========================================================= */
+
+lemma executable_old_certificate_after_later_epoch_compromise:
+  exists-trace
+  "Ex root_pk
+      old_epoch old_epoch_pk old_predecessor
+      iss child_id lineage root
+      A B timeA timeB timeC
+      contextA contextB
+      window space old_anchor
+      new_epoch new_epoch_pk new_predecessor
+      claimA claimB decision
+      #e #o #a #b #g #c #n #k #d #v.
+
+     EpochKeyCredentialIssued(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor
+     ) @ #e
+
+     &
+
+     WindowOpened(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       root,
+       A,
+       B,
+       window,
+       space
+     ) @ #o
+
+     &
+
+     ParentAParticipated(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       root,
+       A,
+       B,
+       timeA,
+       contextA,
+       window,
+       space
+     ) @ #a
+
+     &
+
+     ParentBParticipated(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       root,
+       A,
+       B,
+       timeB,
+       contextB,
+       window,
+       space
+     ) @ #b
+
+     &
+
+     ChildGeneratedInsideEpoch(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ #g
+
+     &
+
+     CompositionCertificateIssued(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ #c
+
+     &
+
+     EpochKeyErased(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_anchor
+     ) @ #c
+
+     &
+
+     EpochKeyCredentialIssued(
+       root_pk,
+       new_epoch,
+       new_epoch_pk,
+       new_predecessor
+     ) @ #n
+
+     &
+
+     EpochKeyCompromised(
+       root_pk,
+       new_epoch,
+       new_epoch_pk
+     ) @ #k
+
+     &
+
+     ClaimCollapseDeclared(
+       iss,
+       A,
+       B,
+       claimA,
+       claimB,
+       decision
+     ) @ #d
+
+     &
+
+     ForwardSecureChildAccepted(
+       root_pk,
+       old_epoch,
+       old_epoch_pk,
+       old_predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ #v
+
+     & #e < #o
+     & #o < #a
+     & #o < #b
+     & #a < #g
+     & #b < #g
+     & #g < #c
+     & #c < #n
+     & #n < #k
+     & #k < #v
+     & #d < #v
+
+     & not (
+         Ex #x.
+           EpochKeyCompromised(
+             root_pk,
+             old_epoch,
+             old_epoch_pk
+           ) @ #x
+           & #x < #v
+       )
+
+     & not (
+         Ex #r.
+           RootKeyCompromised(
+             root_pk
+           ) @ #r
+           & #r < #v
+       )"
+
+
+/* =========================================================
+   Certificate origin theorem
+
+   Compromise of an unrelated later epoch is not an exception.
+   Only the matching epoch key or the root key can justify
+   an otherwise unissued accepted certificate.
+   ========================================================= */
+
+lemma fs_acceptance_requires_issuance_or_target_compromise:
+  "All root_pk epoch epoch_pk predecessor
+       iss child_id lineage root
+       A B timeA timeB timeC window space
+       #v.
+
+     ForwardSecureChildAccepted(
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ #v
+
+     ==>
+
+     (
+       Ex #c.
+         CompositionCertificateIssued(
+           root_pk,
+           epoch,
+           epoch_pk,
+           predecessor,
+           iss,
+           child_id,
+           lineage,
+           root,
+           A,
+           B,
+           timeA,
+           timeB,
+           timeC,
+           window,
+           space
+         ) @ #c
+         & #c < #v
+     )
+
+     |
+
+     (
+       Ex #k.
+         EpochKeyCompromised(
+           root_pk,
+           epoch,
+           epoch_pk
+         ) @ #k
+         & #k < #v
+     )
+
+     |
+
+     (
+       Ex #r.
+         RootKeyCompromised(
+           root_pk
+         ) @ #r
+         & #r < #v
+     )"
+
+
+/* =========================================================
+   Full old-epoch ancestry theorem
+   ========================================================= */
+
+lemma uncompromised_erased_epoch_acceptance_has_full_ancestry:
+  "All root_pk epoch epoch_pk predecessor
+       iss child_id lineage root
+       A B timeA timeB timeC window space
+       #v.
+
+     ForwardSecureChildAccepted(
+       root_pk,
+       epoch,
+       epoch_pk,
+       predecessor,
+       iss,
+       child_id,
+       lineage,
+       root,
+       A,
+       B,
+       timeA,
+       timeB,
+       timeC,
+       window,
+       space
+     ) @ #v
+
+     & not (
+         Ex #k.
+           EpochKeyCompromised(
+             root_pk,
+             epoch,
+             epoch_pk
+           ) @ #k
+           & #k < #v
+       )
+
+     & not (
+         Ex #r.
+           RootKeyCompromised(
+             root_pk
+           ) @ #r
+           & #r < #v
+       )
+
+     ==>
+
+     Ex contextA contextB anchor
+        #e #o #a #b #g #c.
+
+       EpochKeyCredentialIssued(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor
+       ) @ #e
+
+       &
+
+       WindowOpened(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         root,
+         A,
+         B,
+         window,
+         space
+       ) @ #o
+
+       &
+
+       ParentAParticipated(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         root,
+         A,
+         B,
+         timeA,
+         contextA,
+         window,
+         space
+       ) @ #a
+
+       &
+
+       ParentBParticipated(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         root,
+         A,
+         B,
+         timeB,
+         contextB,
+         window,
+         space
+       ) @ #b
+
+       &
+
+       ChildGeneratedInsideEpoch(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         child_id,
+         lineage,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         timeC,
+         window,
+         space
+       ) @ #g
+
+       &
+
+       CompositionCertificateIssued(
+         root_pk,
+         epoch,
+         epoch_pk,
+         predecessor,
+         iss,
+         child_id,
+         lineage,
+         root,
+         A,
+         B,
+         timeA,
+         timeB,
+         timeC,
+         window,
+         space
+       ) @ #c
+
+       &
+
+       EpochKeyErased(
+         root_pk,
+         epoch,
+         epoch_pk,
+         anchor
+       ) @ #c
+
+       & #e < #o
+       & #o < #a
+       & #o < #b
+       & #a < #g
+       & #b < #g
+       & #g < #c
+       & #c < #v"
+
+
+/* =========================================================
+   Forward-secure Time–Space lineage substitution resistance
+
+   Compromise of another epoch key is deliberately absent
+   from the exception set.
+   ========================================================= */
+
+lemma past_epoch_identity_is_bound_or_target_compromised:
+  "All root_pk child_id
+       epoch1 epoch_pk1 predecessor1
+       iss1 lineage1 root1 A1 B1
+       timeA1 timeB1 timeC1 window1 space1
+       epoch2 epoch_pk2 predecessor2
+       iss2 lineage2 root2 A2 B2
+       timeA2 timeB2 timeC2 window2 space2
+       #i #j.
+
+     ForwardSecureChildAccepted(
+       root_pk,
+       epoch1,
+       epoch_pk1,
+       predecessor1,
+       iss1,
+       child_id,
+       lineage1,
+       root1,
+       A1,
+       B1,
+       timeA1,
+       timeB1,
+       timeC1,
+       window1,
+       space1
+     ) @ #i
+
+     &
+
+     ForwardSecureChildAccepted(
+       root_pk,
+       epoch2,
+       epoch_pk2,
+       predecessor2,
+       iss2,
+       child_id,
+       lineage2,
+       root2,
+       A2,
+       B2,
+       timeA2,
+       timeB2,
+       timeC2,
+       window2,
+       space2
+     ) @ #j
+
+     ==>
+
+     (
+       epoch1 = epoch2
+       & epoch_pk1 = epoch_pk2
+       & predecessor1 = predecessor2
+       & iss1 = iss2
+       & lineage1 = lineage2
+       & root1 = root2
+       & A1 = A2
+       & B1 = B2
+       & timeA1 = timeA2
+       & timeB1 = timeB2
+       & timeC1 = timeC2
+       & window1 = window2
+       & space1 = space2
+     )
+
+     |
+
+     (
+       Ex #k.
+         EpochKeyCompromised(
+           root_pk,
+           epoch1,
+           epoch_pk1
+         ) @ #k
+         & (
+             #k < #i
+             | #k < #j
+           )
+     )
+
+     |
+
+     (
+       Ex #k.
+         EpochKeyCompromised(
+           root_pk,
+           epoch2,
+           epoch_pk2
+         ) @ #k
+         & (
+             #k < #i
+             | #k < #j
+           )
+     )
+
+     |
+
+     (
+       Ex #r.
+         RootKeyCompromised(
+           root_pk
+         ) @ #r
+         & (
+             #r < #i
+             | #r < #j
+           )
+     )"
+
+end

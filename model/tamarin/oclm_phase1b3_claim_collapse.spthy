@@ -1,0 +1,667 @@
+theory OCLM_Phase1B3_ClaimCollapse
+begin
+
+builtins: hashing, signing
+
+
+/* =========================================================
+   Verification equations must hold.
+   ========================================================= */
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================
+   Oracle setup
+   ========================================================= */
+
+rule OracleSetup:
+  [ Fr(~oracle_sk) ]
+  --[
+      OracleInitialized(
+        pk(~oracle_sk)
+      )
+    ]->
+  [
+      !OracleSecret(~oracle_sk),
+      !OraclePublic(pk(~oracle_sk)),
+      Out(pk(~oracle_sk))
+  ]
+
+
+/* =========================================================
+   Legitimate Child generation
+
+   The Oracle-signed payload binds:
+   - issuance
+   - Child identity
+   - lineage
+   - Oracle root
+   - both Parents
+   - generation time
+   - time window
+   - causal space
+   ========================================================= */
+
+rule GenerateLegitimateChild:
+  let
+    lineage =
+      h(
+        <'oclm-lineage-b3',
+         pk(~oracle_sk),
+         ~iss,
+         ~root,
+         ~parent_a,
+         ~parent_b,
+         ~time_c,
+         ~window,
+         ~space>
+      )
+
+    child_id =
+      h(
+        <'oclm-child-id-b3',
+         lineage>
+      )
+
+    payload =
+      <'oclm-child-b3',
+       pk(~oracle_sk),
+       ~iss,
+       child_id,
+       lineage,
+       ~root,
+       ~parent_a,
+       ~parent_b,
+       ~time_c,
+       ~window,
+       ~space>
+
+    signature =
+      sign(
+        payload,
+        ~oracle_sk
+      )
+  in
+
+  [
+      !OracleSecret(~oracle_sk),
+
+      Fr(~iss),
+      Fr(~root),
+      Fr(~parent_a),
+      Fr(~parent_b),
+      Fr(~time_c),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      ChildGenerated(
+        pk(~oracle_sk),
+        ~iss,
+        child_id,
+        lineage,
+        ~root,
+        ~parent_a,
+        ~parent_b,
+        ~time_c,
+        ~window,
+        ~space
+      )
+    ]->
+  [
+      Out(
+        <payload,
+         signature>
+      )
+  ]
+
+
+/* =========================================================
+   Parent A denies the Child.
+
+   This claim is not derived from Oracle or Child lineage.
+   It is an arbitrary operating-layer declaration.
+   ========================================================= */
+
+rule PublishParentADenial:
+  [
+      In(
+        <'parent-a-deny-request',
+         iss,
+         parent_a>
+      )
+  ]
+  --[
+      ParentAClaimPublished(
+        iss,
+        parent_a,
+        'deny-child'
+      )
+    ]->
+  [
+      !ParentAClaim(
+        iss,
+        parent_a,
+        'deny-child'
+      )
+  ]
+
+
+/* =========================================================
+   Parent B asserts an alternative Child.
+
+   The alternative value is fresh and is not derived from
+   the legitimate Oracle lineage.
+   ========================================================= */
+
+rule PublishParentBAlternative:
+  [
+      In(
+        <'parent-b-alternate-request',
+         iss,
+         parent_b>
+      ),
+
+      Fr(~alternative_child)
+  ]
+  --[
+      ParentBClaimPublished(
+        iss,
+        parent_b,
+        <'assert-alternate',
+         ~alternative_child>
+      )
+    ]->
+  [
+      !ParentBClaim(
+        iss,
+        parent_b,
+        <'assert-alternate',
+         ~alternative_child>
+      ),
+
+      Out(~alternative_child)
+  ]
+
+
+/* =========================================================
+   Malicious Consensus output
+
+   This represents the entire consensus layer producing an
+   arbitrary alternative world-view selected independently
+   of the authentic Oracle–Child lineage.
+   ========================================================= */
+
+rule PublishMaliciousConsensusDecision:
+  [
+      In(
+        <'consensus-rewrite-request',
+         iss>
+      ),
+
+      Fr(~fake_world_view)
+  ]
+  --[
+      ConsensusDecisionPublished(
+        iss,
+        <'canonical-alternate',
+         ~fake_world_view>
+      )
+    ]->
+  [
+      !ConsensusDecision(
+        iss,
+        <'canonical-alternate',
+         ~fake_world_view>
+      ),
+
+      Out(~fake_world_view)
+  ]
+
+
+/* =========================================================
+   Claim collapse
+
+   Both Parent claims and the Consensus decision are present,
+   but none becomes a cryptographic truth root.
+   ========================================================= */
+
+rule DeclareClaimCollapse:
+  [
+      !ParentAClaim(
+        iss,
+        parent_a,
+        claim_a
+      ),
+
+      !ParentBClaim(
+        iss,
+        parent_b,
+        claim_b
+      ),
+
+      !ConsensusDecision(
+        iss,
+        decision
+      )
+  ]
+  --[
+      ClaimCollapseDeclared(
+        iss,
+        parent_a,
+        parent_b,
+        claim_a,
+        claim_b,
+        decision
+      )
+    ]->
+  [
+      !CollapseActive(
+        iss,
+        parent_a,
+        parent_b,
+        claim_a,
+        claim_b,
+        decision
+      )
+  ]
+
+
+/* =========================================================
+   Child verification after claim collapse
+
+   Claims and Consensus are required only to establish that
+   the operating assumptions have collapsed.
+
+   They are not used to determine Child authenticity.
+
+   Authenticity still depends only on:
+   - authentic Oracle public key
+   - Oracle signature
+   - Child ID / lineage binding
+   ========================================================= */
+
+rule VerifyChildAfterCollapse:
+  let
+    payload =
+      <'oclm-child-b3',
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space>
+  in
+
+  [
+      !OraclePublic(oracle_pk),
+
+      !CollapseActive(
+        iss,
+        parent_a,
+        parent_b,
+        claim_a,
+        claim_b,
+        decision
+      ),
+
+      In(
+        <payload,
+         signature>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          signature,
+          payload,
+          oracle_pk
+        ),
+        true
+      ),
+
+      Eq(
+        child_id,
+        h(
+          <'oclm-child-id-b3',
+           lineage>
+        )
+      ),
+
+      ChildAcceptedAfterCollapse(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        parent_a,
+        parent_b,
+        time_c,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Oracle-key compromise
+
+   After compromise, the attacker can produce Oracle
+   signatures. This remains an explicit exception.
+   ========================================================= */
+
+rule OracleKeyCompromise:
+  [
+      !OracleSecret(oracle_sk)
+  ]
+  --[
+      OracleKeyCompromised(
+        pk(oracle_sk)
+      )
+    ]->
+  [
+      Out(oracle_sk)
+  ]
+
+
+/* =========================================================
+   Executability
+
+   Demonstrates:
+   - legitimate Child generation
+   - Parent A denial
+   - Parent B alternative claim
+   - malicious Consensus decision
+   - claim collapse
+   - authentic Child acceptance after collapse
+   - no prior Oracle-key compromise
+   ========================================================= */
+
+lemma executable_claim_collapse_lifecycle:
+  exists-trace
+  "Ex oracle_pk iss child_id lineage root
+      parent_a parent_b time_c window space
+      claim_a claim_b decision
+      #g #a #b #v #d #i.
+
+     ChildGenerated(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ g
+
+     &
+
+     ParentAClaimPublished(
+       iss,
+       parent_a,
+       claim_a
+     ) @ a
+
+     &
+
+     ParentBClaimPublished(
+       iss,
+       parent_b,
+       claim_b
+     ) @ b
+
+     &
+
+     ConsensusDecisionPublished(
+       iss,
+       decision
+     ) @ v
+
+     &
+
+     ClaimCollapseDeclared(
+       iss,
+       parent_a,
+       parent_b,
+       claim_a,
+       claim_b,
+       decision
+     ) @ d
+
+     &
+
+     ChildAcceptedAfterCollapse(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i
+
+     & g < i
+     & a < d
+     & b < d
+     & v < d
+     & d < i
+
+     & not (
+         Ex #k.
+           OracleKeyCompromised(
+             oracle_pk
+           ) @ k
+           & k < i
+       )"
+
+
+/* =========================================================
+   Core claim-collapse theorem
+
+   Even after both Parent claims and the Consensus world-view
+   collapse, an accepted Child still requires:
+   - matching legitimate generation, or
+   - prior Oracle-key compromise.
+   ========================================================= */
+
+lemma post_collapse_acceptance_requires_generation_or_compromise:
+  "All oracle_pk iss child_id lineage root
+       parent_a parent_b time_c window space
+       #i.
+
+     ChildAcceptedAfterCollapse(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i
+
+     ==>
+
+     (
+       Ex #j.
+         ChildGenerated(
+           oracle_pk,
+           iss,
+           child_id,
+           lineage,
+           root,
+           parent_a,
+           parent_b,
+           time_c,
+           window,
+           space
+         ) @ j
+         & j < i
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & k < i
+     )"
+
+
+/* =========================================================
+   Every post-collapse acceptance has prior contradictory
+   Parent claims, a Consensus decision, and collapse event.
+   ========================================================= */
+
+lemma post_collapse_acceptance_has_collapse_ancestry:
+  "All oracle_pk iss child_id lineage root
+       parent_a parent_b time_c window space
+       #i.
+
+     ChildAcceptedAfterCollapse(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i
+
+     ==>
+
+     Ex claim_a claim_b decision
+        #a #b #v #d.
+
+       ParentAClaimPublished(
+         iss,
+         parent_a,
+         claim_a
+       ) @ a
+
+       &
+
+       ParentBClaimPublished(
+         iss,
+         parent_b,
+         claim_b
+       ) @ b
+
+       &
+
+       ConsensusDecisionPublished(
+         iss,
+         decision
+       ) @ v
+
+       &
+
+       ClaimCollapseDeclared(
+         iss,
+         parent_a,
+         parent_b,
+         claim_a,
+         claim_b,
+         decision
+       ) @ d
+
+       & a < d
+       & b < d
+       & v < d
+       & d < i"
+
+
+/* =========================================================
+   Claim/Consensus lineage substitution resistance
+
+   The same Child ID cannot become a different Child merely
+   because Parent claims or Consensus outputs changed.
+
+   Exception: prior compromise of the Oracle signing key.
+   ========================================================= */
+
+lemma post_collapse_child_identity_is_bound_or_compromised:
+  "All oracle_pk child_id
+       iss1 lineage1 root1 parent_a1 parent_b1
+       time_c1 window1 space1
+       iss2 lineage2 root2 parent_a2 parent_b2
+       time_c2 window2 space2
+       #i #j.
+
+     ChildAcceptedAfterCollapse(
+       oracle_pk,
+       iss1,
+       child_id,
+       lineage1,
+       root1,
+       parent_a1,
+       parent_b1,
+       time_c1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ChildAcceptedAfterCollapse(
+       oracle_pk,
+       iss2,
+       child_id,
+       lineage2,
+       root2,
+       parent_a2,
+       parent_b2,
+       time_c2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     (
+       iss1 = iss2
+       & lineage1 = lineage2
+       & root1 = root2
+       & parent_a1 = parent_a2
+       & parent_b1 = parent_b2
+       & time_c1 = time_c2
+       & window1 = window2
+       & space1 = space2
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & (
+             k < i
+             | k < j
+           )
+     )"
+
+end

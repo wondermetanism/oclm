@@ -1,0 +1,396 @@
+theory OCLM_Phase1B1_ExternalSignature
+begin
+
+builtins: hashing, signing
+
+
+/* Verification equations must hold. */
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================
+   Oracle setup
+   ========================================================= */
+
+rule OracleSetup:
+  [ Fr(~oracle_sk) ]
+  --[
+      OracleInitialized(pk(~oracle_sk))
+    ]->
+  [
+      !OracleSecret(~oracle_sk),
+      !OraclePublic(pk(~oracle_sk)),
+      Out(pk(~oracle_sk))
+  ]
+
+
+/* =========================================================
+   Generate one legitimate externally transferable Child
+
+   The Child identifier binds:
+   - Oracle
+   - issuance
+   - lineage
+   - root
+   - both Parents
+   - time
+   - window
+   - causal space
+   ========================================================= */
+
+rule GenerateLegitimateChild:
+  let
+    lineage =
+      h(
+        <'oclm-lineage-b1',
+         pk(~oracle_sk),
+         ~iss,
+         ~root,
+         ~parent_a,
+         ~parent_b,
+         ~time_c,
+         ~window,
+         ~space>
+      )
+
+    child_id =
+      h(
+        <'oclm-child-id-b1',
+         lineage>
+      )
+
+    payload =
+      <'oclm-child-b1',
+       pk(~oracle_sk),
+       ~iss,
+       child_id,
+       lineage,
+       ~root,
+       ~parent_a,
+       ~parent_b,
+       ~time_c,
+       ~window,
+       ~space>
+
+    signature =
+      sign(payload, ~oracle_sk)
+  in
+
+  [
+      !OracleSecret(~oracle_sk),
+
+      Fr(~iss),
+      Fr(~root),
+      Fr(~parent_a),
+      Fr(~parent_b),
+      Fr(~time_c),
+      Fr(~window),
+      Fr(~space)
+  ]
+  --[
+      ChildGenerated(
+        pk(~oracle_sk),
+        ~iss,
+        child_id,
+        lineage,
+        ~root,
+        ~parent_a,
+        ~parent_b,
+        ~time_c,
+        ~window,
+        ~space
+      )
+    ]->
+  [
+      Out(<payload, signature>)
+  ]
+
+
+/* =========================================================
+   External verification
+
+   The attacker controls the entire network input.
+   Acceptance requires a valid Oracle signature and a Child ID
+   correctly derived from the supplied lineage.
+   ========================================================= */
+
+rule VerifyExternalChild:
+  let
+    payload =
+      <'oclm-child-b1',
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space>
+  in
+
+  [
+      !OraclePublic(oracle_pk),
+
+      In(
+        <payload,
+         signature>
+      )
+  ]
+  --[
+      Eq(
+        verify(
+          signature,
+          payload,
+          oracle_pk
+        ),
+        true
+      ),
+
+      Eq(
+        child_id,
+        h(
+          <'oclm-child-id-b1',
+           lineage>
+        )
+      ),
+
+      ChildAcceptedExternal(
+        oracle_pk,
+        iss,
+        child_id,
+        lineage,
+        root,
+        parent_a,
+        parent_b,
+        time_c,
+        window,
+        space
+      )
+    ]->
+  [ ]
+
+
+/* =========================================================
+   Oracle-key compromise
+   ========================================================= */
+
+rule OracleKeyCompromise:
+  [
+      !OracleSecret(oracle_sk)
+  ]
+  --[
+      OracleKeyCompromised(
+        pk(oracle_sk)
+      )
+    ]->
+  [
+      Out(oracle_sk)
+  ]
+
+
+/* =========================================================
+   Executability
+   ========================================================= */
+
+lemma executable_external_child:
+  exists-trace
+  "Ex oracle_pk iss child_id lineage root
+      parent_a parent_b time_c window space #i.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i"
+
+
+/* =========================================================
+   Core B1 theorem
+
+   An externally accepted Child must have:
+   - a matching prior legitimate generation, or
+   - a prior compromise of the relevant Oracle key.
+   ========================================================= */
+
+lemma external_child_requires_generation_or_compromise:
+  "All oracle_pk iss child_id lineage root
+       parent_a parent_b time_c window space #i.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i
+
+     ==>
+
+     (
+       Ex #j.
+         ChildGenerated(
+           oracle_pk,
+           iss,
+           child_id,
+           lineage,
+           root,
+           parent_a,
+           parent_b,
+           time_c,
+           window,
+           space
+         ) @ j
+         & j < i
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & k < i
+     )"
+
+
+/* =========================================================
+   Same Child ID cannot carry two different lineages before
+   Oracle-key compromise.
+   ========================================================= */
+
+lemma external_child_identity_is_bound_or_compromised:
+  "All oracle_pk child_id
+       iss1 lineage1 root1 parent_a1 parent_b1
+       time_c1 window1 space1
+       iss2 lineage2 root2 parent_a2 parent_b2
+       time_c2 window2 space2
+       #i #j.
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss1,
+       child_id,
+       lineage1,
+       root1,
+       parent_a1,
+       parent_b1,
+       time_c1,
+       window1,
+       space1
+     ) @ i
+
+     &
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss2,
+       child_id,
+       lineage2,
+       root2,
+       parent_a2,
+       parent_b2,
+       time_c2,
+       window2,
+       space2
+     ) @ j
+
+     ==>
+
+     (
+       iss1 = iss2
+       & lineage1 = lineage2
+       & root1 = root2
+       & parent_a1 = parent_a2
+       & parent_b1 = parent_b2
+       & time_c1 = time_c2
+       & window1 = window2
+       & space1 = space2
+     )
+
+     |
+
+     (
+       Ex #k.
+         OracleKeyCompromised(
+           oracle_pk
+         ) @ k
+         & (
+             k < i
+             | k < j
+           )
+     )"
+
+
+/* =========================================================
+   Honest external execution
+
+   Forces Tamarin to exhibit a trace in which:
+   - Oracle generates the exact Child
+   - the Child is later externally accepted
+   - the Oracle key was not compromised before acceptance
+   ========================================================= */
+
+lemma executable_honest_external_child:
+  exists-trace
+  "Ex oracle_pk iss child_id lineage root
+      parent_a parent_b time_c window space
+      #g #i.
+
+     ChildGenerated(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ g
+
+     &
+
+     ChildAcceptedExternal(
+       oracle_pk,
+       iss,
+       child_id,
+       lineage,
+       root,
+       parent_a,
+       parent_b,
+       time_c,
+       window,
+       space
+     ) @ i
+
+     & g < i
+
+     & not (
+         Ex #k.
+           OracleKeyCompromised(
+             oracle_pk
+           ) @ k
+           & k < i
+       )"
+
+end

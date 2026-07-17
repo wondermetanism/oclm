@@ -1,0 +1,740 @@
+theory OCLM_Phase1C6A_Multi_Epoch_Generalization_Core
+begin
+
+/*
+ * OCLM Phase 1-C6A
+ *
+ * Multi-Epoch Generalization Core
+ *
+ * This theory replaces the fixed e0 -> e1 -> e2 verifier model with
+ * a reusable successor rule. The rule can be applied arbitrarily many
+ * times, producing a finite but unbounded-length execution trace.
+ *
+ * Each local epoch transition is recorded generically:
+ *
+ *   lower_epoch -> higher_epoch
+ *
+ * Rollback across any recorded transition is possible only after the
+ * corresponding verifier has been compromised.
+ *
+ * Repeated application of the generic rollback rule covers rollback
+ * across multiple epoch transitions.
+ *
+ * Out of scope:
+ *
+ *   C5C revocation/transparency composition
+ *   arithmetic epoch numbering
+ *   global total ordering between unrelated contracts
+ *   implementation-level key storage
+ */
+
+
+/* =========================================================================
+ * Initialize an arbitrary first epoch
+ * ========================================================================= */
+
+rule Initialize_Multi_Epoch_Lifecycle:
+  [
+    Fr(~verifier),
+    Fr(~contract),
+    Fr(~epoch_0),
+    Fr(~epoch_pk_0),
+    Fr(~lineage_root_0)
+  ]
+  --[
+    MultiEpochLifecycleInitialized(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    EpochIssued(
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    VerifierEpochObserved(
+      ~verifier,
+      ~contract,
+      ~epoch_0
+    )
+  ]->
+  [
+    !EpochRecord(
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    VerifierEpochState(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0,
+      'honest'
+    ),
+
+    AdvanceEpochPermit(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    CurrentEpochAcceptancePermit(
+      ~verifier,
+      ~contract,
+      ~epoch_0,
+      ~epoch_pk_0,
+      ~lineage_root_0
+    ),
+
+    CompromiseGeneralizedVerifierPermit(
+      ~verifier,
+      ~contract
+    )
+  ]
+
+
+/* =========================================================================
+ * Reusable generic epoch successor rule
+ * ========================================================================= */
+
+rule Advance_To_Fresh_Next_Epoch:
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root,
+      'honest'
+    ),
+
+    AdvanceEpochPermit(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root
+    ),
+
+    Fr(~higher_epoch),
+    Fr(~higher_epoch_pk),
+    Fr(~higher_lineage_root)
+  ]
+  --[
+    EpochTransitionRecorded(
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    ),
+
+    EpochIssued(
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    ),
+
+    VerifierEpochAdvanced(
+      verifier,
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    ),
+
+    VerifierEpochObserved(
+      verifier,
+      contract,
+      ~higher_epoch
+    )
+  ]->
+  [
+    !EpochRecord(
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    ),
+
+    !EpochTransition(
+      contract,
+      lower_epoch,
+      ~higher_epoch
+    ),
+
+    VerifierEpochState(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root,
+      'honest'
+    ),
+
+    AdvanceEpochPermit(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    ),
+
+    CurrentEpochAcceptancePermit(
+      verifier,
+      contract,
+      ~higher_epoch,
+      ~higher_epoch_pk,
+      ~higher_lineage_root
+    )
+  ]
+
+
+/* =========================================================================
+ * Honest acceptance at the current epoch
+ * ========================================================================= */
+
+rule Accept_At_Honest_Current_Epoch:
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    ),
+
+    CurrentEpochAcceptancePermit(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    ),
+
+    !EpochRecord(
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    )
+  ]
+  --[
+    CurrentEpochEvidence(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    ),
+
+    GeneralizedEpochAccepted(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'current'
+    )
+  ]->
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    )
+  ]
+
+
+/* =========================================================================
+ * Persistent verifier compromise
+ * ========================================================================= */
+
+rule Compromise_Generalized_Epoch_Verifier:
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'honest'
+    ),
+
+    CompromiseGeneralizedVerifierPermit(
+      verifier,
+      contract
+    )
+  ]
+  --[
+    GeneralizedEpochVerifierCompromised(
+      verifier,
+      contract,
+      epoch
+    )
+  ]->
+  [
+    !GeneralizedVerifierCompromiseState(
+      verifier,
+      contract
+    ),
+
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    CompromisedEpochAcceptancePermit(
+      verifier,
+      contract
+    )
+  ]
+
+
+/* =========================================================================
+ * Generic one-step rollback across any recorded epoch transition
+ * ========================================================================= */
+
+rule Roll_Back_One_Recorded_Epoch_After_Compromise:
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      higher_epoch,
+      higher_epoch_pk,
+      higher_lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedVerifierCompromiseState(
+      verifier,
+      contract
+    ),
+
+    !EpochTransition(
+      contract,
+      lower_epoch,
+      higher_epoch
+    ),
+
+    !EpochRecord(
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root
+    )
+  ]
+  --[
+    GeneralizedEpochRollback(
+      verifier,
+      contract,
+      higher_epoch,
+      lower_epoch
+    ),
+
+    VerifierEpochObserved(
+      verifier,
+      contract,
+      lower_epoch
+    )
+  ]->
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      lower_epoch,
+      lower_epoch_pk,
+      lower_lineage_root,
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Acceptance after one or more compromised rollback steps
+ * ========================================================================= */
+
+rule Accept_At_Stale_Epoch_After_Compromise:
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    ),
+
+    !GeneralizedVerifierCompromiseState(
+      verifier,
+      contract
+    ),
+
+    !EpochRecord(
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    ),
+
+    CompromisedEpochAcceptancePermit(
+      verifier,
+      contract
+    )
+  ]
+  --[
+    StaleEpochEvidence(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root
+    ),
+
+    GeneralizedEpochAccepted(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'stale'
+    )
+  ]->
+  [
+    VerifierEpochState(
+      verifier,
+      contract,
+      epoch,
+      epoch_pk,
+      lineage_root,
+      'compromised'
+    )
+  ]
+
+
+/* =========================================================================
+ * Executability: three advances, then two rollback steps
+ * ========================================================================= */
+
+lemma executable_generalized_multi_epoch_lifecycle:
+  exists-trace
+  "
+    Ex verifier contract
+       epoch_0 epoch_pk_0 lineage_root_0
+       epoch_1 epoch_pk_1 lineage_root_1
+       epoch_2
+       epoch_3 epoch_pk_3 lineage_root_3
+       #i0 #it1 #it2 #it3 #ia #ic #ir1 #ir2 #is.
+
+         MultiEpochLifecycleInitialized(
+           verifier,
+           contract,
+           epoch_0,
+           epoch_pk_0,
+           lineage_root_0
+         ) @ #i0
+
+       & EpochTransitionRecorded(
+           contract,
+           epoch_0,
+           epoch_1
+         ) @ #it1
+
+       & EpochTransitionRecorded(
+           contract,
+           epoch_1,
+           epoch_2
+         ) @ #it2
+
+       & EpochTransitionRecorded(
+           contract,
+           epoch_2,
+           epoch_3
+         ) @ #it3
+
+       & GeneralizedEpochAccepted(
+           verifier,
+           contract,
+           epoch_3,
+           epoch_pk_3,
+           lineage_root_3,
+           'current'
+         ) @ #ia
+
+       & GeneralizedEpochVerifierCompromised(
+           verifier,
+           contract,
+           epoch_3
+         ) @ #ic
+
+       & GeneralizedEpochRollback(
+           verifier,
+           contract,
+           epoch_3,
+           epoch_2
+         ) @ #ir1
+
+       & GeneralizedEpochRollback(
+           verifier,
+           contract,
+           epoch_2,
+           epoch_1
+         ) @ #ir2
+
+       & GeneralizedEpochAccepted(
+           verifier,
+           contract,
+           epoch_1,
+           epoch_pk_1,
+           lineage_root_1,
+           'stale'
+         ) @ #is
+
+       & #i0 < #it1
+       & #it1 < #it2
+       & #it2 < #it3
+       & #it3 < #ia
+       & #ia < #ic
+       & #ic < #ir1
+       & #ir1 < #ir2
+       & #ir2 < #is
+  "
+
+
+/* =========================================================================
+ * Every accepted epoch was previously issued with matching material
+ * ========================================================================= */
+
+lemma accepted_epoch_requires_matching_prior_issuance:
+  "
+    All verifier contract epoch epoch_pk lineage_root mode #ia.
+
+      GeneralizedEpochAccepted(
+        verifier,
+        contract,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        mode
+      ) @ #ia
+
+      ==>
+
+      (Ex #ii.
+
+          EpochIssued(
+            contract,
+            epoch,
+            epoch_pk,
+            lineage_root
+          ) @ #ii
+
+        & #ii < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Clean current acceptance carries current evidence
+ * ========================================================================= */
+
+lemma current_epoch_acceptance_has_current_evidence:
+  "
+    All verifier contract epoch epoch_pk lineage_root #ia.
+
+      GeneralizedEpochAccepted(
+        verifier,
+        contract,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'current'
+      ) @ #ia
+
+      ==>
+
+      CurrentEpochEvidence(
+        verifier,
+        contract,
+        epoch,
+        epoch_pk,
+        lineage_root
+      ) @ #ia
+  "
+
+
+/* =========================================================================
+ * Every stale acceptance requires prior verifier compromise
+ * ========================================================================= */
+
+lemma stale_epoch_acceptance_requires_prior_verifier_compromise:
+  "
+    All verifier contract epoch epoch_pk lineage_root #ia.
+
+      GeneralizedEpochAccepted(
+        verifier,
+        contract,
+        epoch,
+        epoch_pk,
+        lineage_root,
+        'stale'
+      ) @ #ia
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedEpochVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #ia
+      )
+  "
+
+
+/* =========================================================================
+ * Every generic rollback step requires prior verifier compromise
+ * ========================================================================= */
+
+lemma generalized_epoch_rollback_requires_prior_verifier_compromise:
+  "
+    All verifier contract higher_epoch lower_epoch #ir.
+
+      GeneralizedEpochRollback(
+        verifier,
+        contract,
+        higher_epoch,
+        lower_epoch
+      ) @ #ir
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedEpochVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #ir
+      )
+  "
+
+
+/* =========================================================================
+ * A recorded successor edge cannot be traversed backward honestly
+ * ========================================================================= */
+
+lemma recorded_epoch_transition_never_rolls_back_without_compromise:
+  "
+    All verifier contract lower_epoch higher_epoch
+        #it #ih #il.
+
+          EpochTransitionRecorded(
+            contract,
+            lower_epoch,
+            higher_epoch
+          ) @ #it
+
+        & VerifierEpochObserved(
+            verifier,
+            contract,
+            higher_epoch
+          ) @ #ih
+
+        & VerifierEpochObserved(
+            verifier,
+            contract,
+            lower_epoch
+          ) @ #il
+
+        & #ih < #il
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedEpochVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #il
+      )
+  "
+
+
+/* =========================================================================
+ * Conflicting direct-edge acceptance histories require compromise
+ * ========================================================================= */
+
+lemma conflicting_direct_epoch_acceptances_require_prior_compromise:
+  "
+    All verifier contract lower_epoch higher_epoch
+        lower_epoch_pk lower_lineage_root
+        higher_epoch_pk higher_lineage_root
+        higher_mode lower_mode
+        #it #ih #il.
+
+          EpochTransitionRecorded(
+            contract,
+            lower_epoch,
+            higher_epoch
+          ) @ #it
+
+        & GeneralizedEpochAccepted(
+            verifier,
+            contract,
+            higher_epoch,
+            higher_epoch_pk,
+            higher_lineage_root,
+            higher_mode
+          ) @ #ih
+
+        & GeneralizedEpochAccepted(
+            verifier,
+            contract,
+            lower_epoch,
+            lower_epoch_pk,
+            lower_lineage_root,
+            lower_mode
+          ) @ #il
+
+        & #ih < #il
+
+      ==>
+
+      (Ex compromise_epoch #ic.
+
+          GeneralizedEpochVerifierCompromised(
+            verifier,
+            contract,
+            compromise_epoch
+          ) @ #ic
+
+        & #ic < #il
+      )
+  "
+
+end

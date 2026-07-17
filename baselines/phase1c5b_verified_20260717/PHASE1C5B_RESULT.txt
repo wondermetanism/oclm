@@ -1,0 +1,78 @@
+OCLM Phase 1-C5B
+Transparency / Split-View Resistance Core
+
+Status:
+FORMALLY VERIFIED
+
+Verification date:
+2026-07-17
+
+Verification environment:
+Tamarin Prover 1.12.0
+Maude 3.5.1
+macOS 26.5.2 arm64
+
+Model:
+oclm_phase1c5b_transparency_split_view_core.spthy
+
+Model SHA-256:
+b9c9c13390e7c6758d09ccadf4dd1b81b78e57e1439049e0d2290462b2668b14
+
+Final all-lemma proof result:
+phase1c5b_all_lemmas_20260717.txt
+
+Final proof SHA-256:
+b4a75529f34c704edf077385d64a96e07c4e7849589e007fafef57f566baa055
+
+Final processing time:
+0.82 seconds
+
+Verified lemmas:
+
+1. executable_transparency_split_view_lifecycle
+   exists-trace
+   verified (37 steps)
+
+2. accepted_checkpoint_requires_matching_issuance
+   all-traces
+   verified (9 steps)
+
+3. conflicting_checkpoint_roots_require_prior_log_compromise
+   all-traces
+   verified (19 steps)
+
+4. same_certificate_conflicting_transparency_histories_require_compromise
+   all-traces
+   verified (11 steps)
+
+5. conflicting_gossip_produces_equivocation_evidence
+   all-traces
+   verified (2 steps)
+
+Verified guarantee:
+
+Every accepted transparency checkpoint requires matching prior issuance.
+Conflicting roots for the same checkpoint version require prior
+Transparency Log compromise. Acceptance of the same certificate under
+conflicting roots requires prior Log compromise. When conflicting
+same-version views are gossiped, equivocation evidence is generated.
+
+Explicit scope:
+
+- finite checkpoints s0 -> s1
+- honest append-only checkpoint extension
+- two verifier views
+- consistent-view gossip
+- persistent Transparency Log compromise
+- conflicting same-version root issuance
+- certificate acceptance under canonical and forked roots
+- gossip-based equivocation evidence
+
+Excluded from this phase:
+
+- composition with C4B lineage acceptance
+- composition with C5A revocation state
+- Merkle-tree cryptographic internals
+- gossip transport availability guarantees
+- witness quorum and implementation-level log replication
+- unbounded checkpoint generalization

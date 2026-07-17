@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "publication": {
+    "name": "Oracle–Child Lineage Model",
+    "short_name": "OCLM",
+    "phase": "Phase 1",
+    "version": "1.0.0",
+    "tag": "oclm-phase1-v1.0.0",
+    "title": "Oracle–Child Lineage Model (OCLM) Phase 1: Formally Verified Lineage-Substitution Resistance Core",
+    "status": [
+      "FORMALLY VERIFIED",
+      "COMPLETE"
+    ],
+    "release_type": "OCLM Open Verification Release",
+    "license_description": "Publicly Verifiable, Source-Available for Non-Commercial Use",
+    "publication_date": "2026-07-18"
+  },
+  "origin": {
+    "creator": "Hirofumi Kureha",
+    "creator_alias": "HiRO",
+    "creator_statement": "Conceived and designed by Hirofumi Kureha (HiRO).",
+    "copyright_holder": "Hirofumi Kureha (HiRO)",
+    "publisher": "WonderMetanism Inc.",
+    "publisher_statement": "First published by WonderMetanism Inc.",
+    "administrator_statement": "Licensed and administered by WonderMetanism Inc.",
+    "creator_orcid": "https://orcid.org/0009-0006-6182-534X"
+  },
+  "governance": {
+    "canonical_publication_authority": "WonderMetanism Inc.",
+    "commercial_authorization_body": "WonderMetanism Inc.",
+    "certification_authority": "WonderMetanism Inc.",
+    "official_website": "https://www.wonder-metanism.com"
+  },
+  "identifiers": {
+    "github_repository": "https://github.com/wondermetanism/oclm",
+    "github_release": null,
+    "zenodo_doi": "10.5281/zenodo.21416118",
+    "zenodo_record": null
+  },
+  "verification": {
+    "tamarin_version": "1.12.0",
+    "maude_version": "3.5.1",
+    "verified_lemmas": 13,
+    "total_lemmas": 13,
+    "verified_release_packages": 15,
+    "total_release_packages": 15,
+    "formal_reproduction_status": "PASS",
+    "release_integrity_status": "PASS"
+  },
+  "canonical_artifacts": {
+    "final_model": {
+      "path": "model/tamarin/oclm_phase1c6b_generalized_security_composition_contract.spthy",
+      "sha256": "c3a350f15677c93491b3af392c0519f08d3d0a6ea70200121eb4a315d7064328"
+    },
+    "consolidated_proof": {
+      "path": "results/phase1c6b_generalized_security_composition_contract_proof_20260717.txt",
+      "sha256": "de6d508dc5508b1e19e7009242f4541f9cdf8ecc170c02a1746ee8544977caec"
+    },
+    "frozen_release": {
+      "path": "releases/oclm_phase1c6b_verified_20260717.zip",
+      "sha256": "39a6aa3b4103e4a50f3977b43d4948142541e788dd77a69b533ed58afb4c363e"
+    },
+    "proof_index": {
+      "path": "baselines/PROOF_INDEX.md",
+      "sha256": "d7890c5d17dec538e5b6a75397cfc25523faf54412dab81ce49388426373281f"
+    },
+    "verified_proofset_manifest": {
+      "path": "releases/OCLM_VERIFIED_PROOFSET_20260717.txt",
+      "sha256": "6c91c04587780ddc6cf5e0ab3c400f299beb55097f91668d0e0811deaff3931e"
+    },
+    "index_manifest_hash_record": {
+      "path": "results/phase1c6b_index_manifest_hashes_20260717.txt",
+      "sha256": "6ab6de06381b297886d5498aaecfe00e924973bebe6bdd94ea5699cc31abfbc5"
+    }
+  },
+  "verification_commands": [
+    "./scripts/verify-release-integrity.sh",
+    "./scripts/verify-phase1c6b.sh",
+    "./scripts/audit-publication-documents.sh"
+  ],
+  "license_files": [
+    "LICENSE",
+    "COMMERCIAL-LICENSE.md",
+    "TRADEMARKS.md"
+  ],
+  "publication_documents": [
+    "README.md",
+    "CITATION.cff",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
+  ],
+  "immutability_policy": "Published artifacts are not silently replaced. Corrections require a new version, new integrity values, and a new release record."
+}

@@ -1,0 +1,845 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_Phase1C3_ForwardSecureEpochs] Theory loaded
+[Theory OCLM_Phase1C3_ForwardSecureEpochs] Theory translated
+[Theory OCLM_Phase1C3_ForwardSecureEpochs] Derivation checks started
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Theory OCLM_Phase1C3_ForwardSecureEpochs] Derivation checks ended
+[Theory OCLM_Phase1C3_ForwardSecureEpochs] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Saturating Sources] Step 2 (Max 5)
+[Saturating Sources] Done
+theory OCLM_Phase1C3_ForwardSecureEpochs
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) OracleRootSetup:
+   [ Fr( ~root_sk ) ]
+  --[ OracleRootInitialized( pk(~root_sk) ) ]->
+   [
+   !RootSecret( ~root_sk ), !RootPublic( pk(~root_sk) ),
+   GenesisEpochAvailable( pk(~root_sk) ), NextEpochPermit( pk(~root_sk) ),
+   Out( pk(~root_sk) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) StartGenesisEpoch:
+   [
+   !RootSecret( ~root_sk ), GenesisEpochAvailable( pk(~root_sk) ),
+   Fr( ~epoch ), Fr( ~epoch_sk )
+   ]
+  --[
+  EpochKeyCredentialIssued( pk(~root_sk), ~epoch, pk(~epoch_sk),
+                            'oclm-genesis-predecessor'
+  ),
+  EpochStarted( pk(~root_sk), ~epoch, pk(~epoch_sk),
+                'oclm-genesis-predecessor'
+  )
+  ]->
+   [
+   !EpochCredential( pk(~root_sk), ~epoch, pk(~epoch_sk),
+                     'oclm-genesis-predecessor',
+                     <'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, pk(~epoch_sk), 
+                      'oclm-genesis-predecessor'>,
+                     sign(<'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, 
+                           pk(~epoch_sk), 'oclm-genesis-predecessor'>,
+                          ~root_sk)
+   ),
+   EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ),
+   EpochReady( pk(~root_sk), ~epoch, pk(~epoch_sk),
+               'oclm-genesis-predecessor'
+   ),
+   Out( <
+         <'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, pk(~epoch_sk), 
+          'oclm-genesis-predecessor'>, 
+         sign(<'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, 
+               pk(~epoch_sk), 'oclm-genesis-predecessor'>,
+              ~root_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) StartNextEpoch:
+   [
+   !RootSecret( ~root_sk ), NextEpochPermit( pk(~root_sk) ),
+   EpochCompleted( pk(~root_sk), previous_epoch, previous_epoch_pk,
+                   previous_anchor
+   ),
+   Fr( ~epoch ), Fr( ~epoch_sk )
+   ]
+  --[
+  EpochKeyCredentialIssued( pk(~root_sk), ~epoch, pk(~epoch_sk),
+                            previous_anchor
+  ),
+  EpochStarted( pk(~root_sk), ~epoch, pk(~epoch_sk), previous_anchor )
+  ]->
+   [
+   !EpochCredential( pk(~root_sk), ~epoch, pk(~epoch_sk), previous_anchor,
+                     <'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, pk(~epoch_sk), 
+                      previous_anchor>,
+                     sign(<'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, 
+                           pk(~epoch_sk), previous_anchor>,
+                          ~root_sk)
+   ),
+   EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ),
+   EpochReady( pk(~root_sk), ~epoch, pk(~epoch_sk), previous_anchor ),
+   Out( <
+         <'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, pk(~epoch_sk), 
+          previous_anchor>, 
+         sign(<'oclm-epoch-key-credential-v1', pk(~root_sk), ~epoch, 
+               pk(~epoch_sk), previous_anchor>,
+              ~root_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OpenEpochWindow:
+   [
+   EpochReady( root_pk, epoch, epoch_pk, predecessor ), Fr( ~iss ),
+   Fr( ~window ), Fr( ~space )
+   ]
+  --[
+  WindowOpened( root_pk, epoch, epoch_pk, predecessor, ~iss,
+                h(<'oclm-c3-window-root', root_pk, epoch, epoch_pk, predecessor, ~iss, 
+                   $A, $B, ~window, ~space>),
+                $A, $B, ~window, ~space
+  )
+  ]->
+   [
+   WindowNone( root_pk, epoch, epoch_pk, predecessor, ~iss,
+               h(<'oclm-c3-window-root', root_pk, epoch, epoch_pk, predecessor, ~iss, 
+                  $A, $B, ~window, ~space>),
+               $A, $B, ~window, ~space
+   ),
+   Out( <'oclm-c3-window-opened', root_pk, epoch, epoch_pk, predecessor, 
+         ~iss, 
+         h(<'oclm-c3-window-root', root_pk, epoch, epoch_pk, predecessor, ~iss, 
+            $A, $B, ~window, ~space>), 
+         $A, $B, ~window, ~space>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAFirst:
+   [
+   WindowNone( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+               window, space
+   ),
+   Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root, A,
+                       B, ~timeA, ~contextA, window, space
+  )
+  ]->
+   [
+   WindowAReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                 ~timeA, ~contextA, window, space
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBFirst:
+   [
+   WindowNone( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+               window, space
+   ),
+   Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root, A,
+                       B, ~timeB, ~contextB, window, space
+  )
+  ]->
+   [
+   WindowBReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                 ~timeB, ~contextB, window, space
+   )
+   ]
+
+  // loop breaker: [0]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBJoinsAfterA:
+   [
+   WindowAReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                 timeA, contextA, window, space
+   ),
+   Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root, A,
+                       B, ~timeB, ~contextB, window, space
+  )
+  ]->
+   [
+   WindowBothReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                    timeA, contextA, ~timeB, ~contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAJoinsAfterB:
+   [
+   WindowBReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                 timeB, contextB, window, space
+   ),
+   Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root, A,
+                       B, ~timeA, ~contextA, window, space
+  )
+  ]->
+   [
+   WindowBothReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                    ~timeA, ~contextA, timeB, contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateChildInsideEpoch:
+   [
+   WindowBothReady( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                    timeA, contextA, timeB, contextB, window, space
+   ),
+   Fr( ~timeC ), Fr( ~interaction )
+   ]
+  --[
+  ChildGeneratedInsideEpoch( root_pk, epoch, epoch_pk, predecessor, iss,
+                             h(<'oclm-c3-child-id', 
+                                h(<'oclm-c3-lineage', root_pk, epoch, epoch_pk, predecessor, iss, root, 
+                                   A, B, timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                                   ~interaction>)
+                               >),
+                             h(<'oclm-c3-lineage', root_pk, epoch, epoch_pk, predecessor, iss, root, 
+                                A, B, timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                                ~interaction>),
+                             root, A, B, timeA, timeB, ~timeC, window, space
+  )
+  ]->
+   [
+   WindowGenerated( root_pk, epoch, epoch_pk, predecessor, iss,
+                    h(<'oclm-c3-child-id', 
+                       h(<'oclm-c3-lineage', root_pk, epoch, epoch_pk, predecessor, iss, root, 
+                          A, B, timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                          ~interaction>)
+                      >),
+                    h(<'oclm-c3-lineage', root_pk, epoch, epoch_pk, predecessor, iss, root, 
+                       A, B, timeA, timeB, ~timeC, window, space, contextA, contextB, 
+                       ~interaction>),
+                    root, A, B, timeA, timeB, ~timeC, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) IssueCertificateAndEraseEpochKey:
+   [
+   EpochKeyLive( root_pk, epoch, ~epoch_sk ),
+   !EpochCredential( root_pk, epoch, pk(~epoch_sk), predecessor,
+                     epoch_credential, root_signature
+   ),
+   WindowGenerated( root_pk, epoch, pk(~epoch_sk), predecessor, iss,
+                    child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+   )
+   ]
+  --[
+  CompositionCertificateIssued( root_pk, epoch, pk(~epoch_sk), predecessor,
+                                iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+  ),
+  EpochKeyErased( root_pk, epoch, pk(~epoch_sk),
+                  h(<
+                     <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+                      pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+                      timeB, timeC, window, space>, 
+                     sign(<'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+                           pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+                           timeB, timeC, window, space>,
+                          ~epoch_sk)
+                    >)
+  )
+  ]->
+   [
+   EpochCompleted( root_pk, epoch, pk(~epoch_sk),
+                   h(<
+                      <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+                       pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+                       timeB, timeC, window, space>, 
+                      sign(<'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+                            pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+                            timeB, timeC, window, space>,
+                           ~epoch_sk)
+                     >)
+   ),
+   Out( <epoch_credential, root_signature, 
+         <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+          pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+          timeB, timeC, window, space>, 
+         sign(<'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+               pk(~epoch_sk), predecessor, iss, child_id, lineage, root, A, B, timeA, 
+               timeB, timeC, window, space>,
+              ~epoch_sk)
+        >
+   )
+   ]
+
+  // loop breakers: [0,1]
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseLiveEpochKey:
+   [ EpochKeyLive( root_pk, epoch, epoch_sk ) ]
+  --[ EpochKeyCompromised( root_pk, epoch, pk(epoch_sk) ) ]->
+   [ Out( epoch_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CompromiseRootKey:
+   [ !RootSecret( root_sk ) ]
+  --[ RootKeyCompromised( pk(root_sk) ) ]->
+   [ Out( root_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentAClaim:
+   [ In( <'oclm-c3-claim-a', iss, A, claimA> ) ]
+  --[ ParentAClaimPublished( iss, A, claimA ) ]->
+   [ !ParentAClaim( iss, A, claimA ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentBClaim:
+   [ In( <'oclm-c3-claim-b', iss, B, claimB> ) ]
+  --[ ParentBClaimPublished( iss, B, claimB ) ]->
+   [ !ParentBClaim( iss, B, claimB ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishConsensusDecision:
+   [ In( <'oclm-c3-consensus', iss, decision> ) ]
+  --[ ConsensusDecisionPublished( iss, decision ) ]->
+   [ !ConsensusDecision( iss, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) DeclareClaimCollapse:
+   [
+   !ParentAClaim( iss, A, claimA ), !ParentBClaim( iss, B, claimB ),
+   !ConsensusDecision( iss, decision )
+   ]
+  --[ ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) ]->
+   [ !CollapseActive( iss, A, B, claimA, claimB, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyForwardSecureCertificateAfterCollapse:
+   [
+   !RootPublic( root_pk ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <
+        <'oclm-epoch-key-credential-v1', root_pk, epoch, epoch_pk, predecessor>, 
+        root_signature, 
+        <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+         epoch_pk, predecessor, iss, child_id, lineage, root, A, B, timeA, timeB, 
+         timeC, window, space>, 
+        certificate_signature>
+   )
+   ]
+  --[
+  Eq( verify(root_signature,
+             <'oclm-epoch-key-credential-v1', root_pk, epoch, epoch_pk, predecessor>,
+             root_pk),
+      true
+  ),
+  Eq( verify(certificate_signature,
+             <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+              epoch_pk, predecessor, iss, child_id, lineage, root, A, B, timeA, timeB, 
+              timeC, window, space>,
+             epoch_pk),
+      true
+  ),
+  Eq( child_id, h(<'oclm-c3-child-id', lineage>) ),
+  ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor, iss,
+                              child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /*
+  rule (modulo AC) VerifyForwardSecureCertificateAfterCollapse:
+     [
+     !RootPublic( root_pk ),
+     !CollapseActive( iss, A, B, claimA, claimB, decision ),
+     In( <
+          <'oclm-epoch-key-credential-v1', root_pk, epoch, epoch_pk, predecessor>, 
+          root_signature, 
+          <'oclm-forward-secure-composition-certificate-v1', root_pk, epoch, 
+           epoch_pk, predecessor, iss, child_id, lineage, root, A, B, timeA, timeB, 
+           timeC, window, space>, 
+          certificate_signature>
+     )
+     ]
+    --[
+    Eq( z, true ), Eq( z.1, true ),
+    Eq( child_id, h(<'oclm-c3-child-id', lineage>) ),
+    ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor, iss,
+                                child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+    )
+    ]->
+     [ ]
+    variants (modulo AC)
+    1. A     = A.45
+       B     = B.46
+       certificate_signature
+             = certificate_signature.47
+       child_id
+             = child_id.48
+       epoch = epoch.52
+       epoch_pk
+             = epoch_pk.53
+       iss   = iss.54
+       lineage
+             = lineage.55
+       predecessor
+             = predecessor.56
+       root  = root.57
+       root_pk
+             = root_pk.58
+       root_signature
+             = root_signature.59
+       space = space.60
+       timeA = timeA.61
+       timeB = timeB.62
+       timeC = timeC.63
+       window
+             = window.64
+       z     = verify(root_signature.59,
+                      <'oclm-epoch-key-credential-v1', root_pk.58, epoch.52, epoch_pk.53, 
+                       predecessor.56>,
+                      root_pk.58)
+       z.1   = verify(certificate_signature.47,
+                      <'oclm-forward-secure-composition-certificate-v1', root_pk.58, epoch.52, 
+                       epoch_pk.53, predecessor.56, iss.54, child_id.48, lineage.55, root.57, 
+                       A.45, B.46, timeA.61, timeB.62, timeC.63, window.64, space.60>,
+                      epoch_pk.53)
+    
+    2. A     = A.80
+       B     = B.81
+       certificate_signature
+             = sign(<'oclm-forward-secure-composition-certificate-v1', root_pk.93, 
+                     epoch.87, pk(x.158), predecessor.91, iss.89, child_id.83, lineage.90, 
+                     root.92, A.80, B.81, timeA.96, timeB.97, timeC.98, window.99, space.95>,
+                    x.158)
+       child_id
+             = child_id.83
+       epoch = epoch.87
+       epoch_pk
+             = pk(x.158)
+       iss   = iss.89
+       lineage
+             = lineage.90
+       predecessor
+             = predecessor.91
+       root  = root.92
+       root_pk
+             = root_pk.93
+       root_signature
+             = root_signature.94
+       space = space.95
+       timeA = timeA.96
+       timeB = timeB.97
+       timeC = timeC.98
+       window
+             = window.99
+       z     = verify(root_signature.94,
+                      <'oclm-epoch-key-credential-v1', root_pk.93, epoch.87, pk(x.158), 
+                       predecessor.91>,
+                      root_pk.93)
+       z.1   = true
+    
+    3. A     = A.80
+       B     = B.81
+       certificate_signature
+             = sign(<'oclm-forward-secure-composition-certificate-v1', pk(x.156), 
+                     epoch.87, pk(x.158), predecessor.91, iss.89, child_id.83, lineage.90, 
+                     root.92, A.80, B.81, timeA.96, timeB.97, timeC.98, window.99, space.95>,
+                    x.158)
+       child_id
+             = child_id.83
+       epoch = epoch.87
+       epoch_pk
+             = pk(x.158)
+       iss   = iss.89
+       lineage
+             = lineage.90
+       predecessor
+             = predecessor.91
+       root  = root.92
+       root_pk
+             = pk(x.156)
+       root_signature
+             = sign(<'oclm-epoch-key-credential-v1', pk(x.156), epoch.87, pk(x.158), 
+                     predecessor.91>,
+                    x.156)
+       space = space.95
+       timeA = timeA.96
+       timeB = timeB.97
+       timeC = timeC.98
+       window
+             = window.99
+       z     = true
+       z.1   = true
+    
+    4. A     = A.82
+       B     = B.83
+       certificate_signature
+             = certificate_signature.84
+       child_id
+             = child_id.85
+       epoch = epoch.89
+       epoch_pk
+             = epoch_pk.90
+       iss   = iss.91
+       lineage
+             = lineage.92
+       predecessor
+             = predecessor.93
+       root  = root.94
+       root_pk
+             = pk(x.162)
+       root_signature
+             = sign(<'oclm-epoch-key-credential-v1', pk(x.162), epoch.89, 
+                     epoch_pk.90, predecessor.93>,
+                    x.162)
+       space = space.97
+       timeA = timeA.98
+       timeB = timeB.99
+       timeC = timeC.100
+       window
+             = window.101
+       z     = true
+       z.1   = verify(certificate_signature.84,
+                      <'oclm-forward-secure-composition-certificate-v1', pk(x.162), epoch.89, 
+                       epoch_pk.90, predecessor.93, iss.91, child_id.85, lineage.92, root.94, 
+                       A.82, B.83, timeA.98, timeB.99, timeC.100, window.101, space.97>,
+                      epoch_pk.90)
+  */
+
+lemma executable_old_certificate_after_later_epoch_compromise:
+  exists-trace
+  "∃ root_pk old_epoch old_epoch_pk old_predecessor iss child_id lineage
+     root A B timeA timeB timeC window space old_anchor new_epoch new_epoch_pk
+     #c #n #k #v.
+    ((((((EpochKeyErased( root_pk, old_epoch, old_epoch_pk, old_anchor
+          ) @ #c) ∧
+         (EpochKeyCredentialIssued( root_pk, new_epoch, new_epoch_pk, old_anchor
+          ) @ #n)) ∧
+        (EpochKeyCompromised( root_pk, new_epoch, new_epoch_pk ) @ #k)) ∧
+       (ForwardSecureChildAccepted( root_pk, old_epoch, old_epoch_pk,
+                                    old_predecessor, iss, child_id, lineage, root, A, B, timeA, timeB, timeC,
+                                    window, space
+        ) @ #v)) ∧
+      (#c < #n)) ∧
+     (#n < #k)) ∧
+    (#k < #v)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ root_pk old_epoch old_epoch_pk old_predecessor iss child_id lineage
+   root A B timeA timeB timeC window space old_anchor new_epoch new_epoch_pk
+   #c #n #k #v.
+  (EpochKeyErased( root_pk, old_epoch, old_epoch_pk, old_anchor ) @ #c) ∧
+  (EpochKeyCredentialIssued( root_pk, new_epoch, new_epoch_pk, old_anchor
+   ) @ #n) ∧
+  (EpochKeyCompromised( root_pk, new_epoch, new_epoch_pk ) @ #k) ∧
+  (ForwardSecureChildAccepted( root_pk, old_epoch, old_epoch_pk,
+                               old_predecessor, iss, child_id, lineage, root, A, B, timeA, timeB, timeC,
+                               window, space
+   ) @ #v)
+ ∧
+  (#c < #n) ∧ (#n < #k) ∧ (#k < #v)"
+*/
+by sorry
+
+lemma erased_epoch_key_cannot_be_compromised_later:
+  all-traces
+  "∀ root_pk epoch epoch_pk anchor #e.
+    (EpochKeyErased( root_pk, epoch, epoch_pk, anchor ) @ #e) ⇒
+    (¬(∃ #k.
+        (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ∧ (#e < #k)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk epoch epoch_pk anchor #e.
+  (EpochKeyErased( root_pk, epoch, epoch_pk, anchor ) @ #e)
+ ∧
+  ∃ #k. (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ∧ #e < #k"
+*/
+simplify
+solve( WindowGenerated( root_pk, epoch, pk(~epoch_sk), predecessor, iss,
+                        child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+       ) ▶₂ #e )
+  case GenerateChildInsideEpoch_case_1
+  solve( EpochKeyLive( root_pk, epoch, ~epoch_sk ) ▶₀ #k )
+    case StartGenesisEpoch
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  next
+    case StartNextEpoch_case_1
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  next
+    case StartNextEpoch_case_2
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  qed
+next
+  case GenerateChildInsideEpoch_case_2
+  solve( EpochKeyLive( root_pk, epoch, ~epoch_sk ) ▶₀ #k )
+    case StartGenesisEpoch
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  next
+    case StartNextEpoch_case_1
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  next
+    case StartNextEpoch_case_2
+    by solve( EpochKeyLive( pk(~root_sk), ~epoch, ~epoch_sk ) ▶₀ #e )
+  qed
+qed
+
+lemma fs_acceptance_requires_issuance_or_target_compromise:
+  all-traces
+  "∀ root_pk epoch epoch_pk predecessor iss child_id lineage root A B timeA
+     timeB timeC window space #v.
+    (ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor, iss,
+                                 child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+     ) @ #v) ⇒
+    (((∃ #c.
+        (CompositionCertificateIssued( root_pk, epoch, epoch_pk, predecessor,
+                                       iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+         ) @ #c) ∧
+        (#c < #v)) ∨
+      (∃ #k.
+        (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ∧ (#k < #v))) ∨
+     (∃ #r. (RootKeyCompromised( root_pk ) @ #r) ∧ (#r < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk epoch epoch_pk predecessor iss child_id lineage root A B timeA
+   timeB timeC window space #v.
+  (ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor, iss,
+                               child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #c.
+    (CompositionCertificateIssued( root_pk, epoch, epoch_pk, predecessor,
+                                   iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+     ) @ #c)
+   ⇒
+    ¬(#c < #v)) ∧
+  (∀ #k.
+    (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ⇒ ¬(#k < #v)) ∧
+  (∀ #r. (RootKeyCompromised( root_pk ) @ #r) ⇒ ¬(#r < #v))"
+*/
+by sorry
+
+lemma uncompromised_erased_epoch_acceptance_has_full_ancestry:
+  all-traces
+  "∀ root_pk epoch epoch_pk predecessor iss child_id lineage root A B timeA
+     timeB timeC window space #v.
+    (((ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor,
+                                   iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+       ) @ #v) ∧
+      (¬(∃ #k.
+          (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ∧ (#k < #v)))) ∧
+     (¬(∃ #r. (RootKeyCompromised( root_pk ) @ #r) ∧ (#r < #v)))) ⇒
+    (∃ contextA contextB anchor #e #o #a #b #g #c.
+      (((((((((((((EpochKeyCredentialIssued( root_pk, epoch, epoch_pk,
+                                             predecessor
+                   ) @ #e) ∧
+                  (WindowOpened( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                                 window, space
+                   ) @ #o)) ∧
+                 (ParentAParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root,
+                                       A, B, timeA, contextA, window, space
+                  ) @ #a)) ∧
+                (ParentBParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root,
+                                      A, B, timeB, contextB, window, space
+                 ) @ #b)) ∧
+               (ChildGeneratedInsideEpoch( root_pk, epoch, epoch_pk, predecessor, iss,
+                                           child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+                ) @ #g)) ∧
+              (CompositionCertificateIssued( root_pk, epoch, epoch_pk, predecessor,
+                                             iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window,
+                                             space
+               ) @ #c)) ∧
+             (EpochKeyErased( root_pk, epoch, epoch_pk, anchor ) @ #c)) ∧
+            (#e < #o)) ∧
+           (#o < #a)) ∧
+          (#o < #b)) ∧
+         (#a < #g)) ∧
+        (#b < #g)) ∧
+       (#g < #c)) ∧
+      (#c < #v))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk epoch epoch_pk predecessor iss child_id lineage root A B timeA
+   timeB timeC window space #v.
+  (ForwardSecureChildAccepted( root_pk, epoch, epoch_pk, predecessor, iss,
+                               child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #k.
+    (EpochKeyCompromised( root_pk, epoch, epoch_pk ) @ #k) ⇒ ¬(#k < #v)) ∧
+  (∀ #r. (RootKeyCompromised( root_pk ) @ #r) ⇒ ¬(#r < #v)) ∧
+  (∀ contextA contextB anchor #e #o #a #b #g #c.
+    (EpochKeyCredentialIssued( root_pk, epoch, epoch_pk, predecessor
+     ) @ #e) ∧
+    (WindowOpened( root_pk, epoch, epoch_pk, predecessor, iss, root, A, B,
+                   window, space
+     ) @ #o) ∧
+    (ParentAParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root,
+                          A, B, timeA, contextA, window, space
+     ) @ #a) ∧
+    (ParentBParticipated( root_pk, epoch, epoch_pk, predecessor, iss, root,
+                          A, B, timeB, contextB, window, space
+     ) @ #b) ∧
+    (ChildGeneratedInsideEpoch( root_pk, epoch, epoch_pk, predecessor, iss,
+                                child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+     ) @ #g) ∧
+    (CompositionCertificateIssued( root_pk, epoch, epoch_pk, predecessor,
+                                   iss, child_id, lineage, root, A, B, timeA, timeB, timeC, window, space
+     ) @ #c) ∧
+    (EpochKeyErased( root_pk, epoch, epoch_pk, anchor ) @ #c)
+   ⇒
+    ((¬(#e < #o)) ∨
+     (¬(#o < #a)) ∨
+     (¬(#o < #b)) ∨
+     (¬(#a < #g)) ∨
+     (¬(#b < #g)) ∨
+     (¬(#g < #c)) ∨
+     (¬(#c < #v))))"
+*/
+by sorry
+
+lemma past_epoch_identity_is_bound_or_target_compromised:
+  all-traces
+  "∀ root_pk child_id epoch1 epoch_pk1 predecessor1 iss1 lineage1 root1 A1
+     B1 timeA1 timeB1 timeC1 window1 space1 epoch2 epoch_pk2 predecessor2 iss2
+     lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+    ((ForwardSecureChildAccepted( root_pk, epoch1, epoch_pk1, predecessor1,
+                                  iss1, child_id, lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                                  space1
+      ) @ #i) ∧
+     (ForwardSecureChildAccepted( root_pk, epoch2, epoch_pk2, predecessor2,
+                                  iss2, child_id, lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                                  space2
+      ) @ #j)) ⇒
+    ((((((((((((((((epoch1 = epoch2) ∧ (epoch_pk1 = epoch_pk2)) ∧
+                  (predecessor1 = predecessor2)) ∧
+                 (iss1 = iss2)) ∧
+                (lineage1 = lineage2)) ∧
+               (root1 = root2)) ∧
+              (A1 = A2)) ∧
+             (B1 = B2)) ∧
+            (timeA1 = timeA2)) ∧
+           (timeB1 = timeB2)) ∧
+          (timeC1 = timeC2)) ∧
+         (window1 = window2)) ∧
+        (space1 = space2)) ∨
+       (∃ #k.
+         (EpochKeyCompromised( root_pk, epoch1, epoch_pk1 ) @ #k) ∧
+         ((#k < #i) ∨ (#k < #j)))) ∨
+      (∃ #k.
+        (EpochKeyCompromised( root_pk, epoch2, epoch_pk2 ) @ #k) ∧
+        ((#k < #i) ∨ (#k < #j)))) ∨
+     (∃ #r. (RootKeyCompromised( root_pk ) @ #r) ∧ ((#r < #i) ∨ (#r < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ root_pk child_id epoch1 epoch_pk1 predecessor1 iss1 lineage1 root1 A1
+   B1 timeA1 timeB1 timeC1 window1 space1 epoch2 epoch_pk2 predecessor2 iss2
+   lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2 space2 #i #j.
+  (ForwardSecureChildAccepted( root_pk, epoch1, epoch_pk1, predecessor1,
+                               iss1, child_id, lineage1, root1, A1, B1, timeA1, timeB1, timeC1, window1,
+                               space1
+   ) @ #i) ∧
+  (ForwardSecureChildAccepted( root_pk, epoch2, epoch_pk2, predecessor2,
+                               iss2, child_id, lineage2, root2, A2, B2, timeA2, timeB2, timeC2, window2,
+                               space2
+   ) @ #j)
+ ∧
+  (((¬(epoch1 = epoch2)) ∨
+    (¬(epoch_pk1 = epoch_pk2)) ∨
+    (¬(predecessor1 = predecessor2)) ∨
+    (¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(root1 = root2)) ∨
+    (¬(A1 = A2)) ∨
+    (¬(B1 = B2)) ∨
+    (¬(timeA1 = timeA2)) ∨
+    (¬(timeB1 = timeB2)) ∨
+    (¬(timeC1 = timeC2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #k.
+    (EpochKeyCompromised( root_pk, epoch1, epoch_pk1 ) @ #k)
+   ⇒
+    (¬(#k < #i)) ∧ (¬(#k < #j))) ∧
+  (∀ #k.
+    (EpochKeyCompromised( root_pk, epoch2, epoch_pk2 ) @ #k)
+   ⇒
+    (¬(#k < #i)) ∧ (¬(#k < #j))) ∧
+  (∀ #r.
+    (RootKeyCompromised( root_pk ) @ #r) ⇒ (¬(#r < #i)) ∧ (¬(#r < #j)))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1c3_forward_secure_epochs.spthy
+
+  processing time: 9.67s
+  
+  executable_old_certificate_after_later_epoch_compromise (exists-trace): analysis incomplete (1 steps)
+  erased_epoch_key_cannot_be_compromised_later (all-traces): verified (10 steps)
+  fs_acceptance_requires_issuance_or_target_compromise (all-traces): analysis incomplete (1 steps)
+  uncompromised_erased_epoch_acceptance_has_full_ancestry (all-traces): analysis incomplete (1 steps)
+  past_epoch_identity_is_bound_or_target_compromised (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

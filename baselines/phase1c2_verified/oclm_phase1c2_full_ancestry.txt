@@ -1,0 +1,570 @@
+theory OCLM_Phase1C2_SignedCompositionCertificate
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) OracleSetup:
+   [ Fr( ~oracle_sk ) ]
+  --[ OracleInitialized( pk(~oracle_sk) ) ]->
+   [
+   !OracleSecret( ~oracle_sk ), !OraclePublic( pk(~oracle_sk) ),
+   Out( pk(~oracle_sk) )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) OpenWindow:
+   [ !OracleSecret( ~oracle_sk ), Fr( ~iss ), Fr( ~window ), Fr( ~space ) ]
+  --[
+  WindowOpened( pk(~oracle_sk), ~iss,
+                h(<'oclm-c2-window-root', pk(~oracle_sk), ~iss, $A, $B, ~window, ~space
+                  >),
+                $A, $B, ~window, ~space
+  )
+  ]->
+   [
+   WindowNone( pk(~oracle_sk), ~iss,
+               h(<'oclm-c2-window-root', pk(~oracle_sk), ~iss, $A, $B, ~window, ~space
+                 >),
+               $A, $B, ~window, ~space
+   ),
+   Out( <'oclm-c2-window-opened', pk(~oracle_sk), ~iss, 
+         h(<'oclm-c2-window-root', pk(~oracle_sk), ~iss, $A, $B, ~window, ~space
+           >), 
+         $A, $B, ~window, ~space>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAFirst:
+   [
+   WindowNone( oracle_pk, iss, root, A, B, window, space ), Fr( ~timeA ),
+   Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( oracle_pk, iss, root, A, B, ~timeA, ~contextA,
+                       window, space
+  )
+  ]->
+   [
+   WindowAReady( oracle_pk, iss, root, A, B, ~timeA, ~contextA, window,
+                 space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBFirst:
+   [
+   WindowNone( oracle_pk, iss, root, A, B, window, space ), Fr( ~timeB ),
+   Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( oracle_pk, iss, root, A, B, ~timeB, ~contextB,
+                       window, space
+  )
+  ]->
+   [
+   WindowBReady( oracle_pk, iss, root, A, B, ~timeB, ~contextB, window,
+                 space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentBJoinsAfterA:
+   [
+   WindowAReady( oracle_pk, iss, root, A, B, timeA, contextA, window, space
+   ),
+   Fr( ~timeB ), Fr( ~contextB )
+   ]
+  --[
+  ParentBParticipated( oracle_pk, iss, root, A, B, ~timeB, ~contextB,
+                       window, space
+  )
+  ]->
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, timeA, contextA, ~timeB,
+                    ~contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) ParentAJoinsAfterB:
+   [
+   WindowBReady( oracle_pk, iss, root, A, B, timeB, contextB, window, space
+   ),
+   Fr( ~timeA ), Fr( ~contextA )
+   ]
+  --[
+  ParentAParticipated( oracle_pk, iss, root, A, B, ~timeA, ~contextA,
+                       window, space
+  )
+  ]->
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, ~timeA, ~contextA, timeB,
+                    contextB, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) GenerateChildInsideWindow:
+   [
+   WindowBothReady( oracle_pk, iss, root, A, B, timeA, contextA, timeB,
+                    contextB, window, space
+   ),
+   Fr( ~timeC ), Fr( ~interaction )
+   ]
+  --[
+  ChildGeneratedInsideWindow( oracle_pk, iss,
+                              h(<'oclm-c2-child-id', 
+                                 h(<'oclm-c2-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                                    window, space, contextA, contextB, ~interaction>)
+                                >),
+                              h(<'oclm-c2-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                                 window, space, contextA, contextB, ~interaction>),
+                              root, A, B, timeA, timeB, ~timeC, window, space
+  )
+  ]->
+   [
+   WindowGenerated( oracle_pk, iss,
+                    h(<'oclm-c2-child-id', 
+                       h(<'oclm-c2-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                          window, space, contextA, contextB, ~interaction>)
+                      >),
+                    h(<'oclm-c2-lineage', oracle_pk, iss, root, A, B, timeA, timeB, ~timeC, 
+                       window, space, contextA, contextB, ~interaction>),
+                    root, A, B, timeA, timeB, ~timeC, window, space
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) CloseAndIssueCompositionCertificate:
+   [
+   !OracleSecret( ~oracle_sk ),
+   WindowGenerated( pk(~oracle_sk), iss, child_id, lineage, root, A, B,
+                    timeA, timeB, timeC, window, space
+   )
+   ]
+  --[
+  WindowClosedAfterGeneration( pk(~oracle_sk), iss, child_id, lineage,
+                               root, A, B, timeA, timeB, timeC, window, space
+  ),
+  CompositionCertificateIssued( pk(~oracle_sk), iss, child_id, lineage,
+                                root, A, B, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [
+   Out( <
+         <'oclm-composition-certificate-v1', pk(~oracle_sk), iss, child_id, 
+          lineage, root, A, B, timeA, timeB, timeC, window, space>, 
+         sign(<'oclm-composition-certificate-v1', pk(~oracle_sk), iss, child_id, 
+               lineage, root, A, B, timeA, timeB, timeC, window, space>,
+              ~oracle_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentAClaim:
+   [ In( <'oclm-c2-claim-a', iss, A, claimA> ) ]
+  --[ ParentAClaimPublished( iss, A, claimA ) ]->
+   [ !ParentAClaim( iss, A, claimA ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishParentBClaim:
+   [ In( <'oclm-c2-claim-b', iss, B, claimB> ) ]
+  --[ ParentBClaimPublished( iss, B, claimB ) ]->
+   [ !ParentBClaim( iss, B, claimB ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) PublishConsensusDecision:
+   [ In( <'oclm-c2-consensus', iss, decision> ) ]
+  --[ ConsensusDecisionPublished( iss, decision ) ]->
+   [ !ConsensusDecision( iss, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) DeclareClaimCollapse:
+   [
+   !ParentAClaim( iss, A, claimA ), !ParentBClaim( iss, B, claimB ),
+   !ConsensusDecision( iss, decision )
+   ]
+  --[ ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) ]->
+   [ !CollapseActive( iss, A, B, claimA, claimB, decision ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) VerifyCompositionCertificateAfterCollapse:
+   [
+   !OraclePublic( oracle_pk ),
+   !CollapseActive( iss, A, B, claimA, claimB, decision ),
+   In( <
+        <'oclm-composition-certificate-v1', oracle_pk, iss, child_id, lineage, 
+         root, A, B, timeA, timeB, timeC, window, space>, 
+        signature>
+   )
+   ]
+  --[
+  Eq( verify(signature,
+             <'oclm-composition-certificate-v1', oracle_pk, iss, child_id, lineage, 
+              root, A, B, timeA, timeB, timeC, window, space>,
+             oracle_pk),
+      true
+  ),
+  Eq( child_id, h(<'oclm-c2-child-id', lineage>) ),
+  SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                               B, timeA, timeB, timeC, window, space
+  )
+  ]->
+   [ ]
+
+  /*
+  rule (modulo AC) VerifyCompositionCertificateAfterCollapse:
+     [
+     !OraclePublic( oracle_pk ),
+     !CollapseActive( iss, A, B, claimA, claimB, decision ),
+     In( <
+          <'oclm-composition-certificate-v1', oracle_pk, iss, child_id, lineage, 
+           root, A, B, timeA, timeB, timeC, window, space>, 
+          signature>
+     )
+     ]
+    --[
+    Eq( z, true ), Eq( child_id, h(<'oclm-c2-child-id', lineage>) ),
+    SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                 B, timeA, timeB, timeC, window, space
+    )
+    ]->
+     [ ]
+    variants (modulo AC)
+    1. A     = A.35
+       B     = B.36
+       child_id
+             = child_id.37
+       iss   = iss.41
+       lineage
+             = lineage.42
+       oracle_pk
+             = oracle_pk.43
+       root  = root.44
+       signature
+             = signature.45
+       space = space.46
+       timeA = timeA.47
+       timeB = timeB.48
+       timeC = timeC.49
+       window
+             = window.50
+       z     = verify(signature.45,
+                      <'oclm-composition-certificate-v1', oracle_pk.43, iss.41, child_id.37, 
+                       lineage.42, root.44, A.35, B.36, timeA.47, timeB.48, timeC.49, 
+                       window.50, space.46>,
+                      oracle_pk.43)
+    
+    2. A     = A.47
+       B     = B.48
+       child_id
+             = child_id.49
+       iss   = iss.53
+       lineage
+             = lineage.54
+       oracle_pk
+             = pk(x.92)
+       root  = root.56
+       signature
+             = sign(<'oclm-composition-certificate-v1', pk(x.92), iss.53, 
+                     child_id.49, lineage.54, root.56, A.47, B.48, timeA.59, timeB.60, 
+                     timeC.61, window.62, space.58>,
+                    x.92)
+       space = space.58
+       timeA = timeA.59
+       timeB = timeB.60
+       timeC = timeC.61
+       window
+             = window.62
+       z     = true
+  */
+
+rule (modulo E) OracleKeyCompromise:
+   [ !OracleSecret( oracle_sk ) ]
+  --[ OracleKeyCompromised( pk(oracle_sk) ) ]->
+   [ Out( oracle_sk ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_honest_signed_composition_lifecycle:
+  exists-trace
+  "∃ oracle_pk iss child_id lineage root A B timeA timeB timeC contextA
+     contextB window space claimA claimB decision #o #a #b #g #c #d #v.
+    ((((((((((((((WindowOpened( oracle_pk, iss, root, A, B, window, space
+                  ) @ #o) ∧
+                 (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                                       window, space
+                  ) @ #a)) ∧
+                (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                                      window, space
+                 ) @ #b)) ∧
+               (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                            B, timeA, timeB, timeC, window, space
+                ) @ #g)) ∧
+              (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                             A, B, timeA, timeB, timeC, window, space
+               ) @ #c)) ∧
+             (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d)) ∧
+            (SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                          B, timeA, timeB, timeC, window, space
+             ) @ #v)) ∧
+           (#o < #a)) ∧
+          (#o < #b)) ∧
+         (#a < #g)) ∧
+        (#b < #g)) ∧
+       (#g < #c)) ∧
+      (#d < #v)) ∧
+     (#c < #v)) ∧
+    (¬(∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC contextA
+   contextB window space claimA claimB decision #o #a #b #g #c #d #v.
+  (WindowOpened( oracle_pk, iss, root, A, B, window, space ) @ #o) ∧
+  (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                        window, space
+   ) @ #a) ∧
+  (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                        window, space
+   ) @ #b) ∧
+  (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                               B, timeA, timeB, timeC, window, space
+   ) @ #g) ∧
+  (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                 A, B, timeA, timeB, timeC, window, space
+   ) @ #c) ∧
+  (ClaimCollapseDeclared( iss, A, B, claimA, claimB, decision ) @ #d) ∧
+  (SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                B, timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (#o < #a) ∧
+  (#o < #b) ∧
+  (#a < #g) ∧
+  (#b < #g) ∧
+  (#g < #c) ∧
+  (#d < #v) ∧
+  (#c < #v) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v))"
+*/
+by sorry
+
+lemma signed_acceptance_requires_certificate_or_compromise:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+     #v.
+    (SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                  B, timeA, timeB, timeC, window, space
+     ) @ #v) ⇒
+    ((∃ #c.
+       (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                      A, B, timeA, timeB, timeC, window, space
+        ) @ #c) ∧
+       (#c < #v)) ∨
+     (∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+   #v.
+  (SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                B, timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #c.
+    (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                   A, B, timeA, timeB, timeC, window, space
+     ) @ #c)
+   ⇒
+    ¬(#c < #v)) ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v))"
+*/
+by sorry
+
+lemma uncompromised_signed_acceptance_has_full_ancestry:
+  all-traces
+  "∀ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+     #v.
+    ((SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root,
+                                   A, B, timeA, timeB, timeC, window, space
+      ) @ #v) ∧
+     (¬(∃ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ∧ (#k < #v)))) ⇒
+    (∃ contextA contextB #o #a #b #g #c.
+      ((((((((((WindowOpened( oracle_pk, iss, root, A, B, window, space
+                ) @ #o) ∧
+               (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                                     window, space
+                ) @ #a)) ∧
+              (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                                    window, space
+               ) @ #b)) ∧
+             (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                          B, timeA, timeB, timeC, window, space
+              ) @ #g)) ∧
+            (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                           A, B, timeA, timeB, timeC, window, space
+             ) @ #c)) ∧
+           (#o < #a)) ∧
+          (#o < #b)) ∧
+         (#a < #g)) ∧
+        (#b < #g)) ∧
+       (#g < #c)) ∧
+      (#c < #v))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk iss child_id lineage root A B timeA timeB timeC window space
+   #v.
+  (SignedComposedChildAccepted( oracle_pk, iss, child_id, lineage, root, A,
+                                B, timeA, timeB, timeC, window, space
+   ) @ #v)
+ ∧
+  (∀ #k. (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ ¬(#k < #v)) ∧
+  (∀ contextA contextB #o #a #b #g #c.
+    (WindowOpened( oracle_pk, iss, root, A, B, window, space ) @ #o) ∧
+    (ParentAParticipated( oracle_pk, iss, root, A, B, timeA, contextA,
+                          window, space
+     ) @ #a) ∧
+    (ParentBParticipated( oracle_pk, iss, root, A, B, timeB, contextB,
+                          window, space
+     ) @ #b) ∧
+    (ChildGeneratedInsideWindow( oracle_pk, iss, child_id, lineage, root, A,
+                                 B, timeA, timeB, timeC, window, space
+     ) @ #g) ∧
+    (CompositionCertificateIssued( oracle_pk, iss, child_id, lineage, root,
+                                   A, B, timeA, timeB, timeC, window, space
+     ) @ #c)
+   ⇒
+    ((¬(#o < #a)) ∨
+     (¬(#o < #b)) ∨
+     (¬(#a < #g)) ∨
+     (¬(#b < #g)) ∨
+     (¬(#g < #c)) ∨
+     (¬(#c < #v))))"
+*/
+simplify
+solve( !OraclePublic( pk(x) ) ▶₀ #v )
+  case OracleSetup
+  solve( !CollapseActive( iss, A, B, claimA, claimB, decision ) ▶₁ #v )
+    case DeclareClaimCollapse
+    solve( !KU( sign(<'oclm-composition-certificate-v1', pk(~oracle_sk), 
+                      iss, h(<'oclm-c2-child-id', lineage>), lineage, root, A, B, timeA, 
+                      timeB, timeC, window, space>,
+                     ~oracle_sk)
+           ) @ #vk.31 )
+      case CloseAndIssueCompositionCertificate_case_1
+      by contradiction /* from formulas */
+    next
+      case CloseAndIssueCompositionCertificate_case_2
+      by contradiction /* from formulas */
+    next
+      case c_sign
+      solve( !KU( ~oracle_sk ) @ #vk.41 )
+        case OracleKeyCompromise
+        by contradiction /* from formulas */
+      qed
+    qed
+  qed
+qed
+
+lemma signed_composition_identity_is_bound_or_compromised:
+  all-traces
+  "∀ oracle_pk child_id iss1 lineage1 root1 A1 B1 timeA1 timeB1 timeC1
+     window1 space1 iss2 lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2
+     space2 #i #j.
+    ((SignedComposedChildAccepted( oracle_pk, iss1, child_id, lineage1,
+                                   root1, A1, B1, timeA1, timeB1, timeC1, window1, space1
+      ) @ #i) ∧
+     (SignedComposedChildAccepted( oracle_pk, iss2, child_id, lineage2, root2,
+                                   A2, B2, timeA2, timeB2, timeC2, window2, space2
+      ) @ #j)) ⇒
+    (((((((((((iss1 = iss2) ∧ (lineage1 = lineage2)) ∧ (root1 = root2)) ∧
+            (A1 = A2)) ∧
+           (B1 = B2)) ∧
+          (timeA1 = timeA2)) ∧
+         (timeB1 = timeB2)) ∧
+        (timeC1 = timeC2)) ∧
+       (window1 = window2)) ∧
+      (space1 = space2)) ∨
+     (∃ #k.
+       (OracleKeyCompromised( oracle_pk ) @ #k) ∧ ((#k < #i) ∨ (#k < #j))))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ oracle_pk child_id iss1 lineage1 root1 A1 B1 timeA1 timeB1 timeC1
+   window1 space1 iss2 lineage2 root2 A2 B2 timeA2 timeB2 timeC2 window2
+   space2 #i #j.
+  (SignedComposedChildAccepted( oracle_pk, iss1, child_id, lineage1, root1,
+                                A1, B1, timeA1, timeB1, timeC1, window1, space1
+   ) @ #i) ∧
+  (SignedComposedChildAccepted( oracle_pk, iss2, child_id, lineage2, root2,
+                                A2, B2, timeA2, timeB2, timeC2, window2, space2
+   ) @ #j)
+ ∧
+  (((¬(iss1 = iss2)) ∨
+    (¬(lineage1 = lineage2)) ∨
+    (¬(root1 = root2)) ∨
+    (¬(A1 = A2)) ∨
+    (¬(B1 = B2)) ∨
+    (¬(timeA1 = timeA2)) ∨
+    (¬(timeB1 = timeB2)) ∨
+    (¬(timeC1 = timeC2)) ∨
+    (¬(window1 = window2)) ∨
+    (¬(space1 = space2)))) ∧
+  (∀ #k.
+    (OracleKeyCompromised( oracle_pk ) @ #k) ⇒ (¬(#k < #i)) ∧ (¬(#k < #j)))"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: ./model/tamarin/oclm_phase1c2_signed_composition_certificate.spthy
+
+  processing time: 3.93s
+  
+  executable_honest_signed_composition_lifecycle (exists-trace): analysis incomplete (1 steps)
+  signed_acceptance_requires_certificate_or_compromise (all-traces): analysis incomplete (1 steps)
+  uncompromised_signed_acceptance_has_full_ancestry (all-traces): verified (8 steps)
+  signed_composition_identity_is_bound_or_compromised (all-traces): analysis incomplete (1 steps)
+
+==============================================================================
