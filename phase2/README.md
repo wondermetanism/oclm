@@ -119,3 +119,17 @@ The materials are publicly verifiable and source-available for non-commercial us
 ## Publication materials
 
 Release and publication text is preserved under [`publication/`](publication/).
+
+## Phase 2 Persistent Identifiers
+
+Version 2.0.0 DOI:
+
+https://doi.org/10.5281/zenodo.21472818
+
+All-versions Concept DOI:
+
+https://doi.org/10.5281/zenodo.21472817
+
+Zenodo record:
+
+https://zenodo.org/records/21472818

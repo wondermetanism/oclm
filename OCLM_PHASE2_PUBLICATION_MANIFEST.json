@@ -35,8 +35,9 @@
     "github_repository": "https://github.com/wondermetanism/oclm",
     "official_website": "https://www.wonder-metanism.com",
     "phase1_zenodo_doi": "10.5281/zenodo.21416118",
-    "phase2_zenodo_doi": null,
-    "phase2_zenodo_record": null
+    "phase2_zenodo_concept_doi": "10.5281/zenodo.21472817",
+    "phase2_zenodo_doi": "10.5281/zenodo.21472818",
+    "phase2_zenodo_record": "https://zenodo.org/records/21472818"
   },
   "immutability_policy": "Published artifacts are not silently replaced. Corrections require a new version, new tag, new integrity values, and a new release record.",
   "license_files": [

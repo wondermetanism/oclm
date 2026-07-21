@@ -1,5 +1,5 @@
 {
-  "github_release_url": null,
+  "github_release_url": "https://github.com/wondermetanism/oclm/releases/tag/oclm-phase2-v2.0.0",
   "github_repository_url": "https://github.com/wondermetanism/oclm",
   "official_phase2_page_url": null,
   "official_website_url": "https://www.wonder-metanism.com",
@@ -7,6 +7,7 @@
   "release_date": "2026-07-21",
   "release_tag": "oclm-phase2-v2.0.0",
   "release_version": "2.0.0",
-  "zenodo_doi": null,
-  "zenodo_record_url": null
+  "zenodo_concept_doi": "10.5281/zenodo.21472817",
+  "zenodo_doi": "10.5281/zenodo.21472818",
+  "zenodo_record_url": "https://zenodo.org/records/21472818"
 }

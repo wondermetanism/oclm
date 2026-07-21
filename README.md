@@ -238,3 +238,17 @@ a88c6afce9b7d17e19b08b63efd1b4d6e7b8955d7f6f78c15e3731e35b6dc74a
 ```
 
 Phase 2 is distributed under the OCLM Open Verification Release License, Version 1.1. It is publicly verifiable and source-available for non-commercial use. Commercial use requires prior written authorization and a separate agreement with WonderMetanism Inc.
+
+## Phase 2 Persistent Identifiers
+
+Version 2.0.0 DOI:
+
+https://doi.org/10.5281/zenodo.21472818
+
+All-versions Concept DOI:
+
+https://doi.org/10.5281/zenodo.21472817
+
+Zenodo record:
+
+https://zenodo.org/records/21472818
