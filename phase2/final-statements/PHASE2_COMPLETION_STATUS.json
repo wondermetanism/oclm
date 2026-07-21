@@ -1,0 +1,31 @@
+{
+  "frozen_evidence": {
+    "filename": "oclm-phase2-final-evidence-20260721T050537Z.zip",
+    "sha256": "de36e384b7583ddde8dfc655ac51eeb517bb64011b5cf4d59a850aad62abb51e"
+  },
+  "manuscript_sections_complete": 11,
+  "phase": "Phase 2",
+  "project": "Oracle–Child Lineage Model",
+  "release_date": "2026-07-21",
+  "release_tag": "oclm-phase2-v2.0.0",
+  "remaining_before_publication": [
+    "create the GitHub tag and release",
+    "allow Zenodo to archive the GitHub release or upload the frozen release ZIP manually",
+    "record the minted Phase 2 DOI in the default branch metadata",
+    "publish the WonderMetanism website announcement",
+    "publish the official WonderMetanism X announcement"
+  ],
+  "results": {
+    "a48_final_property_verified": true,
+    "a48_helper_lemmas_verified": 3,
+    "attack_classes_ruled_out": 80,
+    "counterexample_traces": 0,
+    "health_and_reachability_properties": 8,
+    "health_and_reachability_reachable": 8,
+    "symbolic_attack_classes": 80,
+    "unresolved_attack_classes": 0
+  },
+  "status": "FINAL PUBLIC RELEASE FROZEN",
+  "title": "Adversarial Validation of Canonical Lineage Non-Substitutability",
+  "version": "2.0.0"
+}

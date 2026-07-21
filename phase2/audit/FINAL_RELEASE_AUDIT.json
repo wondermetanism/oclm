@@ -1,0 +1,3929 @@
+{
+  "artifacts": {
+    "frozen_evidence_sha256": "de36e384b7583ddde8dfc655ac51eeb517bb64011b5cf4d59a850aad62abb51e",
+    "manuscript_markdown_sha256": "2052e481ec698e106591f1b1aedc4ecb9b52217d5984a8c38d97e166b458c694",
+    "manuscript_pdf_pages": 82,
+    "manuscript_pdf_sha256": "52831d5a36facaf1ce9512b10e39587dfea63233ae446765b51691cb4eb2b669"
+  },
+  "checks": [
+    {
+      "details": 88,
+      "name": "principal target count",
+      "passed": true
+    },
+    {
+      "details": 80,
+      "name": "attack target count",
+      "passed": true
+    },
+    {
+      "details": 8,
+      "name": "health target count",
+      "passed": true
+    },
+    {
+      "details": 80,
+      "name": "all attacks survive",
+      "passed": true
+    },
+    {
+      "details": 8,
+      "name": "all health reachable",
+      "passed": true
+    },
+    {
+      "details": 0,
+      "name": "counterexample total",
+      "passed": true
+    },
+    {
+      "details": "de36e384b7583ddde8dfc655ac51eeb517bb64011b5cf4d59a850aad62abb51e",
+      "name": "frozen evidence SHA",
+      "passed": true
+    },
+    {
+      "details": "OCLM Phase 2 frozen evidence verification: PASS\nAttack classes: 80/80 SURVIVES\nCounterexamples: 0\nUnresolved: 0\nHealth and reachability: 8/8 REACHABLE\nA48 helpers: 3/3 VERIFIED",
+      "name": "frozen evidence validator",
+      "passed": true
+    },
+    {
+      "details": {
+        "pages": 82,
+        "returncode": 0
+      },
+      "name": "paper PDF readable",
+      "passed": true
+    },
+    {
+      "details": 313855,
+      "name": "paper PDF size",
+      "passed": true
+    },
+    {
+      "details": "present",
+      "name": "paper Markdown final status",
+      "passed": true
+    },
+    {
+      "details": "present",
+      "name": "Phase 2 license scope",
+      "passed": true
+    },
+    {
+      "details": [
+        "access_right",
+        "contributors",
+        "creators",
+        "description",
+        "keywords",
+        "language",
+        "notes",
+        "publication_date",
+        "title",
+        "upload_type",
+        "version"
+      ],
+      "name": "Zenodo metadata required fields",
+      "passed": true
+    },
+    {
+      "details": "software",
+      "name": "Zenodo upload type",
+      "passed": true
+    },
+    {
+      "details": "absent",
+      "name": "Zenodo DOI not pre-invented",
+      "passed": true
+    },
+    {
+      "details": "1.2.0",
+      "name": "CITATION.cff version",
+      "passed": true
+    },
+    {
+      "details": "2.0.0",
+      "name": "CITATION.cff release version",
+      "passed": true
+    },
+    {
+      "details": [
+        149,
+        107,
+        111,
+        177
+      ],
+      "name": "X thread post lengths",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/COMMIT_EDITMSG",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/HEAD",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/config",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/description",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/applypatch-msg.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/commit-msg.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/fsmonitor-watchman.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/post-update.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-applypatch.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-commit.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-merge-commit.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-push.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-rebase.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/pre-receive.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/prepare-commit-msg.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/push-to-checkout.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/sendemail-validate.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/hooks/update.sample",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/index",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/info/exclude",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/logs/HEAD",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/logs/refs/heads/main",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/logs/refs/remotes/origin/main",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/00/0cb94cef71664c11132c8afa1e94323a7c86e6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/00/2dc11f96a64cbf499a77fa75ae2bc637d0dd57",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/00/fe0ffaec089c37825883513b24fd0c4f3eeeb9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/01/300b784c7dadfd45e44c0dd0c770ccaba3f1f1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/02/3d486ba92686b676deb72b422cb32b1a82b726",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/03/48fcbc9f30dfd0fac2ab63a2bdd627e0e2d8b9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/03/f2880454761890286f6d296c8d6c41eae6dffc",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/03/fe88afdc07a76115bf4b2675710bec8d43df75",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/04/ae83fde821840c8c3cca48c9ca1b3c879042a0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/04/d1edd04ded5eca139e22b03a7add23f6061200",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/05/000331b5ccad883184925c0d1fb1bb02d33b69",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/05/25a6c98384b3c05d88b0103f7c69bf872665b7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/05/cf69450e9c7dcb3c08dd0e6119767270b84ec3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/06/21acfcabc91b47cb4c1566126132fd8ff6ac61",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/06/8a928bc6075026a5e58842d6175cb11bc831ab",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/08/352e80456a1c0dbe77b7cfd1cb7e06f9dc911e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/08/8d312c1f7fc1e149a452764285423908095523",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/08/dfa6f1882f4a05fb7ea4a86a028e175b1404c0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/09/2398e3e481fa083a9903cc80436fdc12b48022",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/09/63cabecd447650e0530db95c6db71cb3e08674",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0a/38881ecfee44dc191cb9fdde881d2ceaa22cca",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0b/79c5d379ccffd106fd841a337586de2e1b9384",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0c/f4bd4cb9d4e001e6a2f65c81d834141a7ef6ea",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0c/fc5a71cfec98d3e59010e1796aab7b2e567d14",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0d/8d7aa630f05c154eaee300f9a067a4a63920c4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0d/98c3cf545f066697dfed848364b2b95018e253",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0e/321f370acb6862798d33d01f4beafbdcdea7d5",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0e/d02670751df04f9484e6d87cf48b983c31ab80",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0e/df4482c63406478dd37331864636ab2ea5076b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0f/a948b2bf2f7c676f2abb1b9d9e6ab72c07165b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/0f/c9b03cdb03a19c3067590d25226f166f3eb56b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/10/05a81dec797b82e392a95c52a62af4e9c022ca",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/13/4bf83f3d40ecb4f0c77b345adf42ac6294f551",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/13/94c987c30f048f1ae82197ae91963761a6e91b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/14/6ae700f58294a2f89aaea9f025a4391c106ca6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/16/6ee82bdf2a64fc336ba2fe077b11a50aaa5964",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/16/b1dab5bc394417fd1d3f2c918153c97db9640f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/16/edeea5506b4e382d4df4fdbea01ff0a0dd51fb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/16/f9ec3e230d3cf145c1d9861796543ecf11cb53",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/17/284ea2b577c1ff1607c08ee620618626cc6e52",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/17/2962bd8dd317302e4dbce724f9ea1770c4f14b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/17/2da051574ab9a565c93d01470ed8c04befd813",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/17/bb05ce1cb2e81def4c1d677e1c1a3e79690d58",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/18/2c36659904c2d62c09a059fab27cf43a1ee20e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/18/4cc1b324672d6151f50401cab3100b6777c616",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/18/847124d25ac4dadb6ca6d06fbeaa1a69efe828",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/18/8a3ae2b301fe61a9759b4c10f68285f2118d0d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/19/1610b2e3b0b1455fc7a99c45fe1861ea13072c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/19/1e5519ad6102ffbb8f86cb307b4c73c8cc5968",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/19/e5e7b7cec4a47be4196e87d2be22be294d1b2b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/1a/c0310e1adf626c9d175f5c53160379e46057e6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/1b/edee73a7897de4cbb60f0b80842cf42666fcf8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/1b/ef69ab2f6b5a16c2b77654d71c99a1c8157331",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/1c/40548871ab4cb5aa35fac557a6e7285434ae81",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/1d/d4f9be97469e65af3af238b591ab4e5042afbe",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/20/c69250f6d73339a0710083ae82948bd844fed3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/21/1019045647c79585e80543a0a65380b076accf",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/21/21715f4f93015c355c1a4f461d307a05926d8e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/21/3eb5b044e263347e8eb3ff51d2f751a858fd82",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/21/f47fb38ef6684031e5b39e27dcf1794eeb3179",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/23/b6aabafc181702e3e35a219fb1b837408e2292",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/24/60296a7d932f6dd3b462006bfec106ab59e9c4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/25/086deaf8912d2ca9f8def58eb8d72c1e4da477",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/25/247423dd53496571b1c07702c3d05a1b44e8d2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/25/c3e993813217abdac9774f2b1e405e57837bda",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/25/df888762d2ed8c7de0f4492fe8bef22958ea64",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/25/e9f83d3919a484590cb3021ae09cbe8d165747",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/26/04549163b9438f83fa2e0dcccb8adb4554ef2c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/26/3c75fde2233f20be03d067f8699a47b5ba7b2d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/26/98bec851fc6fde1992134368f8b1cbb2d0049a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/27/9aabd1e10456250e89b7dc913e19ff014c7f9b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/28/2eff560a3d8a9257a82c154ce8368230c13176",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/28/362bea73f3df4d5abd8e4f78c01eacb4f32a50",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/28/61f43cb7919fa4c2d4b762b372b07f9bdb2e0e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/2c/2cf5bdefda863901c059323246ca39e960440b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/2d/8c32af4a5ad75dc59360470f93c4df0e19d871",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/2d/c7c45c865126a0724585d8ddbbc3929dac787b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/2e/461524d5793502c688b9c1866cba779c115600",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/30/18637576071c1e16df67cbc6baa27f425a1fe0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/30/85ceada161bc268457153961a7a3b3b46a0948",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/32/2284aa56dad29bf32be2af445443a080ebf80c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/32/e7ee7f34c1a59edf87b40f2e9693933347369f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/33/3e5b6b4ffd8468172cd0c2404712999b9fa7cd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/34/3365af2d1a2db4a05e641363669dba88892f71",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/36/25f3b115d9ae7b761260efa4ddd8bc74e39570",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/37/4386a29d11122c9dd150df5872ec95efcad3dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/37/49c5a8c2e00271a554cefc1ddc1b8d96e56228",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/37/fc95dc4c54e28d2f63a233a4f29bcb9b616285",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/38/623c7f54a6792aaf90e0d334c42db60976591e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/38/d95b9616839e16738afb181c563f9997bb7698",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/38/f9cb2b8c8f588a7171df011ad16bb61e5e272c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/39/5962a976b05a4663151e8ca518c9286dee5a19",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/39/ef4b8ae1172e5181d3584bf0a8bc2e8da68765",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3a/8fffebe09f0782dfb606a3c9f216d717bbd70e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3c/aeea09005d54582ab19fee5331a0a8ce974a76",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3d/6801ad5d95c38b65f34cde5c21f937ba773d3b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3d/e4c48dfed9bc12304b3d319103c4f116bdf5f6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3e/05d7d68d32f15177f49f20c44a8fb1e9e37b17",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3e/8bc70eb0ca1c2d407106b071fb6421715d84c0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3e/e610ba104c817d3338ba655be0d34cefa00404",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/3f/d9d41d461fffb9b06a865a12f73a409e06eb71",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/40/9578c3e7d0f7940dd4bdeb2789a3c2b0264ba2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/41/0983e4d752318db7794976a0e488510d8350a8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/42/a5d3998f53022fa6b94b59b031cd9dd4b454ac",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/43/7bd84f1aa0bd812240bc32a7d619ae24ff340f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/43/921fe820c2ee4b35cf81b499014951eabe0b41",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/43/d70d53215b079a0328993dae14fe24f006f51a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/45/fb19819233dee1bc5083ddfc1635981603b8dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/46/b88cc2885b254c7a9188c88ac3a33d3a0b7194",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/49/0b447a04bd3d721c29e5c9cb292f3c52786a25",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/49/a1e085036dc942a4c4bedc547f793f3b41f7dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4a/814926ecd010c8660655c087b604a81f843592",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4a/e6523fb4da42ea55ef76e0a87c7bf87e981409",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4d/26d5c056485c62f926d989f858791f346641a9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4d/37d778148fd3ec7f80f4221de92e1937aa4a94",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4e/2704d4a8742d673db6ee9d8be82fdd19da79f8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4e/8ae497c507947caeea0e086e8ce150a6fc2822",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/4f/a251d7ef4b00dc947eb0b882ddf68c7b4a2d56",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/50/20825991cd457ab37f630c548bb7582e3148ae",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/51/d351cb60a9f27add1b4d3dab07477d2057c7c7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/52/3866a96f1be57b92f3eed4cbc4a06111b94c75",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/52/57a6f47961d41461099511a8c2c4c846ac1e49",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/53/f34457512b4c7e2cf903b0e554e6e16116f80e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/54/1669e7672e7343529f09dbd658e8547643cbe3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/54/d800a782dcf616fc3fb468748868c950913e6f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/55/4b24f19d6fc89a12bccdbbb4b6fbf975fa7df9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/55/e26c492801f80fe315b114b65f5a5d7c04e368",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/56/0e17533af5af40fe968a6165a6d8df4ed6376d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/56/d04026a3d55169b1baaf920918152b721293a6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/57/7cb0e50dff47e1166c420bef715ff09c028e6a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/58/8d46fd6631d8e99cab0cf139b2559d50035424",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/59/032632adbf8fb9ef85972b86c52316f5e4e8d4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/59/28ef3bd73442a05c66c1d7b6237e5957bf05d2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5a/0a5aa7cfc1be41b8d160deb7ce4671db058696",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5a/1d67167994a3bca1817c9adffae11588d27f81",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5c/44f6e2b04acc9af57b766ec367932381596015",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5d/4ba1b0ba190f272efe893f8dc93b61d503176c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5d/4cfd792bcdf396ee70d5c3a829297b2867cab4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5e/218589f67db63118d374afb50f10d6ac403fc3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/5e/462d276770d472eaa137385273d25323fa7241",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/60/0a6395bbcf4ad3919b76d99deb76138c5ab114",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/60/681f94980d88b3f5bc6fe6c7335a37817ff1ea",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/61/0eea33f23f693e01efdf8108ffde053b92a6cc",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/62/ade1ad129175873580b2fec01870bc990e6501",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/62/ff3e8337ea28a2d7f5cd5e954114cf64516fa1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/66/96be99690f5897933c0d4c16b19080e57ca3fa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/67/8c189b43297138266cbc2ec50e4d63de7a7b8c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/68/141e142f5d73fbf8a330335426385394f79f56",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/68/62d9b70cab8bb900998f9201bbbfc2c246820f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/68/64113b6cb1e38fff70a7e51c47b00fdad6f2fe",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/68/96588165bc759afab5d11168bba7e36922903c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/69/5ee3652a8452841449fd5a56551eeda9cebbfc",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/69/8044799882a28ed44507e26bbf8015b7c8a2e2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/69/f395b8b96a572fc7ce2fdf979ce217816906d7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/6b/83a50add0214dc9fa3da09a923482206216e49",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/6b/a528a9e1724bd1cafb177619f8d746f26651fa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/6c/ba668dfab03e8e05169f0a69ee77d8e8f8f86d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/6d/6291885f8779458970661255638299e484bb73",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/6e/1e91067358565683573f4da71d721f436d6915",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/70/1f5ce46a05892491beb15ae45c560750dc338c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/70/eec725e8eee3a4a75bd23c9ebd2174125e2840",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/71/04c6059dbdea25cd2ed15c5c8a1db1be97867f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/71/53d0ba37c5951e3f336d9e3e80aff561049f93",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/72/04db69c184641aa0acfcd56f7e295a5c722f36",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/73/75456747509f23a90159f090304223e25b02a0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/73/cec83957a71a344d152477e23d8a3d7129ea10",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/74/6515e255256a92f96ec697f4ec74d9e0ea9eeb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/74/fba5a4e18a9bf018d17d0ad4d82fe8fefe4417",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/75/16c59feccad95445290f14396c1396eb6d9ea7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/75/34a2078db33c38c9cac8135bc0b7c6f9eaef85",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/75/64ad5185f5c4fce3725333c44952770487a167",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/76/11dc3a9449909fe9ae683a02fbd7fd57746de3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/76/84ff67709089957cb3893213ca85acc8cee2bb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/77/721d289e9461c8c4ffbbd66d83a298945d6b53",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/77/9fb19641d7da32e83f7debf6b3ec4666b59698",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/77/d8e55af3702912873eb367c1ef9b9f607e0f69",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/78/123d161fa1ed8ee270125e6b440c2f3d9c6511",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/79/9072c0432c57b28634af36388d5009d96a8f01",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/79/d141ee21f6a511934b0c4a5be5aecb6f4c32b3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7a/9364ccf39d9a177e6f7844cf9a94d0c69b7577",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7a/d18c4af18145cf92239c52f141a9f8a3ff99f7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7b/9455c05531216a759dee459b9d20ad6938be8d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7b/99fe0380ae23fc6a658337bb055e6cf1020bf3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7b/9ebf79b40facc8ae8a5a5494f45a467433f4c6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7c/766ee19d7cb38c45bd0532bf84de311bd4c296",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7c/a69acf270bc4f6caf461ac744f427e6186419c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7d/fcaee9c590eca7230c2f32f96ed7324be930c7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7e/1c6b93dc2b4e193e04872952a6d0391d4a4941",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7e/843f1e3dbfa92535bb0a765f881629eaf85a86",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/7f/ef5ea05a53f41269f97941fed2de3b62ef17c1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/80/1bccf3bfbb969a8b01f5841ee9303c978806f6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/80/d8415d84d461910fa06dfb6f512dc015dc16f4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/85/35e3f1554da2c2135ac0afdd663e3151c1feb7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/85/c36fb14149ab573b4d87033107f9bb7a544546",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/86/e2bb2323de2f095d325829374521c192471422",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/88/d8d4698565d49b9e8541eb2a7aaf6f6dfb8f6b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/89/57d9459de1240e8713ca9a0ae6e329f0aef6d2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/89/d97f48bcb99c337264d844f6bdb7d1bcfb9abf",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8a/d6e59e24741e7e8814c036f19875f5670e0fca",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8b/b571daa53dd5ad3d3b491448f5238f2465b15f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8b/da634a8471b1e1446980b91593979fabe795f9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8c/640887f286939426ad55f9c9b569b4b32ce6b9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8d/54628e3d2ab4ba72fcb990f24ed14d71282f53",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8e/65f5f60b39bd70668fef27b963c1ffa7088dd4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/8f/dbb5787d3f373ecbaaf77897c2637fac520330",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/90/3663c04d19d47d20177aa36279920655c4252e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/90/d3afbf9856c5f819a13369cf78c1db998035a4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/91/9a127c03ed53bda47798173053b8767239ed42",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/91/efc90dc561ddd58d0eda2850b830015a9bae49",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/91/fa3c670a5e9ce695169251c95f6b206836aea3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/92/26e556c4bc353e64de6d6780a041fb1a0a7c36",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/92/474f962aa3cea390615c209ca2cca0b5d7f395",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/93/7458b92dfbb18ed2bde9c1c5cbef8e8589f1dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/94/28d27f6ec9428da7d81323b09cf3a7dc1ec2ac",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/94/545e425479c5069545e8b7a645bb1071685333",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/95/4e106e99bea911b9eb7b80213a238d5d3b070f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/95/b39acffa9f3ab518564a7ba50a28a058768acd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/96/77bb2b48df1b7547d05501af058d5d95c70db0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/98/6bbda98848fc93dddffd5349b1cd545ada5716",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/98/dec727b096800d7bd7182fd52e5cd29943186b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/98/f577b8e4fdc1dd44488a2a9cba60a4b668501d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/99/71dd7e181728a28db416db4583868b08d6da93",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/99/7ebdf23e3454927b3b538daa8e541f9ba1008c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9a/356ad2aa0bacba952b32b9707c5acb8dddcb1c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9a/6bc0083873bdc8bd7c006689fc19a199308d27",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9a/8ddb3274489fcb4f0a32618991d327a8cf18a8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9b/2e8825adb3e7257ce839cfcdde111aaf62481b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9b/9d39c778598790ce1719a2b502be9ebcf829aa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9b/bd036f5f38515c1e1c0a9e318f2335c452e3fa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9c/adff329d3aab2013c6f91d920d16c27973c9c6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9c/c5adc28ee955e2d2cba52ac51b30b288001128",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9c/d8fe5d0da3b5c5eee984d172f37c308d0b2099",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9d/a6b9bccf1f33fef68cc87ebbe82f52720cee31",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9d/b44f8a8ce5234e779993796ed627c9a597731f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9e/2e9c83975d1218432f27be3599ee7a72ae2e95",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9f/28f5d2a139011dd4591dc4739be8a1128ea148",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/9f/82b11c4f5cc9fccef574afc6227fa5115d4146",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a0/0311586f5549a71923703230020df4b3f9adc9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a0/2d3d7bc155cb00ca64c502449c23aac0ae8b6d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a0/779a6622e98ebebb927ced131ef149eac782d2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a0/7ac35b2379a15b09287e0b004f9ec7890b42e4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a2/24fc61473b8efcdba19e9ce3b4583b46e400f6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a2/5558b31058f688045c4eb1242c39d96155e903",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a4/1e84fb38fe7a489c9eab3d1765f3bf39e4df5a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a4/6f660cfff05158f708fdcd05444a4c394b5e2b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a4/ef6481a88c1e9c875d3f3adc2f74fb1af544a2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a5/80740e109694e7112cf07464f545b3e97a53af",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a6/8f032f87b18e7b0c6d6a2806cd4dda19373065",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a7/9fc3c60083b2372404571d46148dae364ef02b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/a9/3069f2d93cbcab135658fce5665d9ab86963e8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ab/20419402c9a3c02771bc42b94277d355a440fa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ab/32b7e682ec0333d698d2afbb174b197da86415",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ab/4cbcae9a8e4c7c9228ca399c0ef8b1e60a083e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ac/e636e2714b668bd2e086c8903ca485a75044c3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ad/52fb8df36fa3f634a6d53f8376817ba434faa5",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ad/f110c1baba9a1a2ba30cc01b9f0523e701822b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ae/a178dba2284111edb23a4066fe4ea2d3ed75f4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ae/d4a5dee2e4d0ef77a3c4c86b590c0d1c084926",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/af/7736f0fa05ac46a9dac736c68f31b47b3d8487",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b0/90501c49f74c4620c7c5ab8ad924a4367cff30",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b1/0b80e024b84a9e6156dc0bc3a02e99a2bef8a7",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b1/143b264e41ca89b001ecda7cecbe348bf9fcf2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b1/9c22b8ed69cf2e0875dd55157243a0b560e9ef",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b2/e07ff9890f824006bca4f61255c56f8347a925",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b3/9a16149b7736a1345bdd194bb7dd3608a244cb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b4/3265a3c53132c615fdeda4f87e9b33a43d68b0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b4/3d9f45e8ba7d531845e5a93b70cd344847a4be",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b4/cba299844668fd47e0290b00ee12b3f69572eb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b5/6977e71f3e46bbd89be913052c13529db48b3b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b5/e6391d84bcf4c4c18d45a14b8f864f0ab54347",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b5/ff5951a5f3b69e8d4c6194e856f665bc97b89a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b6/73d43df583695926ec8c276a7ace22a2399b19",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b9/185d2531aec7d13f11f74debe35d7c151f3a82",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/b9/9ea118a26fec7fec7f2e791682b845fa88d468",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ba/deb4ad34816ccb74729f40d935039fb986846a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/be/f8e31478fd7c49ff9bb831b23cfe6369b58ec5",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/bf/110352e5975363a1ce1ec32a18ddd751ff44a9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c0/187f745f06f29e26190b9838381a1841246609",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c0/62d8ff110c6776f285fc4720c20d62f8fe12ed",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c0/9068a27241270d355207e691ca92614205de84",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c1/676e25633aa0f1863bcf8524b4793d118064a9",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c2/5f8381d9af13c8628a7343abe678da9abd2053",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c2/7b5df20f11ca688a8628c746fc23793461593e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c4/7e6da79340665fb1ea4e0c3a4c624dd0d5f2d1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c4/f110367155a334b451721410bf307f2ad16746",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c5/84da7122d44574284fd3ebef858327df9bfe02",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c6/1a7635a82b922701635e7822532881fccb9d9b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c6/332ac981aef4535c6c5e952aab032ac168d6ee",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/c8/714b0a0612daa6e756a399940181b8834f42ae",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ca/d550a146a7f82a9c9fba36edf3edff8909cba3",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ca/d8895b1cdf9051c2837c185b627864b4563ec8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ca/dbcca5e4699ec3e0b045e18aec33c539d8cb1a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/03b6b587d1999725d4007364aa862de2200730",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/7b971c49ab7348fb813dd80e3798354cd568ba",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/93c59f1c0549d72677631a01798f123bfa4c3c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/cfc9b18e8f11664a6fbf15528d48daa41d75dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/e0d09cb7ca703ecefb97daf9e8ea27ffed03da",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cb/f341fc046305f70ed642d1de2520497e45754e",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cc/14f6ed6d5d5e424b255a16115dbd7adb755db1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cc/3bcb8265903b42b2154e3cbe1c8e050c4b485f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cc/df8ed1bbe532238306a40bd9be88d36237789c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/cd/f64b06241039c5e311636243230fc2e364ca64",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ce/310404ff76cf0dded4e40a393ff17b3abb8e41",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d0/c30b1916e50623cba716f57936af00ecc2ebda",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d1/3e4ac5ff420b8096e7c5bc4257275ee4add9da",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d1/89561d7929aa86a636b26331caf90769a765e1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d2/a607cdbcc10e4aa9390c6d9166eea30d14861b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d5/f72a93e837b54481ab76d1c431b5fbf82c84c6",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d9/50674f9c6fb50764fdfb9144da4c4cda7c807c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d9/7d0168b3727c5b707cae85ddee06995f27e49f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/d9/da3c7751bc570b14547af8f1b83243ce33f40b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/da/5511fecf993a7f8bb41e1687fa7068fc5708f1",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/db/b02f7347ea1fac0e8e36171e00da2b487a7692",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/db/f8e8177480268e1ba1a7862679df5636faf27a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/dc/d1843a1e8bd38c3d0843cf8d0677579810013f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/de/bb1db6db3b30b66f625db52759acd4c24d2158",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/df/641b21c67af88f7505ec08849ccabdd34dbcf2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e5/5a00002af513e8c09a0c63bd96f42a80480a89",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e6/9de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e6/cbe2132f47dd01490d27285a67f1e1c9261eeb",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e7/397839ce43d22e3aaadbd7c6a35fd4483f35ad",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e8/40dfde87d976996f2d92259a277902657a23dd",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e8/c11c930f3b116f8598ce7dab35937b00cf17e8",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e9/30833262ca8671cb8604ea07a1de1f0b6d66fa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e9/d9d6114ea36136390feb90518f118cd28a4a32",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/e9/fa519b203f2624147f75c0f9e70354568ce20a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/eb/4e5ea660a2e727c835e66ff9562a35d4e0da3a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/eb/67b5d8b832f735420dbf447b0c2b289b4e1325",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/eb/fe2216bd1f139ac3e986642a9321ca19643e0d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ed/6dd603a628c0711e83b00d775517e4383f400f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ed/a061b293a158089015709063520479cb051c0c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/0010d503f78a88ddec7fe053ec73e2ed0beb5a",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/12d7179a8755b815c88946e970a3a36f41ea3d",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/15de9d983dacc0d2b0e8d048ecdf4db7f38f0f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/21e48239dfe7c9cbb29658388e5f55a4960d6b",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/65055157fd21b41acde313edd636fbc99ee92f",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ee/cd3e587d937cc35e89fe1da1a28574b4001591",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ef/1dd5c6b04ba422602d39e689afada83e0a7248",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f1/f8a113ea8ab91f882d1efa695be04019afc0b5",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f3/aa578613b51f89165f5dae3857bda2dbd7bab2",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f4/0432e495f0a71bb25f6235757f1af1ef577d41",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f5/9d45d5a84bf25174f689106b2865ac7d8ce1b5",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f6/17f98e4407e5472379ecfd0c6ee67a7e0e802c",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f6/1da9ea393ed275eb5dd9390d298bb7cf7fec13",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f7/6d1292b3ce086244638fd27eced21fac55ec10",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f7/e548f8e394014a0d8ba348f74912fde2b647e4",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f8/9937fc76a429a7b59067f5bd2920f2362a0b49",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/f9/07060e2236667a7f41b2759bb7aae396c96484",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/fb/f8192b8c5ff232be064a9f87635768524e8732",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/fd/0416fe562faf1e6163955a74f4c5bafe747736",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/fe/4d97d91ed048f1c298c4264b0d832019f7cdaa",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/fe/69064262242dab26d4ee28c36ed157861945ab",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/objects/ff/435e29d13d414170646747f651ff79bd4a2d97",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/refs/heads/main",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/refs/remotes/origin/main",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .git/refs/tags/oclm-phase1-v1.0.0",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file .gitignore",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file COMMERCIAL-LICENSE.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file CONTRIBUTING.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file LICENSE",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file OCLM_PHASE1_PUBLICATION_MANIFEST.json",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file SECURITY.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file TRADEMARKS.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/ARCHIVE_MANIFEST.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/README.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c4a_verifier_state_monotonicity_counterexample_20260717.dot",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c4a_verifier_state_monotonicity_counterexample_20260717.dot.png",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c4a_verifier_state_monotonicity_counterexample_20260717.json",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c4a_verifier_state_monotonicity_counterexample_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c5b_certificate_split_view_counterexample_20260717.dot",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c5b_certificate_split_view_counterexample_20260717.json",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/counterexamples/phase1c5b_certificate_split_view_counterexample_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/accepted_epoch_requires_matching_prior_issuance.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/conflicting_direct_epoch_acceptances_require_prior_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/current_epoch_acceptance_has_current_evidence.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/executable_generalized_multi_epoch_lifecycle.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/generalized_epoch_rollback_requires_prior_verifier_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/recorded_epoch_transition_never_rolls_back_without_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/guardedness-probes/phase1c6a_guardedness_probe_20260717/stale_epoch_acceptance_requires_prior_verifier_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c4a_index_update_backup_20260717/OCLM_VERIFIED_PROOFSET_PRE_PHASE1C4A_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c4a_index_update_backup_20260717/PROOF_INDEX_PRE_PHASE1C4A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c4a_index_update_backup_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5a_index_update_backup_20260717/OCLM_VERIFIED_PROOFSET_PRE_PHASE1C5A_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5a_index_update_backup_20260717/PROOF_INDEX_PRE_PHASE1C5A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5a_index_update_backup_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5b_index_update_backup_20260717/OCLM_VERIFIED_PROOFSET_PRE_PHASE1C5B_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5b_index_update_backup_20260717/PROOF_INDEX_PRE_PHASE1C5B.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5b_index_update_backup_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5c_index_update_backup_20260717/OCLM_VERIFIED_PROOFSET_PRE_PHASE1C5C_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5c_index_update_backup_20260717/PROOF_INDEX_PRE_PHASE1C5C.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c5c_index_update_backup_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c6a_index_update_backup_20260717/OCLM_VERIFIED_PROOFSET_PRE_PHASE1C6A_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c6a_index_update_backup_20260717/PROOF_INDEX_PRE_PHASE1C6A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/index-backups/phase1c6a_index_update_backup_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1.spthy.before_timepoint_fix.20260717-015006",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1b1_external_signature.spthy.before_honest_trace.20260717-020906",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c1_composition_contract.spthy.before_window_announcement.20260717-023429",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c3_forward_secure_epochs.pre_executable_simplification.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c3_forward_secure_epochs.pre_origin_split.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c3_forward_secure_epochs.pre_positive_witness.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c3_forward_secure_epochs.pre_two_epoch_bound.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c3_monolithic_experimental.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c4a_verifier_state_monotonicity_core.spthy.before_attempt_observation_loop_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c4a_verifier_state_monotonicity_core.spthy.before_bridge_removal_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c4a_verifier_state_monotonicity_core.spthy.before_e2_e1_reuse_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c4a_verifier_state_monotonicity_core.spthy.before_finite_monotonicity_split_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c4a_verifier_state_monotonicity_core.spthy.before_monotonicity_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c5b_transparency_split_view_core.spthy.before_conflicting_history_time_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c5c_revocation_transparency_lineage_composition_contract.spthy.before_component_anchor_root_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c6a_multi_epoch_generalization_core.spthy.before_executable_guardedness_fix_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c6b_generalized_security_composition_contract.spthy.before_compromise_use_witness_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c6b_generalized_security_composition_contract.spthy.before_compromise_use_witness_retry_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c6b_generalized_security_composition_contract.spthy.before_executable_split_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/model-snapshots/oclm_phase1c6b_generalized_security_composition_contract.spthy.before_stale_lemma_split_20260717",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file archive/phase1-development/pre-release-records/phase1c6a_pre_release_state_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/PROOF_INDEX.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/PROOF_INDEX.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1a_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1a_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1a_verified/oclm_phase1a_proof.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1a_verified/oclm_phase1a_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/oclm_phase1b1_correspondence.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/oclm_phase1b1_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/oclm_phase1b1_honest_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/oclm_phase1b1_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b1_verified/oclm_phase1b1_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b2_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b2_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b2_verified/oclm_phase1b2_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b2_verified/oclm_phase1b2_proof.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b2_verified/oclm_phase1b2_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/oclm_phase1b3_collapse_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/oclm_phase1b3_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/oclm_phase1b3_identity.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/oclm_phase1b3_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1b3_verified/oclm_phase1b3_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/PROOF_INDEX_SNAPSHOT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_closed_generation.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_executable_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_parse_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c1_verified/oclm_phase1c1_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/PROOF_INDEX_PRE_C2.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_certificate_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c2_verified/oclm_phase1c2_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/PROOF_INDEX_PRE_C3A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_certificate_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_epoch_credential_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_erasure_safety.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3a_verified/oclm_phase1c3a_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/PROOF_INDEX_PRE_C3B.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/RESULT.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_contract_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c3b_verified/oclm_phase1c3b_verified.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/PHASE1C4A_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/PROOF_INDEX_PRE_PHASE1C4A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/oclm_phase1c4a_verifier_state_monotonicity_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/phase1c4a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4a_verified_20260717/phase1c4a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/PHASE1C4B_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/PROOF_INDEX_PRE_PHASE1C4B.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/oclm_phase1c4b_rollback_resistant_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/phase1c4b_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c4b_verified_20260717/phase1c4b_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/PHASE1C5A_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/PROOF_INDEX_PRE_PHASE1C5A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/oclm_phase1c5a_revocation_state_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/phase1c5a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5a_verified_20260717/phase1c5a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/PHASE1C5B_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/PROOF_INDEX_PRE_PHASE1C5B.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/oclm_phase1c5b_transparency_split_view_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/phase1c5b_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5b_verified_20260717/phase1c5b_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/PHASE1C5C_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/PROOF_INDEX_PRE_PHASE1C5C.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/oclm_phase1c5c_revocation_transparency_lineage_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/phase1c5c_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c5c_verified_20260717/phase1c5c_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/PHASE1C6A_RESULT.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/PROOF_INDEX_PRE_PHASE1C6A.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/oclm_phase1c6a_multi_epoch_generalization_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/phase1c6a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file baselines/phase1c6a_verified_20260717/phase1c6a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/00-oclm-charter.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/01-truth-semantics.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/02-entities-and-state.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/03-adversary-model.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/04-security-properties.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/05-time-space-binding.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/06-theorem-targets.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/07-open-questions.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/README.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/model-tamarin-readme.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/phase0-foundation.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/history/phase0/verify-foundation.sh",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file docs/publication/ZENODO_METADATA.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1_proof.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1_proof_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1_single_use_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_correspondence.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_external_signature.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_honest_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b1_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b2_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b2_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b2_proof.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b2_time_space_window.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_claim_collapse.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_collapse_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_identity.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b3_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b_external.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b_external_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b_external_executable_autosources.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1b_external_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_closed_generation.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_executable_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_parse_fixed.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c1_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_certificate_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c2_signed_composition_certificate.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_certificate_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_epoch_credential_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_erasure_safety.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_forward_secure_epochs.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_parse_bounded.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_parse_diagnostic.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_parse_origin_split.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3_parse_simplified.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_certificate_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_epoch_credential_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_erasure_safety.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_forward_secure_epoch_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3a_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_c2_c3_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_contract_origin.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_executable.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_full_ancestry.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_identity_binding.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_parse.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c3b_proof_final.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c4a_verifier_state_monotonicity_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c4b_rollback_resistant_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c5a_revocation_state_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c5b_transparency_split_view_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c5c_revocation_transparency_lineage_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c6a_multi_epoch_generalization_core.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file model/tamarin/oclm_phase1c6b_generalized_security_composition_contract.spthy",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/OCLM_VERIFIED_PROOFSET_20260717.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/OCLM_VERIFIED_PROOFSET_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1a_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1b1_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1b2_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1b3_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c1_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c2_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c3a_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c3b_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c4a_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c4a_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c4b_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c4b_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5a_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5a_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5b_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5b_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5c_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c5c_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c6a_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c6a_verified_20260717.zip.sha256",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file releases/oclm_phase1c6b_verified_20260717.zip",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_e2_to_e1_requires_rollback_success_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_executable_monotonic_verifier_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_executable_monotonic_verifier_lifecycle_current_model_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_rollback_attempt_cannot_lower_state_without_later_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_rollback_success_requires_prior_verifier_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_rollback_success_requires_prior_verifier_compromise_current_model_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verifier_state_e1_never_rolls_back_to_e0_without_compromise_current_model_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verifier_state_e1_to_e0_monotonicity_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verifier_state_e2_to_e0_monotonicity_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verifier_state_e2_to_e1_monotonicity_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_verifier_state_never_rolls_back_without_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4a_wellformedness_after_loop_fix_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_composed_acceptance_latest_state_or_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_conflicting_verifier_histories_require_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_executable_rollback_resistant_composed_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_interface_inventory_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_rollback_resistant_acceptance_requires_c3b_contract_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_stale_acceptance_requires_prior_verifier_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c4b_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_certificate_reactivation_requires_prior_authority_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_current_verifier_state_never_accepts_revoked_certificate_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_executable_revocation_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_revoked_acceptance_requires_missing_update_or_verifier_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_verifier_revocation_state_never_rolls_back_without_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5a_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_accepted_checkpoint_requires_matching_issuance_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_conflicting_checkpoint_roots_require_prior_log_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_conflicting_gossip_produces_equivocation_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_executable_transparency_split_view_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_same_certificate_conflicting_histories_require_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5b_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_acceptance_requires_all_component_contracts_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_clean_acceptance_current_component_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_conflicting_composed_roots_require_log_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_executable_composed_security_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_forked_acceptance_requires_log_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_revoked_acceptance_requires_explicit_exception_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_source_contract_symbols_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_stale_lineage_acceptance_requires_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c5c_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6a_all_lemmas_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6a_executable_generalized_multi_epoch_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6a_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6a_verified_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6a_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_clean_generalized_acceptance_has_complete_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_conflicting_generalized_epoch_histories_require_prior_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_conflicting_generalized_transparency_roots_require_prior_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_clean_generalized_acceptance_has_complete_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_executable_generalized_clean_multi_epoch_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_executable_generalized_forked_transparency_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_executable_generalized_revocation_exception_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_executable_generalized_stale_epoch_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_generalized_acceptance_requires_c5c_and_c6a_contracts_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_current_stale_generalized_acceptance_has_stale_epoch_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_executable_generalized_clean_multi_epoch_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_executable_generalized_forked_transparency_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_executable_generalized_revocation_exception_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_executable_generalized_security_composition_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_executable_generalized_stale_epoch_lifecycle_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_forked_generalized_acceptance_requires_prior_log_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_generalized_acceptance_requires_c5c_and_c6a_contracts_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_generalized_epoch_compromise_use_requires_prior_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_generalized_security_composition_contract_proof_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_index_manifest_hashes_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_parse_after_compromise_witness_retry_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_revoked_generalized_acceptance_requires_explicit_exception_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_stale_epoch_component_evidence_requires_prior_epoch_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_stale_generalized_acceptance_has_stale_epoch_evidence_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_stale_generalized_acceptance_requires_prior_epoch_compromise_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_stale_generalized_acceptance_uses_epoch_compromise_state_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_wellformedness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_wellformedness_after_compromise_witness_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_wellformedness_after_executable_split_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/phase1c6b_wellformedness_after_stale_split_20260717.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/README.md",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/SHA256SUMS.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/VERIFICATION_SUMMARY.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/clean_generalized_acceptance_has_complete_evidence.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/conflicting_generalized_epoch_histories_require_prior_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/conflicting_generalized_transparency_roots_require_prior_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/executable_generalized_clean_multi_epoch_lifecycle.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/executable_generalized_forked_transparency_lifecycle.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/executable_generalized_revocation_exception_lifecycle.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/executable_generalized_stale_epoch_lifecycle.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/forked_generalized_acceptance_requires_prior_log_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/generalized_acceptance_requires_c5c_and_c6a_contracts.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/generalized_epoch_compromise_use_requires_prior_compromise.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/revoked_generalized_acceptance_requires_explicit_exception.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/stale_generalized_acceptance_has_stale_epoch_evidence.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file results/reproduction/phase1c6b_20260717T141134Z/stale_generalized_acceptance_uses_epoch_compromise_state.txt",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file scripts/audit-publication-documents.sh",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file scripts/check-environment.sh",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file scripts/verify-phase1c6b.sh",
+      "passed": true
+    },
+    {
+      "details": "unchanged",
+      "name": "preserve existing file scripts/verify-release-integrity.sh",
+      "passed": true
+    }
+  ],
+  "checks_passed": 776,
+  "checks_total": 776,
+  "release": {
+    "date": "2026-07-21",
+    "status": "FINAL PUBLIC RELEASE",
+    "tag": "oclm-phase2-v2.0.0",
+    "title": "OCLM Phase 2: Adversarial Validation of Canonical Lineage Non-Substitutability",
+    "version": "2.0.0"
+  },
+  "result": {
+    "a48_final_verified": true,
+    "a48_helpers_verified": 3,
+    "attack_classes": 80,
+    "attack_classes_ruled_out": 80,
+    "counterexample_traces": 0,
+    "health_and_reachability": 8,
+    "health_and_reachability_reachable": 8,
+    "unresolved_attack_classes": 0
+  }
+}

@@ -1,0 +1,548 @@
+OCLM Open Verification Release License
+Version 1.1
+
+License Identifier:
+LicenseRef-OCLM-Open-Verification-Release
+
+Copyright © 2026 Hirofumi Kureha (HiRO).
+Licensed and administered by WonderMetanism Inc.
+
+Oracle–Child Lineage Model (OCLM)
+Conceived and designed by Hirofumi Kureha (HiRO).
+First published by WonderMetanism Inc.
+
+Publicly Verifiable,
+Source-Available for Non-Commercial Use
+
+-------------------------------------------------------------------------------
+
+1. ACCEPTANCE
+
+This License governs the use of the Covered Materials.
+
+By exercising any permission granted under this License,
+you accept all of its terms and conditions.
+
+No permission is granted except under this License or a
+separate written agreement issued or administered by
+WonderMetanism Inc.
+
+-------------------------------------------------------------------------------
+
+2. DEFINITIONS
+
+"Licensor" means Hirofumi Kureha (HiRO), the copyright holder
+and originator of the Oracle–Child Lineage Model (OCLM).
+
+"Administrator" means WonderMetanism Inc., acting as the
+official publisher, license administrator, commercial
+authorization body, certification authority, and governance
+body for OCLM.
+
+"Covered Materials" means the OCLM Phase 2 source files,
+formal models, adversarial-validation results, proof logs,
+scripts, documentation, release archives, manuscripts,
+manifests, integrity records, and other materials distributed
+with this License, except material that expressly states
+different terms.
+
+"Canonical OCLM" means the official OCLM specification,
+models, releases, records, and versions expressly published
+as canonical by WonderMetanism Inc.
+
+"Modified Materials" means any alteration, adaptation,
+translation, extension, extraction, transformation,
+reimplementation, or derivative work based on any part of
+the Covered Materials.
+
+"Non-Commercial Purpose" means use whose primary purpose is
+research, education, independent verification, criticism,
+review, private study, or personal experimentation and that
+does not provide commercial advantage, monetary compensation,
+revenue, operational business value, or services to a customer.
+
+"Passive Commercial Evaluation" means inspection and internal
+review by an organization solely to determine whether to seek
+a separate commercial agreement. It does not include
+implementation, integration, deployment, operational use,
+customer delivery, production testing, or business-process use.
+
+"Commercial Use" has the meaning specified in Section 7.
+
+-------------------------------------------------------------------------------
+
+3. NON-COMMERCIAL LICENSE GRANT
+
+Subject to full compliance with this License, the Licensor
+grants you a limited, worldwide, non-exclusive,
+non-transferable license to:
+
+a. inspect and study the Covered Materials;
+
+b. download and reproduce the Covered Materials;
+
+c. execute the published verification and integrity scripts;
+
+d. independently reproduce the formal verification results;
+
+e. use the Covered Materials for a Non-Commercial Purpose;
+
+f. create Modified Materials solely for a Non-Commercial Purpose;
+
+g. redistribute unmodified or Modified Materials only as
+   permitted by Sections 4, 5, and 6;
+
+h. quote and cite reasonable portions of the Covered Materials
+   with proper attribution;
+
+i. conduct Passive Commercial Evaluation.
+
+All rights not expressly granted are reserved.
+
+-------------------------------------------------------------------------------
+
+4. ATTRIBUTION REQUIREMENTS
+
+Every permitted copy, redistribution, publication, or
+Modified Material must retain the following attribution:
+
+Oracle–Child Lineage Model (OCLM)
+
+Conceived and designed by
+Hirofumi Kureha (HiRO).
+
+First published by
+WonderMetanism Inc.
+
+Copyright © 2026 Hirofumi Kureha (HiRO).
+Licensed and administered by WonderMetanism Inc.
+
+The attribution must be reasonably prominent and must not
+be removed, obscured, falsified, or replaced.
+
+Existing copyright, license, origin, integrity, and
+third-party notices must also be preserved.
+
+-------------------------------------------------------------------------------
+
+5. MODIFICATION AND DERIVATIVE WORKS
+
+You may create Modified Materials only for a
+Non-Commercial Purpose.
+
+Modified Materials must:
+
+a. clearly identify that they have been modified;
+
+b. identify the person or organization responsible for
+   the modification;
+
+c. identify the date and general nature of the modification;
+
+d. retain this License and all required attribution;
+
+e. remain available only under this License unless the
+   Administrator gives prior written authorization;
+
+f. clearly state that they are not the Canonical OCLM;
+
+g. not claim official, certified, compliant, conformant,
+   approved, or authorized status;
+
+h. not reuse canonical SHA-256 values, signatures, release
+   identifiers, DOI metadata, or verification statements in
+   a way that implies identity with an official artifact.
+
+A modification, fork, translation, implementation, or
+derivative work does not become an official OCLM version
+merely because it reproduces or extends published properties.
+
+-------------------------------------------------------------------------------
+
+6. REDISTRIBUTION
+
+You may redistribute the Covered Materials or Modified
+Materials only when all of the following conditions are met:
+
+a. the redistribution is exclusively for a
+   Non-Commercial Purpose;
+
+b. no fee is charged other than a reasonable and documented
+   cost of physical media or transmission;
+
+c. a complete copy of this License is included;
+
+d. all attribution and origin notices are retained;
+
+e. Modified Materials are clearly marked as modified and
+   non-canonical;
+
+f. source materials sufficient to inspect and reproduce the
+   redistributed work are included or made available without
+   charge;
+
+g. no additional legal, contractual, technical, or digital
+   restriction is imposed that conflicts with this License;
+
+h. no representation of sponsorship, certification,
+   approval, affiliation, or official status is made.
+
+Recipients receive their rights directly from the Licensor
+under this License. You may not sublicense, assign, sell,
+transfer, or grant broader rights in the Covered Materials.
+
+-------------------------------------------------------------------------------
+
+7. COMMERCIAL USE
+
+Commercial Use requires prior written authorization and a
+separate agreement administered by WonderMetanism Inc.
+
+Commercial Use includes, without limitation:
+
+a. use by or for a for-profit company, commercial enterprise,
+   customer, client, investor, or revenue-generating activity,
+   except Passive Commercial Evaluation;
+
+b. internal enterprise implementation, integration,
+   deployment, testing, validation, governance, security,
+   compliance, recordkeeping, or operational use;
+
+c. incorporation into a product, platform, protocol,
+   application, service, infrastructure, database,
+   distributed ledger, blockchain, financial system,
+   identity system, AI system, registry, or asset system;
+
+d. use in production, staging, pilot, proof-of-concept,
+   customer demonstration, or pre-production environments;
+
+e. use to provide consulting, development, assessment,
+   verification, validation, certification, auditing,
+   training, support, or managed services for compensation;
+
+f. use in a paid course, paid publication, paid research,
+   subscription service, hosted service, API, SDK,
+   verifier, test suite, or software distribution;
+
+g. development or distribution of a commercial derivative
+   implementation or competing commercial offering;
+
+h. use in connection with fundraising, commercial promotion,
+   product marketing, customer acquisition, or sales;
+
+i. use that creates direct or indirect revenue,
+   cost reduction, operational advantage, market advantage,
+   asset protection, regulatory advantage, or commercial value;
+
+j. customer-facing or third-party-facing use;
+
+k. use of OCLM results, terminology, or verification claims
+   to market, certify, validate, or distinguish a commercial
+   product or service;
+
+l. any other use primarily intended for commercial benefit.
+
+Nonprofit, academic, governmental, or educational status
+does not by itself make a fee-based, customer-facing,
+revenue-generating, or operational use non-commercial.
+
+-------------------------------------------------------------------------------
+
+8. COMMERCIAL AUTHORIZATION
+
+Commercial rights may be granted only through a separate
+written authorization or agreement administered by
+WonderMetanism Inc.
+
+A commercial agreement may address:
+
+- implementation rights;
+- integration rights;
+- enterprise deployment rights;
+- official verifier or SDK access;
+- certification and conformance rights;
+- support and maintenance;
+- industry or jurisdiction-specific profiles;
+- attribution and branding requirements;
+- fees, royalties, minimum commitments, or usage terms;
+- audit and reporting obligations;
+- partnership or strategic adoption terms.
+
+No public statement, discussion, contribution, pull request,
+issue, email exchange, or technical compatibility creates a
+commercial license unless an authorized written agreement
+expressly says so.
+
+-------------------------------------------------------------------------------
+
+9. ENTERPRISE INTERNAL USE
+
+Enterprise or organizational internal use is Commercial Use
+when the Covered Materials or Modified Materials are used to:
+
+- support operations;
+- evaluate or control real assets, records, rights, states,
+  identities, transactions, or systems;
+- guide product or infrastructure development;
+- produce internal business outputs;
+- reduce commercial risk or cost;
+- support regulatory, security, governance, or compliance work;
+- train personnel for commercial implementation;
+- provide value to an affiliated entity, customer, or partner.
+
+Passive Commercial Evaluation remains permitted only to
+decide whether to request a commercial agreement and must
+stop before implementation, integration, deployment,
+operational testing, or commercial exploitation begins.
+
+-------------------------------------------------------------------------------
+
+10. NO SUBLICENSING OR TRANSFER
+
+You may not:
+
+- sublicense the Covered Materials;
+- sell or assign this License;
+- transfer commercial-use rights;
+- authorize another party to certify OCLM implementations;
+- grant official, compliant, conformant, or approved status;
+- permit use beyond the scope of this License.
+
+A corporate reorganization, merger, acquisition, asset sale,
+or transfer of control does not transfer commercial rights
+without written authorization from WonderMetanism Inc.
+
+-------------------------------------------------------------------------------
+
+11. OFFICIAL STATUS AND GOVERNANCE
+
+Only WonderMetanism Inc. may determine or authorize:
+
+- the Canonical OCLM specification;
+- official OCLM versions;
+- official formal models and lemma sets;
+- official verification records;
+- official release status;
+- official verifier, SDK, API, registry, or test suite;
+- compatibility and conformance definitions;
+- certification requirements;
+- official implementation status;
+- transition, revocation, and version-governance policies.
+
+This License does not grant governance authority,
+certification authority, approval authority, or any right
+to represent a work as official.
+
+-------------------------------------------------------------------------------
+
+12. NAMES, MARKS, AND CERTIFICATION
+
+This License does not grant a trademark, branding,
+certification, endorsement, affiliation, or naming license.
+
+Factual reference to Oracle–Child Lineage Model or OCLM is
+permitted only as described in TRADEMARKS.md.
+
+Prior written authorization is required to use OCLM-related
+names, logos, badges, marks, or designations as part of a
+product, service, protocol, company, organization, domain,
+application, account, package, certification, or commercial
+promotion.
+
+Reproduction of the published formal verification does not
+grant the right to claim:
+
+- OCLM Certified;
+- OCLM Compliant;
+- OCLM Conformant;
+- Official OCLM;
+- WonderMetanism Approved;
+- any equivalent official status.
+
+-------------------------------------------------------------------------------
+
+13. INTEGRITY AND CANONICAL ARTIFACTS
+
+Official SHA-256 values, signatures, tags, DOI records,
+release archives, manifests, and proof records identify
+specific canonical artifacts.
+
+You may not:
+
+- alter an artifact while retaining its official identity;
+- attach an official hash to different content;
+- represent Modified Materials as cryptographically identical
+  to a canonical artifact;
+- silently replace or overwrite a published artifact;
+- falsify verification or integrity results.
+
+Corrections to canonical artifacts require a new version,
+new integrity values, and an official publication by
+WonderMetanism Inc.
+
+-------------------------------------------------------------------------------
+
+14. CONTRIBUTIONS
+
+This License does not require the Licensor or Administrator
+to accept, review, merge, publish, acknowledge, or maintain
+any contribution.
+
+Submission of a contribution does not grant the contributor:
+
+- ownership of OCLM;
+- joint authorship of the original OCLM theory;
+- governance or certification authority;
+- commercial-use rights;
+- official implementation status;
+- rights to controlled names or marks.
+
+Additional contribution terms or a Contributor License
+Agreement may be required before incorporation into a
+canonical or commercially licensable OCLM work.
+
+-------------------------------------------------------------------------------
+
+15. TERMINATION
+
+Your rights under this License terminate automatically upon
+any violation of its terms.
+
+Upon termination, you must immediately:
+
+a. stop all use, modification, reproduction, distribution,
+   deployment, and commercial exploitation;
+
+b. remove public distributions that you control;
+
+c. stop all OCLM-related official, compliance, certification,
+   endorsement, or authorization claims;
+
+d. destroy or permanently disable operational copies, except
+   copies required to be retained by law or as legal evidence.
+
+For a first unintentional violation, rights may be restored
+if the violation is fully cured within 30 days after written
+notice and the Administrator confirms restoration in writing.
+
+Restoration is not automatic for intentional, repeated,
+commercial, deceptive, attribution-removing, integrity-
+falsifying, or certification-related violations.
+
+Termination of one recipient does not automatically terminate
+the rights of another recipient who independently complies
+with this License.
+
+Sections concerning attribution, reserved rights,
+commercial restrictions, official status, integrity,
+termination, warranty, liability, and enforcement survive
+termination.
+
+-------------------------------------------------------------------------------
+
+16. THIRD-PARTY MATERIALS
+
+Third-party materials remain subject to their own licenses,
+notices, and terms.
+
+This License grants no rights in third-party materials beyond
+the rights that their respective owners have provided.
+
+You are responsible for identifying and complying with all
+applicable third-party terms.
+
+-------------------------------------------------------------------------------
+
+17. NO WARRANTY
+
+THE COVERED MATERIALS ARE PROVIDED "AS IS" AND "AS AVAILABLE",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED, OR STATUTORY.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE LICENSOR AND
+ADMINISTRATOR DISCLAIM ALL WARRANTIES, INCLUDING
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+NONINFRINGEMENT, ACCURACY, SECURITY, AVAILABILITY,
+COMPATIBILITY, AND ERROR-FREE OPERATION.
+
+FORMAL VERIFICATION ESTABLISHES ONLY THE PROPERTIES DEFINED
+WITHIN THE PUBLISHED FORMAL MODEL, ATTACKER MODEL,
+ASSUMPTIONS, AND LEMMAS.
+
+IT DOES NOT BY ITSELF GUARANTEE THE SECURITY, CORRECTNESS,
+LEGALITY, FITNESS, OR PERFORMANCE OF ANY IMPLEMENTATION,
+INTEGRATION, DEPLOYMENT, OPERATOR, DEPENDENCY, DEVICE,
+NETWORK, OR SURROUNDING SYSTEM.
+
+-------------------------------------------------------------------------------
+
+18. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE LICENSOR,
+ADMINISTRATOR, CONTRIBUTORS, AND PUBLISHERS WILL NOT BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOSS
+OF PROFITS, REVENUE, DATA, ASSETS, RIGHTS, BUSINESS,
+GOODWILL, OPPORTUNITY, OR SERVICE, ARISING FROM OR RELATED
+TO THE COVERED MATERIALS OR THIS LICENSE.
+
+YOU ASSUME ALL RISK ARISING FROM USE, MODIFICATION,
+VERIFICATION, REDISTRIBUTION, OR RELIANCE ON THE COVERED
+MATERIALS.
+
+-------------------------------------------------------------------------------
+
+19. NO ENDORSEMENT OR RELATIONSHIP
+
+This License does not create a partnership, agency,
+employment, fiduciary, franchise, joint venture,
+investment, sponsorship, endorsement, or other organizational
+relationship with Hirofumi Kureha (HiRO) or
+WonderMetanism Inc.
+
+-------------------------------------------------------------------------------
+
+20. SEVERABILITY AND NO WAIVER
+
+If any provision of this License is found unenforceable,
+the remaining provisions remain effective to the maximum
+extent permitted by law.
+
+Failure to enforce a provision is not a waiver of that
+provision or any other right.
+
+-------------------------------------------------------------------------------
+
+21. LICENSE VERSION
+
+This License is Version 1.0.
+
+A later license version does not automatically replace or
+modify the terms governing an already published release.
+
+A later version applies only when WonderMetanism Inc.
+expressly designates it for a specific OCLM release or
+covered artifact.
+
+Published artifacts and their applicable license versions
+will not be silently replaced.
+
+-------------------------------------------------------------------------------
+
+22. COMMERCIAL AND PERMISSION REQUESTS
+
+Commercial implementation, deployment, integration,
+certification, enterprise use, branding, or other uses
+outside this License require a separate written agreement
+with WonderMetanism Inc.
+
+Canonical publication authority:
+
+WonderMetanism Inc.
+
+Official website:
+
+https://www.wonder-metanism.com
+
+-------------------------------------------------------------------------------
+
+END OF LICENSE

@@ -204,3 +204,37 @@ WonderMetanism Inc.
 Official website:
 
 https://www.wonder-metanism.com
+
+## OCLM Phase 2 — Final Public Release
+
+**OCLM Phase 2: Adversarial Validation of Canonical Lineage Non-Substitutability**
+
+Version: `2.0.0`
+
+Release tag: `oclm-phase2-v2.0.0`
+
+Release date: `2026-07-21`
+
+Final formal result:
+
+- 80/80 symbolic adversarial attack classes ruled out under the stated models and assumptions
+- 0 counterexample traces
+- 0 unresolved attack classes
+- 8/8 health and reachability properties reachable
+- A48 H1/H2/H3 and the final property verified in one integrated Tamarin invocation
+
+Canonical Phase 2 artifacts:
+
+- Manuscript: [`phase2/paper/oclm_phase2_adversarial_validation.md`](phase2/paper/oclm_phase2_adversarial_validation.md)
+- PDF: [`phase2/paper/oclm_phase2_adversarial_validation_20260721.pdf`](phase2/paper/oclm_phase2_adversarial_validation_20260721.pdf)
+- Frozen evidence: [`phase2/evidence/oclm-phase2-final-evidence-20260721T050537Z.zip`](phase2/evidence/oclm-phase2-final-evidence-20260721T050537Z.zip)
+- Final audit: [`phase2/audit/FINAL_RELEASE_AUDIT.md`](phase2/audit/FINAL_RELEASE_AUDIT.md)
+- Standalone release: [`releases/oclm_phase2_adversarial_validation_20260721.zip`](releases/oclm_phase2_adversarial_validation_20260721.zip)
+
+Standalone release SHA-256:
+
+```text
+a88c6afce9b7d17e19b08b63efd1b4d6e7b8955d7f6f78c15e3731e35b6dc74a
+```
+
+Phase 2 is distributed under the OCLM Open Verification Release License, Version 1.1. It is publicly verifiable and source-available for non-commercial use. Commercial use requires prior written authorization and a separate agreement with WonderMetanism Inc.

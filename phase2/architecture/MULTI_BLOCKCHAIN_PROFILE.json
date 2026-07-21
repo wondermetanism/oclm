@@ -1,0 +1,34 @@
+{
+  "canonical_migration_requires": [
+    "source lineage state",
+    "authorized transition",
+    "source evidence and finality rule",
+    "destination generation",
+    "authenticated continuity"
+  ],
+  "core_invariants": [
+    "origin binding",
+    "predecessor binding",
+    "domain binding",
+    "transition uniqueness",
+    "temporal ordering",
+    "context binding",
+    "monotonic verification",
+    "explicit compromise"
+  ],
+  "layers": [
+    "chain-local execution",
+    "evidence extraction and attestation",
+    "OCLM lineage validation",
+    "application and settlement action"
+  ],
+  "name": "OCLM multi-blockchain higher-layer profile",
+  "not_established_by_phase2": [
+    "security of every concrete bridge",
+    "truth of physical Oracle inputs",
+    "implementation refinement",
+    "universal blockchain finality",
+    "end-to-end refinement of all Phase 1 models into C6B"
+  ],
+  "status": "architectural interpretation; not a frozen wire protocol"
+}

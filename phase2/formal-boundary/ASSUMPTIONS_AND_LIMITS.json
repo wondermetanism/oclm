@@ -1,0 +1,74 @@
+{
+  "assumptions": [
+    {
+      "id": "A-SYM",
+      "implementation_obligation": "select concrete primitives and encodings that preserve symbolic distinctions",
+      "name": "symbolic cryptographic abstraction"
+    },
+    {
+      "id": "A-HASH",
+      "implementation_obligation": "use collision-resistant hashing, canonical serialization, and domain separation",
+      "name": "collision-free constructor behavior in the symbolic model"
+    },
+    {
+      "id": "A-KEY",
+      "implementation_obligation": "inventory all production authorities and compromise paths",
+      "name": "declared key roles and compromise events are complete"
+    },
+    {
+      "id": "A-TIME",
+      "implementation_obligation": "provide trustworthy ordering, checkpoints, or monotonic state",
+      "name": "security-relevant event order is preserved"
+    },
+    {
+      "id": "A-ERASE",
+      "implementation_obligation": "implement auditable key destruction across memory, backups, and recovery systems",
+      "name": "modeled prior epoch keys are erased"
+    },
+    {
+      "id": "A-ORACLE",
+      "implementation_obligation": "define and audit physical, legal, hardware, or blockchain evidence profiles",
+      "name": "external evidence satisfies the modeled Oracle predicate"
+    },
+    {
+      "id": "A-REFINE",
+      "implementation_obligation": "prove or audit event mapping, serialization, state transitions, and bypass absence",
+      "name": "implementation acceptance behavior refines the model"
+    },
+    {
+      "id": "A-FINAL",
+      "implementation_obligation": "specify reorganization and catastrophic-failure handling",
+      "name": "external ledger evidence satisfies a declared finality rule"
+    }
+  ],
+  "future_obligations": [
+    "end-to-end refinement",
+    "reference implementation model",
+    "concrete cryptographic profile",
+    "Oracle profiles",
+    "cross-chain finality profiles",
+    "privacy model",
+    "recovery and governance model"
+  ],
+  "not_established": [
+    "universal unbreakability",
+    "exhaustion of every possible attack",
+    "physical truth of all Oracle inputs",
+    "security of every implementation",
+    "privacy and unlinkability",
+    "availability and denial-of-service resistance",
+    "economic and governance security",
+    "end-to-end refinement of all components into C6B"
+  ],
+  "phase": "OCLM Phase 2",
+  "verified": {
+    "a48_final_verified": true,
+    "a48_helper_lemmas_verified": 3,
+    "attack_classes_ruled_out": 80,
+    "counterexample_traces": 0,
+    "health_and_reachability_properties": 8,
+    "health_and_reachability_reachable": 8,
+    "symbolic_attack_classes": 80,
+    "unresolved_attack_classes": 0
+  }
+}

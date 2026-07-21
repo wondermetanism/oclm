@@ -1,0 +1,97 @@
+{
+  "canonical_artifacts": {
+    "final_release_audit": {
+      "path": "phase2/audit/FINAL_RELEASE_AUDIT.md",
+      "sha256": "753904dfb409b2ca7bdc061075838e3a3f53b0630077f559a5a4bbd55d3754bc"
+    },
+    "final_results": {
+      "path": "phase2/catalog/FINAL_88_RESULTS.csv",
+      "sha256": "4c9451cdb967914940c63742cc15bcb65ac6cf7870973becf8e3e6e942147e26"
+    },
+    "frozen_evidence": {
+      "path": "phase2/evidence/oclm-phase2-final-evidence-20260721T050537Z.zip",
+      "sha256": "de36e384b7583ddde8dfc655ac51eeb517bb64011b5cf4d59a850aad62abb51e"
+    },
+    "frozen_release": {
+      "path": "releases/oclm_phase2_adversarial_validation_20260721.zip",
+      "sha256": "a88c6afce9b7d17e19b08b63efd1b4d6e7b8955d7f6f78c15e3731e35b6dc74a"
+    },
+    "manuscript_markdown": {
+      "path": "phase2/paper/oclm_phase2_adversarial_validation.md",
+      "sha256": "2052e481ec698e106591f1b1aedc4ecb9b52217d5984a8c38d97e166b458c694"
+    },
+    "manuscript_pdf": {
+      "pages": 82,
+      "path": "phase2/paper/oclm_phase2_adversarial_validation_20260721.pdf",
+      "sha256": "52831d5a36facaf1ce9512b10e39587dfea63233ae446765b51691cb4eb2b669"
+    },
+    "phase2_manifest": {
+      "path": "phase2/MANIFEST.sha256",
+      "sha256": "0c745323ad4fcad00186e77fc0239fc65d6b029dd9d8ef24e16b7475dd8a70b9"
+    }
+  },
+  "identifiers": {
+    "github_release": null,
+    "github_repository": "https://github.com/wondermetanism/oclm",
+    "official_website": "https://www.wonder-metanism.com",
+    "phase1_zenodo_doi": "10.5281/zenodo.21416118",
+    "phase2_zenodo_doi": null,
+    "phase2_zenodo_record": null
+  },
+  "immutability_policy": "Published artifacts are not silently replaced. Corrections require a new version, new tag, new integrity values, and a new release record.",
+  "license_files": [
+    "phase2/LICENSE",
+    "phase2/COMMERCIAL-LICENSE.md",
+    "phase2/TRADEMARKS.md"
+  ],
+  "origin": {
+    "administrator_statement": "Licensed and administered by WonderMetanism Inc.",
+    "copyright_holder": "Hirofumi Kureha (HiRO)",
+    "creator": "Hirofumi Kureha",
+    "creator_alias": "HiRO",
+    "creator_orcid": "https://orcid.org/0009-0006-6182-534X",
+    "creator_statement": "Conceived and designed by Hirofumi Kureha (HiRO).",
+    "publisher": "WonderMetanism Inc.",
+    "publisher_statement": "First published by WonderMetanism Inc."
+  },
+  "publication": {
+    "license_description": "Publicly Verifiable, Source-Available for Non-Commercial Use",
+    "name": "Oracle–Child Lineage Model",
+    "phase": "Phase 2",
+    "publication_date": "2026-07-21",
+    "release_type": "OCLM Open Verification Release",
+    "short_name": "OCLM",
+    "status": [
+      "ADVERSARIALLY VALIDATED",
+      "COMPLETE",
+      "FROZEN"
+    ],
+    "tag": "oclm-phase2-v2.0.0",
+    "title": "OCLM Phase 2: Adversarial Validation of Canonical Lineage Non-Substitutability",
+    "version": "2.0.0"
+  },
+  "publication_documents": [
+    "phase2/README.md",
+    "phase2/CITATION.cff",
+    ".zenodo.json",
+    "phase2/RELEASE_NOTES.md",
+    "phase2/publication/GITHUB_RELEASE.md",
+    "phase2/publication/ZENODO_UPLOAD.md",
+    "phase2/publication/WEBSITE_ANNOUNCEMENT_JA.md",
+    "phase2/publication/WEBSITE_ANNOUNCEMENT_EN.md",
+    "phase2/publication/X_ANNOUNCEMENT_JA.md"
+  ],
+  "schema_version": "1.0",
+  "verification": {
+    "a48_final_property_verified": true,
+    "a48_helper_lemmas_verified": 3,
+    "attack_classes_ruled_out": 80,
+    "counterexample_traces": 0,
+    "formal_reproduction_status": "PASS",
+    "health_and_reachability_properties": 8,
+    "health_and_reachability_reachable": 8,
+    "release_integrity_status": "PASS",
+    "symbolic_attack_classes": 80,
+    "unresolved_attack_classes": 0
+  }
+}

@@ -1,0 +1,11 @@
+id,kind,category_ja,model,processing_time_seconds,verification_method
+A47,attack,理論・同一性・祖先,oclm_phase1c3_forward_secure_epochs.spthy,726.84,clean direct rerun
+A48,attack,理論・同一性・祖先,oclm_phase1c3_forward_secure_epochs.spthy,707.76,integrated all-traces proof with three verified helper lemmas
+A46,attack,時間境界・状態遷移,oclm_phase1c3_forward_secure_epochs.spthy,373.17,clean direct rerun
+A14,attack,鍵侵害の時間境界,oclm_phase1c3_forward_secure_epochs.spthy,301.59,clean direct rerun
+A13,attack,鍵侵害の時間境界,oclm_phase1c3_forward_secure_epochs.spthy,290.39,clean direct rerun
+A04,attack,系譜・同一性置換,oclm_phase1c3b_c2_c3_composition_contract.spthy,69.98,clean direct rerun
+A43,attack,理論・同一性・祖先,oclm_phase1b_external.spthy,59.75,clean direct rerun
+A80,attack,完全複製・逆方向同一性,oclm_phase1c3b_c2_c3_composition_contract.spthy,34.13,clean direct rerun
+A08,attack,Cross-instance・祖先混成,oclm_phase1c3b_c2_c3_composition_contract.spthy,34.08,clean direct rerun
+A16,attack,鍵侵害の時間境界,oclm_phase1c3b_c2_c3_composition_contract.spthy,33.58,clean direct rerun

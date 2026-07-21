@@ -1,0 +1,39 @@
+{
+  "access_right": "open",
+  "contributors": [
+    {
+      "name": "WonderMetanism Inc.",
+      "type": "HostingInstitution"
+    }
+  ],
+  "creators": [
+    {
+      "affiliation": "WonderMetanism Inc.",
+      "name": "Kureha, Hirofumi",
+      "orcid": "0009-0006-6182-534X"
+    }
+  ],
+  "description": "<p>The Oracle–Child Lineage Model (OCLM) Phase 2 release presents an adversarial validation campaign against the inherited Phase 1 Tamarin models.</p><p>Under the stated symbolic models, attacker capabilities, cryptographic abstractions, and compromise conditions, all 80 tested symbolic adversarial attack classes were ruled out, no counterexample trace was found, no attack class remained unresolved, and all eight health and reachability properties were reachable. The final A48 past-epoch identity property and its three helper lemmas were verified together in one integrated Tamarin invocation.</p><p>OCLM is conceived and designed by Hirofumi Kureha (HiRO), first published by WonderMetanism Inc. Materials are publicly verifiable and source-available for non-commercial use. Commercial use requires prior written authorization from WonderMetanism Inc.</p>",
+  "keywords": [
+    "OCLM",
+    "Oracle-Child Lineage Model",
+    "canonical lineage",
+    "non-substitutability",
+    "formal verification",
+    "Tamarin Prover",
+    "symbolic protocol analysis",
+    "blockchain interoperability",
+    "cross-chain identity",
+    "provenance",
+    "forward security",
+    "rollback resistance",
+    "revocation",
+    "transparency"
+  ],
+  "language": "eng",
+  "notes": "License: OCLM Open Verification Release License, Version 1.1. Publicly verifiable and source-available for non-commercial use. Commercial implementation, integration, deployment, services, certification, or derivative commercial products require prior written authorization and a separate agreement with WonderMetanism Inc. Phase 1 DOI: https://doi.org/10.5281/zenodo.21416118",
+  "publication_date": "2026-07-21",
+  "title": "OCLM Phase 2: Adversarial Validation of Canonical Lineage Non-Substitutability",
+  "upload_type": "software",
+  "version": "2.0.0"
+}

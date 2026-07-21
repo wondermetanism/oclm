@@ -1,0 +1,44 @@
+{
+  "attack_id": "A48",
+  "final": {
+    "lemma": "past_epoch_identity_is_bound_or_target_compromised",
+    "result": "verified",
+    "steps": 8
+  },
+  "helpers": [
+    {
+      "id": "H1",
+      "lemma": "a48_h1_same_child_id_implies_same_lineage",
+      "result": "verified",
+      "role": "accepted Child ID to lineage equality",
+      "steps": 6
+    },
+    {
+      "id": "H2",
+      "lemma": "a48_h2_same_generated_lineage_implies_same_public_tuple",
+      "result": "verified",
+      "role": "generated lineage equality to public ancestry tuple equality",
+      "steps": 2
+    },
+    {
+      "id": "H3",
+      "lemma": "a48_h3_uncompromised_acceptance_has_generated_origin",
+      "result": "verified",
+      "role": "uncompromised acceptance to matching prior generation",
+      "steps": 52
+    }
+  ],
+  "integrated_log": "logs/clean/A48_integrated_H1_H2_H3_final.txt",
+  "integrated_log_sha256": "7a3b2b0e6b64e2d8bfca323dce4ca49c267fb78286044a11e4c39645a4a714c1",
+  "integrated_model": "models/a48/oclm_phase1c3_a48_decomposed_h1_h2_h3.spthy",
+  "integrated_model_sha256": "6a674d76a6c37479a10c727387a9a5771b7557064781ea4411b658e9bf355133",
+  "original_direct_attack_search": {
+    "result": "timeout",
+    "timeout_seconds": 1800,
+    "used_as_final_security_evidence": false
+  },
+  "processing_time_seconds": 707.76,
+  "recorded_exit_status": "NOT_CAPTURED_POSTPROCESS",
+  "source_model": "oclm_phase1c3_forward_secure_epochs.spthy",
+  "wellformedness": "all checks successful"
+}

@@ -1,0 +1,23 @@
+{
+  "attack_survives": 80,
+  "attack_targets": 80,
+  "counterexample_traces": 0,
+  "health_reachable": 8,
+  "health_targets": 8,
+  "principal_targets": 88,
+  "reported_processing_time_seconds": {
+    "aggregate_selected_final_evidence": 2985.35,
+    "maximum_all_targets": 726.84,
+    "median_all_targets": 2.64,
+    "median_attack_targets": 2.42,
+    "median_health_targets": 4.06,
+    "third_quartile_all_targets": 8.94
+  },
+  "runtime_interpretation": "The aggregate is the sum of per-target processing times recorded in the selected final evidence logs. It is not the initial battery wall-clock duration.",
+  "unresolved_attack_targets": 0,
+  "verification_methods": {
+    "clean direct rerun": 16,
+    "integrated all-traces proof with three verified helper lemmas": 1,
+    "original clean run": 71
+  }
+}
