@@ -22,6 +22,11 @@ Signed Phase AI-B3 freeze commit:
 
 `efc9ff097ed4509fa4884855c3e7962b2c74fc59`
 
+Zenodo:
+
+- Version DOI: [10.5281/zenodo.21490691](https://doi.org/10.5281/zenodo.21490691)
+- Concept DOI: [10.5281/zenodo.21490690](https://doi.org/10.5281/zenodo.21490690)
+
 See:
 
 - [Phase AI-B3 overview](profiles/ai-command-lineage/phase-b3/README.md)
