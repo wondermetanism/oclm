@@ -1,0 +1,730 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_AI_B1_Command_Lineage_Core] Theory loaded
+[Theory OCLM_AI_B1_Command_Lineage_Core] Theory translated
+[Theory OCLM_AI_B1_Command_Lineage_Core] Derivation checks started
+[Theory OCLM_AI_B1_Command_Lineage_Core] Derivation checks ended
+[Theory OCLM_AI_B1_Command_Lineage_Core] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10
+[Saturating Sources] Step 2 (Max 5)
+[Saturating Sources] Done
+theory OCLM_AI_B1_Command_Lineage_Core
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0, verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) Initialize_Command_Lineage_Actors:
+   [ Fr( ~authority_sk ), Fr( ~agent_sk ), Fr( ~verifier_sk ) ]
+  --[
+  CommandLineageActorsInitialized( pk(~authority_sk), pk(~agent_sk),
+                                   pk(~verifier_sk)
+  )
+  ]->
+   [
+   !AuthoritySecret( ~authority_sk ), !AuthorityPublic( pk(~authority_sk) ),
+   !AgentSecret( ~agent_sk ), !AgentPublic( pk(~agent_sk) ),
+   !VerifierSecret( ~verifier_sk ), !VerifierPublic( pk(~verifier_sk) ),
+   Out( <'oclm-ai-command-lineage-actors-v1', pk(~authority_sk), 
+         pk(~agent_sk), pk(~verifier_sk)>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Issue_Root_Command:
+   [
+   !AuthoritySecret( authority_sk ), !AgentPublic( agent_pk ),
+   !VerifierPublic( verifier_pk ), Fr( ~command_id ), Fr( ~target ),
+   Fr( ~space ), Fr( ~time_window ), Fr( ~capability ), Fr( ~resource ),
+   Fr( ~context )
+   ]
+  --[
+  RootCommandIssued( pk(authority_sk), ~command_id, agent_pk, verifier_pk,
+                     ~target, ~space, ~time_window, ~capability, ~resource, ~context
+  ),
+  RootCommandCertificateIssued( pk(authority_sk), ~command_id,
+                                <'oclm-ai-root-command-v1', pk(authority_sk), ~command_id, agent_pk, 
+                                 verifier_pk, ~target, ~space, ~time_window, ~capability, ~resource, 
+                                 ~context>
+  )
+  ]->
+   [
+   !RootCommandRecord( pk(authority_sk), ~command_id, agent_pk, verifier_pk,
+                       ~target, ~space, ~time_window, ~capability, ~resource, ~context
+   ),
+   CommandState( pk(authority_sk), ~command_id, 'active' ),
+   Out( <
+         <'oclm-ai-root-command-v1', pk(authority_sk), ~command_id, agent_pk, 
+          verifier_pk, ~target, ~space, ~time_window, ~capability, ~resource, 
+          ~context>, 
+         sign(<'oclm-ai-root-command-v1', pk(authority_sk), ~command_id, 
+               agent_pk, verifier_pk, ~target, ~space, ~time_window, ~capability, 
+               ~resource, ~context>,
+              authority_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Agent_Proposes_Action:
+   [
+   !AgentSecret( agent_sk ),
+   !RootCommandRecord( authority_pk, command_id, pk(agent_sk), verifier_pk,
+                       authorized_target, authorized_space, authorized_time_window,
+                       authorized_capability, authorized_resource, authorized_context
+   ),
+   CommandState( authority_pk, command_id, 'active' ),
+   In( <action_id, tool, arguments, proposed_target, proposed_space, 
+        proposed_time_window, proposed_capability, proposed_resource, 
+        proposed_context>
+   )
+   ]
+  --[
+  AgentActionProposed( authority_pk, command_id, pk(agent_sk), verifier_pk,
+                       action_id, tool, arguments, proposed_target, proposed_space,
+                       proposed_time_window, proposed_capability, proposed_resource,
+                       proposed_context
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'proposed' ),
+   PendingActionProposal( authority_pk, command_id, pk(agent_sk),
+                          verifier_pk, action_id, tool, arguments, proposed_target, proposed_space,
+                          proposed_time_window, proposed_capability, proposed_resource,
+                          proposed_context,
+                          <'oclm-ai-action-proposal-v1', authority_pk, command_id, pk(agent_sk), 
+                           verifier_pk, action_id, tool, arguments, proposed_target, 
+                           proposed_space, proposed_time_window, proposed_capability, 
+                           proposed_resource, proposed_context>,
+                          sign(<'oclm-ai-action-proposal-v1', authority_pk, command_id, 
+                                pk(agent_sk), verifier_pk, action_id, tool, arguments, proposed_target, 
+                                proposed_space, proposed_time_window, proposed_capability, 
+                                proposed_resource, proposed_context>,
+                               agent_sk)
+   ),
+   Out( <
+         <'oclm-ai-action-proposal-v1', authority_pk, command_id, pk(agent_sk), 
+          verifier_pk, action_id, tool, arguments, proposed_target, 
+          proposed_space, proposed_time_window, proposed_capability, 
+          proposed_resource, proposed_context>, 
+         sign(<'oclm-ai-action-proposal-v1', authority_pk, command_id, 
+               pk(agent_sk), verifier_pk, action_id, tool, arguments, proposed_target, 
+               proposed_space, proposed_time_window, proposed_capability, 
+               proposed_resource, proposed_context>,
+              agent_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Validate_And_Issue_Action_Certificate:
+   [
+   !VerifierSecret( verifier_sk ),
+   !RootCommandRecord( authority_pk, command_id, agent_pk, pk(verifier_sk),
+                       target, space, time_window, capability, resource, context
+   ),
+   CommandState( authority_pk, command_id, 'proposed' ),
+   PendingActionProposal( authority_pk, command_id, agent_pk,
+                          pk(verifier_sk), action_id, tool, arguments, target, space, time_window,
+                          capability, resource, context, proposal, proposal_signature
+   )
+   ]
+  --[
+  Eq( verify(proposal_signature, proposal, agent_pk), true ),
+  ActionCertificateIssued( authority_pk, pk(verifier_sk), command_id,
+                           agent_pk, action_id, tool, arguments, target, space, time_window,
+                           capability, resource, context,
+                           <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                            command_id, agent_pk, action_id, tool, arguments, target, space, 
+                            time_window, capability, resource, context>
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'certified' ),
+   UnusedActionCertificate( authority_pk, pk(verifier_sk), command_id,
+                            agent_pk, action_id, tool, arguments, target, space, time_window,
+                            capability, resource, context,
+                            <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                             command_id, agent_pk, action_id, tool, arguments, target, space, 
+                             time_window, capability, resource, context>,
+                            sign(<'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                  command_id, agent_pk, action_id, tool, arguments, target, space, 
+                                  time_window, capability, resource, context>,
+                                 verifier_sk)
+   ),
+   Out( <
+         <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+          command_id, agent_pk, action_id, tool, arguments, target, space, 
+          time_window, capability, resource, context>, 
+         sign(<'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+               command_id, agent_pk, action_id, tool, arguments, target, space, 
+               time_window, capability, resource, context>,
+              verifier_sk)
+        >
+   )
+   ]
+
+  /*
+  rule (modulo AC) Validate_And_Issue_Action_Certificate:
+     [
+     !VerifierSecret( verifier_sk ),
+     !RootCommandRecord( authority_pk, command_id, agent_pk, pk(verifier_sk),
+                         target, space, time_window, capability, resource, context
+     ),
+     CommandState( authority_pk, command_id, 'proposed' ),
+     PendingActionProposal( authority_pk, command_id, agent_pk,
+                            pk(verifier_sk), action_id, tool, arguments, target, space, time_window,
+                            capability, resource, context, proposal, proposal_signature
+     )
+     ]
+    --[
+    Eq( z, true ),
+    ActionCertificateIssued( authority_pk, pk(verifier_sk), command_id,
+                             agent_pk, action_id, tool, arguments, target, space, time_window,
+                             capability, resource, context,
+                             <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                              command_id, agent_pk, action_id, tool, arguments, target, space, 
+                              time_window, capability, resource, context>
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'certified' ),
+     UnusedActionCertificate( authority_pk, pk(verifier_sk), command_id,
+                              agent_pk, action_id, tool, arguments, target, space, time_window,
+                              capability, resource, context,
+                              <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                               command_id, agent_pk, action_id, tool, arguments, target, space, 
+                               time_window, capability, resource, context>,
+                              sign(<'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                    command_id, agent_pk, action_id, tool, arguments, target, space, 
+                                    time_window, capability, resource, context>,
+                                   verifier_sk)
+     ),
+     Out( <
+           <'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+            command_id, agent_pk, action_id, tool, arguments, target, space, 
+            time_window, capability, resource, context>, 
+           sign(<'oclm-ai-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                 command_id, agent_pk, action_id, tool, arguments, target, space, 
+                 time_window, capability, resource, context>,
+                verifier_sk)
+          >
+     )
+     ]
+    variants (modulo AC)
+    1. agent_pk
+             = agent_pk.28
+       proposal
+             = proposal.34
+       proposal_signature
+             = proposal_signature.35
+       z     = verify(proposal_signature.35, proposal.34, agent_pk.28)
+    
+    2. agent_pk
+             = pk(x.81)
+       proposal
+             = proposal.45
+       proposal_signature
+             = sign(proposal.45, x.81)
+       z     = true
+  */
+
+rule (modulo E) Execution_Gateway_Accepts_Certified_Action:
+   [
+   !VerifierPublic( verifier_pk ),
+   CommandState( authority_pk, command_id, 'certified' ),
+   UnusedActionCertificate( authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context, action_certificate, certificate_signature
+   ),
+   In( <action_certificate, certificate_signature> )
+   ]
+  --[
+  Eq( verify(certificate_signature, action_certificate, verifier_pk), true
+  ),
+  CertifiedCommandValidatedAtGateway( authority_pk, command_id ),
+  ActionCertificateConsumed( action_certificate ),
+  ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                         action_id, tool, arguments, target, space, time_window, capability,
+                         resource, context, action_certificate
+  ),
+  ExecutionReceiptRecorded( h(<'oclm-ai-tool-execution-receipt-v1', 
+                               action_certificate, 'accepted'>),
+                            action_certificate, authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'executed' ),
+   Out( <'oclm-ai-tool-execution-receipt-v1', 
+         h(<'oclm-ai-tool-execution-receipt-v1', action_certificate, 'accepted'
+           >), 
+         action_certificate>
+   )
+   ]
+
+  /*
+  rule (modulo AC) Execution_Gateway_Accepts_Certified_Action:
+     [
+     !VerifierPublic( verifier_pk ),
+     CommandState( authority_pk, command_id, 'certified' ),
+     UnusedActionCertificate( authority_pk, verifier_pk, command_id, agent_pk,
+                              action_id, tool, arguments, target, space, time_window, capability,
+                              resource, context, action_certificate, certificate_signature
+     ),
+     In( <action_certificate, certificate_signature> )
+     ]
+    --[
+    Eq( z, true ),
+    CertifiedCommandValidatedAtGateway( authority_pk, command_id ),
+    ActionCertificateConsumed( action_certificate ),
+    ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                           action_id, tool, arguments, target, space, time_window, capability,
+                           resource, context, action_certificate
+    ),
+    ExecutionReceiptRecorded( h(<'oclm-ai-tool-execution-receipt-v1', 
+                                 action_certificate, 'accepted'>),
+                              action_certificate, authority_pk, verifier_pk, command_id, agent_pk,
+                              action_id, tool, arguments, target, space, time_window, capability,
+                              resource, context
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'executed' ),
+     Out( <'oclm-ai-tool-execution-receipt-v1', 
+           h(<'oclm-ai-tool-execution-receipt-v1', action_certificate, 'accepted'
+             >), 
+           action_certificate>
+     )
+     ]
+    variants (modulo AC)
+    1. action_certificate
+             = action_certificate.36
+       certificate_signature
+             = certificate_signature.42
+       verifier_pk
+             = verifier_pk.50
+       z     = verify(certificate_signature.42, action_certificate.36,
+                      verifier_pk.50)
+    
+    2. action_certificate
+             = action_certificate.88
+       certificate_signature
+             = sign(action_certificate.88, x.174)
+       verifier_pk
+             = pk(x.174)
+       z     = true
+  */
+
+rule (modulo E) Revoke_Root_Command_From_Active:
+   [
+   !AuthoritySecret( authority_sk ),
+   !RootCommandRecord( pk(authority_sk), command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+   ),
+   CommandState( pk(authority_sk), command_id, 'active' ),
+   In( <'oclm-ai-revoke-root-command-v1', command_id> )
+   ]
+  --[ CommandRevoked( pk(authority_sk), command_id ) ]->
+   [ CommandState( pk(authority_sk), command_id, 'revoked' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Revoke_Root_Command_From_Proposed:
+   [
+   !AuthoritySecret( authority_sk ),
+   !RootCommandRecord( pk(authority_sk), command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+   ),
+   CommandState( pk(authority_sk), command_id, 'proposed' ),
+   In( <'oclm-ai-revoke-root-command-v1', command_id> )
+   ]
+  --[ CommandRevoked( pk(authority_sk), command_id ) ]->
+   [ CommandState( pk(authority_sk), command_id, 'revoked' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Revoke_Root_Command_From_Certified:
+   [
+   !AuthoritySecret( authority_sk ),
+   !RootCommandRecord( pk(authority_sk), command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+   ),
+   CommandState( pk(authority_sk), command_id, 'certified' ),
+   In( <'oclm-ai-revoke-root-command-v1', command_id> )
+   ]
+  --[ CommandRevoked( pk(authority_sk), command_id ) ]->
+   [ CommandState( pk(authority_sk), command_id, 'revoked' ) ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Revoke_Root_Command_From_Executed:
+   [
+   !AuthoritySecret( authority_sk ),
+   !RootCommandRecord( pk(authority_sk), command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+   ),
+   CommandState( pk(authority_sk), command_id, 'executed' ),
+   In( <'oclm-ai-revoke-root-command-v1', command_id> )
+   ]
+  --[ CommandRevoked( pk(authority_sk), command_id ) ]->
+   [ CommandState( pk(authority_sk), command_id, 'revoked' ) ]
+
+  /* has exactly the trivial AC variant */
+
+lemma executable_honest_command_to_execution:
+  exists-trace
+  "∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     receipt #r #p #c #e.
+    (((((((RootCommandIssued( authority_pk, command_id, agent_pk,
+                              verifier_pk, target, space, time_window, capability, resource, context
+           ) @ #r) ∧
+          (AgentActionProposed( authority_pk, command_id, agent_pk, verifier_pk,
+                                action_id, tool, arguments, target, space, time_window, capability,
+                                resource, context
+           ) @ #p)) ∧
+         (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                   agent_pk, action_id, tool, arguments, target, space, time_window,
+                                   capability, resource, context, action_certificate
+          ) @ #c)) ∧
+        (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                                action_id, tool, arguments, target, space, time_window, capability,
+                                resource, context, action_certificate
+         ) @ #e)) ∧
+       (ExecutionReceiptRecorded( receipt, action_certificate, authority_pk,
+                                  verifier_pk, command_id, agent_pk, action_id, tool, arguments, target,
+                                  space, time_window, capability, resource, context
+        ) @ #e)) ∧
+      (#r < #p)) ∧
+     (#p < #c)) ∧
+    (#c < #e)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   receipt #r #p #c #e.
+  (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                      target, space, time_window, capability, resource, context
+   ) @ #r) ∧
+  (AgentActionProposed( authority_pk, command_id, agent_pk, verifier_pk,
+                        action_id, tool, arguments, target, space, time_window, capability,
+                        resource, context
+   ) @ #p) ∧
+  (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                            agent_pk, action_id, tool, arguments, target, space, time_window,
+                            capability, resource, context, action_certificate
+   ) @ #c) ∧
+  (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                          action_id, tool, arguments, target, space, time_window, capability,
+                          resource, context, action_certificate
+   ) @ #e) ∧
+  (ExecutionReceiptRecorded( receipt, action_certificate, authority_pk,
+                             verifier_pk, command_id, agent_pk, action_id, tool, arguments, target,
+                             space, time_window, capability, resource, context
+   ) @ #e)
+ ∧
+  (#r < #p) ∧ (#p < #c) ∧ (#c < #e)"
+*/
+by sorry
+
+lemma executable_honest_command_revocation:
+  exists-trace
+  "∃ authority_pk command_id agent_pk verifier_pk target space time_window
+     capability resource context #r #v.
+    ((RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                         target, space, time_window, capability, resource, context
+      ) @ #r) ∧
+     (CommandRevoked( authority_pk, command_id ) @ #v)) ∧
+    (#r < #v)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ authority_pk command_id agent_pk verifier_pk target space time_window
+   capability resource context #r #v.
+  (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                      target, space, time_window, capability, resource, context
+   ) @ #r) ∧
+  (CommandRevoked( authority_pk, command_id ) @ #v)
+ ∧
+  #r < #v"
+*/
+by sorry
+
+lemma accepted_execution_requires_complete_command_lineage:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     #e.
+    (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context, action_certificate
+     ) @ #e) ⇒
+    (∃ #r #p #c.
+      (((((RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                              target, space, time_window, capability, resource, context
+           ) @ #r) ∧
+          (AgentActionProposed( authority_pk, command_id, agent_pk, verifier_pk,
+                                action_id, tool, arguments, target, space, time_window, capability,
+                                resource, context
+           ) @ #p)) ∧
+         (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                   agent_pk, action_id, tool, arguments, target, space, time_window,
+                                   capability, resource, context, action_certificate
+          ) @ #c)) ∧
+        (#r < #p)) ∧
+       (#p < #c)) ∧
+      (#c < #e))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   #e.
+  (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                          action_id, tool, arguments, target, space, time_window, capability,
+                          resource, context, action_certificate
+   ) @ #e)
+ ∧
+  ∀ #r #p #c.
+   (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+    ) @ #r) ∧
+   (AgentActionProposed( authority_pk, command_id, agent_pk, verifier_pk,
+                         action_id, tool, arguments, target, space, time_window, capability,
+                         resource, context
+    ) @ #p) ∧
+   (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                             agent_pk, action_id, tool, arguments, target, space, time_window,
+                             capability, resource, context, action_certificate
+    ) @ #c)
+  ⇒
+   ((¬(#r < #p)) ∨ (¬(#p < #c)) ∨ (¬(#c < #e)))"
+*/
+by sorry
+
+lemma action_certificate_is_exactly_scope_bound:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     #c.
+    (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                              agent_pk, action_id, tool, arguments, target, space, time_window,
+                              capability, resource, context, action_certificate
+     ) @ #c) ⇒
+    (∃ #r.
+      (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                          target, space, time_window, capability, resource, context
+       ) @ #r) ∧
+      (#r < #c))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   #c.
+  (ActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                            agent_pk, action_id, tool, arguments, target, space, time_window,
+                            capability, resource, context, action_certificate
+   ) @ #c)
+ ∧
+  ∀ #r.
+   (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+    ) @ #r)
+  ⇒
+   ¬(#r < #c)"
+*/
+by sorry
+
+lemma action_certificate_is_agent_bound:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     #e.
+    (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context, action_certificate
+     ) @ #e) ⇒
+    (∃ #r.
+      (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                          target, space, time_window, capability, resource, context
+       ) @ #r) ∧
+      (#r < #e))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   #e.
+  (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                          action_id, tool, arguments, target, space, time_window, capability,
+                          resource, context, action_certificate
+   ) @ #e)
+ ∧
+  ∀ #r.
+   (RootCommandIssued( authority_pk, command_id, agent_pk, verifier_pk,
+                       target, space, time_window, capability, resource, context
+    ) @ #r)
+  ⇒
+   ¬(#r < #e)"
+*/
+simplify
+solve( !VerifierPublic( pk(x) ) ▶₀ #e )
+  case Initialize_Command_Lineage_Actors
+  solve( CommandState( authority_pk, command_id, 'certified' ) ▶₁ #e )
+    case Validate_And_Issue_Action_Certificate
+    solve( UnusedActionCertificate( pk(~authority_sk), pk(~verifier_sk),
+                                    ~command_id, agent_pk, action_id, tool, arguments, target, space,
+                                    time_window, capability, resource, context, action_certificate,
+                                    sign(action_certificate, ~verifier_sk)
+           ) ▶₂ #e )
+      case Validate_And_Issue_Action_Certificate
+      by contradiction /* from formulas */
+    qed
+  qed
+qed
+
+lemma action_certificate_is_single_use:
+  all-traces
+  "∀ action_certificate #i #j.
+    ((ActionCertificateConsumed( action_certificate ) @ #i) ∧
+     (ActionCertificateConsumed( action_certificate ) @ #j)) ⇒
+    (#i = #j)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ action_certificate #i #j.
+  (ActionCertificateConsumed( action_certificate ) @ #i) ∧
+  (ActionCertificateConsumed( action_certificate ) @ #j)
+ ∧
+  ¬(#i = #j)"
+*/
+by sorry
+
+lemma revoked_command_cannot_execute_later:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     #r #e.
+    ((CommandRevoked( authority_pk, command_id ) @ #r) ∧
+     (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                             action_id, tool, arguments, target, space, time_window, capability,
+                             resource, context, action_certificate
+      ) @ #e)) ⇒
+    (#e < #r)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   #r #e.
+  (CommandRevoked( authority_pk, command_id ) @ #r) ∧
+  (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                          action_id, tool, arguments, target, space, time_window, capability,
+                          resource, context, action_certificate
+   ) @ #e)
+ ∧
+  ¬(#e < #r)"
+*/
+by sorry
+
+lemma accepted_execution_requires_gateway_certified_state:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+     target space time_window capability resource context action_certificate
+     #e.
+    (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context, action_certificate
+     ) @ #e) ⇒
+    (CertifiedCommandValidatedAtGateway( authority_pk, command_id ) @ #e)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_pk action_id tool arguments
+   target space time_window capability resource context action_certificate
+   #e.
+  (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                          action_id, tool, arguments, target, space, time_window, capability,
+                          resource, context, action_certificate
+   ) @ #e)
+ ∧
+  ¬(CertifiedCommandValidatedAtGateway( authority_pk, command_id ) @ #e)"
+*/
+by sorry
+
+lemma receipt_requires_exact_accepted_execution:
+  all-traces
+  "∀ receipt action_certificate authority_pk verifier_pk command_id
+     agent_pk action_id tool arguments target space time_window capability
+     resource context #r.
+    (ExecutionReceiptRecorded( receipt, action_certificate, authority_pk,
+                               verifier_pk, command_id, agent_pk, action_id, tool, arguments, target,
+                               space, time_window, capability, resource, context
+     ) @ #r) ⇒
+    (ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                            action_id, tool, arguments, target, space, time_window, capability,
+                            resource, context, action_certificate
+     ) @ #r)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ receipt action_certificate authority_pk verifier_pk command_id
+   agent_pk action_id tool arguments target space time_window capability
+   resource context #r.
+  (ExecutionReceiptRecorded( receipt, action_certificate, authority_pk,
+                             verifier_pk, command_id, agent_pk, action_id, tool, arguments, target,
+                             space, time_window, capability, resource, context
+   ) @ #r)
+ ∧
+  ¬(ToolExecutionAccepted( authority_pk, verifier_pk, command_id, agent_pk,
+                           action_id, tool, arguments, target, space, time_window, capability,
+                           resource, context, action_certificate
+    ) @ #r)"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: /Users/hiro/Desktop/oclm/profiles/ai-command-lineage/phase-b1/model/tamarin/oclm_ai_b1_command_lineage_core.spthy
+
+  processing time: 4.14s
+  
+  executable_honest_command_to_execution (exists-trace): analysis incomplete (1 steps)
+  executable_honest_command_revocation (exists-trace): analysis incomplete (1 steps)
+  accepted_execution_requires_complete_command_lineage (all-traces): analysis incomplete (1 steps)
+  action_certificate_is_exactly_scope_bound (all-traces): analysis incomplete (1 steps)
+  action_certificate_is_agent_bound (all-traces): verified (5 steps)
+  action_certificate_is_single_use (all-traces): analysis incomplete (1 steps)
+  revoked_command_cannot_execute_later (all-traces): analysis incomplete (1 steps)
+  accepted_execution_requires_gateway_certified_state (all-traces): analysis incomplete (1 steps)
+  receipt_requires_exact_accepted_execution (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

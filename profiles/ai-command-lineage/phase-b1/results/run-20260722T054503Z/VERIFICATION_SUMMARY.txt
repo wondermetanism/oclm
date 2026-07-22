@@ -1,0 +1,18 @@
+OCLM AI Command Lineage Phase AI-B1
+Generated UTC: 20260722T054503Z
+Model SHA-256: 4997a3cf89c055845ef3382af4df41c62cf3c27afe146659f43163bbaad93c68
+Tamarin: 1.12.0
+Maude: 3.5.1
+Per-lemma timeout: 180s
+
+executable_honest_command_to_execution — VERIFIED
+executable_honest_command_revocation — VERIFIED
+accepted_execution_requires_complete_command_lineage — VERIFIED
+action_certificate_is_exactly_scope_bound — VERIFIED
+action_certificate_is_agent_bound — VERIFIED
+action_certificate_is_single_use — VERIFIED
+revoked_command_cannot_execute_later — VERIFIED
+accepted_execution_requires_gateway_certified_state — VERIFIED
+receipt_requires_exact_accepted_execution — VERIFIED
+
+Verified lemma count: 9/9
