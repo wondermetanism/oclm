@@ -1,5 +1,35 @@
 # Oracle–Child Lineage Model (OCLM)
 
+<!-- OCLM_AI_COMMAND_LINEAGE_BEGIN -->
+## AI Command Lineage — Verifiable Chain of Command for Autonomous Agents
+
+**OCLM establishes a verifiable chain of command for autonomous AI agents.**
+
+Rather than asking an autonomous agent to obey, OCLM verifies whether an executable action remains a legitimate descendant of an authorized command.
+
+The current formal milestone is **Phase AI-B3 (`0.4.0-ai-b3`)**, extending OCLM from command lineage and delegated authority into revocation, compromise containment, emergency stop, and bounded recovery.
+
+**Phase AI-B3 formal verification**
+
+- Emergency Stop Core — **14/14 VERIFIED**
+- Subtree Revocation Core — **5/5 VERIFIED**
+- Subtree Recovery Core — **7/7 VERIFIED**
+- Total — **26/26 verified proof obligations**
+
+The final proof basis is deliberately decomposed into three independently scoped Tamarin models. The 26 properties are a composition proof bundle; they are not presented as one monolithic 26-lemma theorem over a single transition system.
+
+Signed Phase AI-B3 freeze commit:
+
+`efc9ff097ed4509fa4884855c3e7962b2c74fc59`
+
+See:
+
+- [Phase AI-B3 overview](profiles/ai-command-lineage/phase-b3/README.md)
+- [Final formal statement](profiles/ai-command-lineage/phase-b3/FINAL_STATEMENT.md)
+- [Machine-readable manifest](profiles/ai-command-lineage/phase-b3/manifest.json)
+
+<!-- OCLM_AI_COMMAND_LINEAGE_END -->
+
 ## Phase 1 — Formally Verified Lineage-Substitution Resistance Core
 
 Oracle–Child Lineage Model (OCLM)
