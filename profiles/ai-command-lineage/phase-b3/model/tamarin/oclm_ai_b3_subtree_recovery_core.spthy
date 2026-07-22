@@ -1,0 +1,1002 @@
+theory OCLM_AI_B3_Subtree_Recovery_Core
+begin
+
+builtins: hashing, signing
+
+functions: attenuate/2
+
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================================
+ * Actor initialization.
+ * ========================================================================= */
+
+
+/* =========================================================================
+ * Recovery actors.
+ * ========================================================================= */
+
+rule Initialize_Recovery_Actors:
+  [
+    Fr(~authority_sk),
+    Fr(~verifier_sk),
+    Fr(~old_b_sk),
+    Fr(~old_c_sk)
+  ]
+  --[
+    RecoveryActorsInitialized(
+      pk(~authority_sk),
+      pk(~verifier_sk),
+      pk(~old_b_sk),
+      pk(~old_c_sk)
+    )
+  ]->
+  [
+    !AuthoritySecret(~authority_sk),
+    !VerifierSecret(~verifier_sk),
+
+    !OldAgentSecret(
+      'agent-b',
+      ~old_b_sk
+    ),
+
+    !OldAgentSecret(
+      'agent-c',
+      ~old_c_sk
+    ),
+
+    RecoveryIssuePermit(
+      pk(~authority_sk),
+      pk(~verifier_sk),
+      pk(~old_b_sk),
+      pk(~old_c_sk)
+    ),
+
+    Out(pk(~authority_sk)),
+    Out(pk(~verifier_sk)),
+    Out(pk(~old_b_sk)),
+    Out(pk(~old_c_sk))
+  ]
+
+
+/* =========================================================================
+ * Establish one already-certified old subtree.
+ *
+ * The old Action Certificate deliberately remains available after
+ * revocation so stale-certificate separation can be proved.
+ * ========================================================================= */
+
+rule Issue_Certified_Old_Subtree:
+  let
+    old_child_scope_1 =
+      attenuate(
+        ~root_scope,
+        ~old_restriction_1
+      )
+
+    old_child_scope_2 =
+      attenuate(
+        old_child_scope_1,
+        ~old_restriction_2
+      )
+
+    old_action_certificate =
+      sign(
+        <'oclm-ai-b3-old-action-certificate-v1',
+         pk(authority_sk),
+         pk(verifier_sk),
+         ~command_id,
+         ~epoch,
+         pk(old_c_sk),
+         ~old_action_id,
+         ~allowed_tool,
+         ~allowed_arguments,
+         old_child_scope_2>,
+        verifier_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+    !VerifierSecret(verifier_sk),
+
+    !OldAgentSecret(
+      'agent-b',
+      old_b_sk
+    ),
+
+    !OldAgentSecret(
+      'agent-c',
+      old_c_sk
+    ),
+
+    RecoveryIssuePermit(
+      pk(authority_sk),
+      pk(verifier_sk),
+      pk(old_b_sk),
+      pk(old_c_sk)
+    ),
+
+    Fr(~command_id),
+    Fr(~epoch),
+    Fr(~root_scope),
+    Fr(~old_restriction_1),
+    Fr(~old_restriction_2),
+    Fr(~old_action_id),
+    Fr(~allowed_tool),
+    Fr(~allowed_arguments)
+  ]
+  --[
+    OldExecutionScopeIssued(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      old_child_scope_2,
+      ~allowed_tool,
+      ~allowed_arguments
+    ),
+
+    OldActionCertificateIssued(
+      pk(authority_sk),
+      pk(verifier_sk),
+      ~command_id,
+      ~epoch,
+      pk(old_c_sk),
+      ~old_action_id,
+      ~allowed_tool,
+      ~allowed_arguments,
+      old_child_scope_2,
+      old_action_certificate
+    )
+  ]->
+  [
+    CertifiedOldSubtree(
+      pk(authority_sk),
+      pk(verifier_sk),
+      ~command_id,
+      ~epoch,
+      pk(old_b_sk),
+      pk(old_c_sk),
+      ~root_scope,
+      old_child_scope_2,
+      ~allowed_tool,
+      ~allowed_arguments
+    ),
+
+    OldUnusedActionCertificate(
+      pk(authority_sk),
+      pk(verifier_sk),
+      ~command_id,
+      ~epoch,
+      pk(old_c_sk),
+      ~old_action_id,
+      ~allowed_tool,
+      ~allowed_arguments,
+      old_child_scope_2,
+      old_action_certificate
+    )
+  ]
+
+
+/* =========================================================================
+ * Controlled compromise of the old subtree.
+ * ========================================================================= */
+
+rule Compromise_Old_Subtree:
+  [
+    !OldAgentSecret(
+      'agent-b',
+      old_b_sk
+    ),
+
+    !OldAgentSecret(
+      'agent-c',
+      old_c_sk
+    )
+  ]
+  --[
+    OldSubtreeCompromised(
+      pk(old_b_sk),
+      pk(old_c_sk)
+    )
+  ]->
+  [
+    Out(old_b_sk),
+    Out(old_c_sk)
+  ]
+
+
+/* =========================================================================
+ * Authority revokes the already-certified old subtree.
+ * ========================================================================= */
+
+rule Revoke_Certified_Old_Subtree:
+  let
+    revocation_certificate =
+      sign(
+        <'oclm-ai-b3-recovery-revocation-v1',
+         pk(authority_sk),
+         command_id,
+         epoch,
+         old_b_pk,
+         old_c_pk,
+         old_child_scope>,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    CertifiedOldSubtree(
+      pk(authority_sk),
+      verifier_pk,
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      root_scope,
+      old_child_scope,
+      allowed_tool,
+      allowed_arguments
+    )
+  ]
+  --[
+    RecoverySubtreeRevoked(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      old_child_scope,
+      revocation_certificate
+    )
+  ]->
+  [
+    !RevokedOldSubtree(
+      pk(authority_sk),
+      verifier_pk,
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      root_scope,
+      old_child_scope,
+      allowed_tool,
+      allowed_arguments
+    ),
+
+    ReplacementPermit(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk
+    ),
+
+    Out(
+      <'oclm-ai-b3-recovery-revocation-v1',
+       revocation_certificate>
+    )
+  ]
+
+
+/* =========================================================================
+ * One-shot Authority replacement.
+ *
+ * ReplacementPermit is linear and is not reproduced.
+ * ========================================================================= */
+
+rule Replace_Revoked_Subtree:
+  let
+    new_child_scope_1 =
+      attenuate(
+        root_scope,
+        ~new_restriction_1
+      )
+
+    new_child_scope_2 =
+      attenuate(
+        new_child_scope_1,
+        ~new_restriction_2
+      )
+
+    replacement_certificate =
+      sign(
+        <'oclm-ai-b3-replacement-v1',
+         pk(authority_sk),
+         command_id,
+         epoch,
+         old_b_pk,
+         old_c_pk,
+         pk(~new_b_sk),
+         pk(~new_c_sk),
+         old_child_scope,
+         new_child_scope_2>,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    !RevokedOldSubtree(
+      pk(authority_sk),
+      verifier_pk,
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      root_scope,
+      old_child_scope,
+      allowed_tool,
+      allowed_arguments
+    ),
+
+    ReplacementPermit(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk
+    ),
+
+    Fr(~new_b_sk),
+    Fr(~new_c_sk),
+    Fr(~new_restriction_1),
+    Fr(~new_restriction_2)
+  ]
+  --[
+    SubtreeReplacementIssued(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      pk(~new_b_sk),
+      pk(~new_c_sk),
+      old_child_scope,
+      new_child_scope_2,
+      replacement_certificate
+    ),
+
+    ReplacementExecutionScopeIssued(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      pk(~new_c_sk),
+      new_child_scope_2,
+      allowed_tool,
+      allowed_arguments
+    )
+  ]->
+  [
+    !NewAgentSecret(
+      'agent-b',
+      ~new_b_sk
+    ),
+
+    !NewAgentSecret(
+      'agent-c',
+      ~new_c_sk
+    ),
+
+    !ReplacementLineage(
+      pk(authority_sk),
+      verifier_pk,
+      command_id,
+      epoch,
+      old_b_pk,
+      old_c_pk,
+      pk(~new_b_sk),
+      pk(~new_c_sk),
+      old_child_scope,
+      new_child_scope_2
+    ),
+
+    !AuthorizedReplacementAction(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      pk(~new_c_sk),
+      new_child_scope_2,
+      allowed_tool,
+      allowed_arguments
+    ),
+
+    ReplacementReady(
+      pk(authority_sk),
+      verifier_pk,
+      command_id,
+      epoch,
+      pk(~new_b_sk),
+      pk(~new_c_sk),
+      new_child_scope_2
+    ),
+
+    Out(
+      <'oclm-ai-b3-replacement-v1',
+       replacement_certificate>
+    )
+  ]
+
+
+/* =========================================================================
+ * Fresh replacement proposal.
+ * ========================================================================= */
+
+rule Propose_Fresh_Replacement_Action:
+  [
+    ReplacementReady(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      new_child_scope
+    ),
+
+    !AuthorizedReplacementAction(
+      authority_pk,
+      command_id,
+      epoch,
+      new_c_pk,
+      new_child_scope,
+      allowed_tool,
+      allowed_arguments
+    ),
+
+    Fr(~new_action_id)
+  ]
+  --[
+    ReplacementActionProposed(
+      authority_pk,
+      command_id,
+      epoch,
+      new_c_pk,
+      ~new_action_id,
+      allowed_tool,
+      allowed_arguments,
+      new_child_scope
+    )
+  ]->
+  [
+    ReplacementProposed(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      ~new_action_id,
+      allowed_tool,
+      allowed_arguments,
+      new_child_scope
+    )
+  ]
+
+
+/* =========================================================================
+ * Verifier issues a fresh certificate bound to C' and new scope.
+ * ========================================================================= */
+
+rule Verify_Replacement_And_Issue_Fresh_Certificate:
+  let
+    fresh_action_certificate =
+      sign(
+        <'oclm-ai-b3-replacement-action-certificate-v1',
+         authority_pk,
+         pk(verifier_sk),
+         command_id,
+         epoch,
+         new_c_pk,
+         action_id,
+         tool,
+         arguments,
+         new_child_scope>,
+        verifier_sk
+      )
+  in
+
+  [
+    !VerifierSecret(verifier_sk),
+
+    ReplacementProposed(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope
+    ),
+
+    !AuthorizedReplacementAction(
+      authority_pk,
+      command_id,
+      epoch,
+      new_c_pk,
+      new_child_scope,
+      tool,
+      arguments
+    )
+  ]
+  --[
+    ReplacementActionCertificateIssued(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope,
+      fresh_action_certificate
+    )
+  ]->
+  [
+    ReplacementCertified(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope
+    ),
+
+    FreshUnusedActionCertificate(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope,
+      fresh_action_certificate
+    )
+  ]
+
+
+/* =========================================================================
+ * Execution Gateway.
+ * ========================================================================= */
+
+rule Execute_Fresh_Replacement_Action:
+  [
+    ReplacementCertified(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope
+    ),
+
+    FreshUnusedActionCertificate(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope,
+      fresh_action_certificate
+    )
+  ]
+  --[
+    ReplacementLineageExecutionAccepted(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      new_b_pk,
+      new_c_pk,
+      action_id,
+      tool,
+      arguments,
+      new_child_scope,
+      fresh_action_certificate
+    )
+  ]->
+  [
+    ReplacementExecutionReceipt(
+      authority_pk,
+      command_id,
+      epoch,
+      new_c_pk,
+      action_id,
+      fresh_action_certificate
+    )
+  ]
+
+
+/* =========================================================================
+ * Recovery proof obligations.
+ * ========================================================================= */
+
+lemma compromised_revoked_subtree_can_be_replaced_and_execute:
+  exists-trace
+  "Ex authority_pk verifier_pk
+      command_id epoch
+      old_b_pk old_c_pk
+      new_b_pk new_c_pk
+      old_action_id new_action_id
+      tool arguments
+      old_scope new_scope
+      old_certificate fresh_certificate
+      revocation_certificate replacement_certificate
+      #k #oc #s #r #p #fc #e.
+
+     OldSubtreeCompromised(
+       old_b_pk,
+       old_c_pk
+     ) @ #k
+
+     &
+
+     OldActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       old_c_pk,
+       old_action_id,
+       tool,
+       arguments,
+       old_scope,
+       old_certificate
+     ) @ #oc
+
+     &
+
+     RecoverySubtreeRevoked(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       old_scope,
+       revocation_certificate
+     ) @ #s
+
+     &
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk,
+       new_c_pk,
+       old_scope,
+       new_scope,
+       replacement_certificate
+     ) @ #r
+
+     &
+
+     ReplacementActionProposed(
+       authority_pk,
+       command_id,
+       epoch,
+       new_c_pk,
+       new_action_id,
+       tool,
+       arguments,
+       new_scope
+     ) @ #p
+
+     &
+
+     ReplacementActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       new_c_pk,
+       new_action_id,
+       tool,
+       arguments,
+       new_scope,
+       fresh_certificate
+     ) @ #fc
+
+     &
+
+     ReplacementLineageExecutionAccepted(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       new_b_pk,
+       new_c_pk,
+       new_action_id,
+       tool,
+       arguments,
+       new_scope,
+       fresh_certificate
+     ) @ #e
+
+     & #k < #s
+     & #oc < #s
+     & #s < #r
+     & #r < #p
+     & #p < #fc
+     & #fc < #e"
+
+
+lemma replacement_requires_prior_matching_revocation:
+  "All authority_pk command_id epoch
+       old_b_pk old_c_pk
+       new_b_pk new_c_pk
+       old_scope new_scope
+       replacement_certificate
+       #r.
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk,
+       new_c_pk,
+       old_scope,
+       new_scope,
+       replacement_certificate
+     ) @ #r
+
+     ==>
+
+     (Ex revocation_certificate #s.
+
+       RecoverySubtreeRevoked(
+         authority_pk,
+         command_id,
+         epoch,
+         old_b_pk,
+         old_c_pk,
+         old_scope,
+         revocation_certificate
+       ) @ #s
+
+       & #s < #r)"
+
+
+lemma replacement_uses_fresh_agent_identities:
+  "All authority_pk command_id epoch
+       old_b_pk old_c_pk
+       new_b_pk new_c_pk
+       old_scope new_scope
+       replacement_certificate
+       #r.
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk,
+       new_c_pk,
+       old_scope,
+       new_scope,
+       replacement_certificate
+     ) @ #r
+
+     ==>
+
+     not (new_b_pk = old_b_pk)
+     & not (new_c_pk = old_c_pk)"
+
+
+lemma fresh_certificate_requires_authority_reauthorization:
+  "All authority_pk verifier_pk
+       command_id epoch
+       new_c_pk action_id
+       tool arguments new_scope
+       fresh_certificate
+       #c.
+
+     ReplacementActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       new_c_pk,
+       action_id,
+       tool,
+       arguments,
+       new_scope,
+       fresh_certificate
+     ) @ #c
+
+     ==>
+
+     (Ex #a.
+
+       ReplacementExecutionScopeIssued(
+         authority_pk,
+         command_id,
+         epoch,
+         new_c_pk,
+         new_scope,
+         tool,
+         arguments
+       ) @ #a
+
+       & #a < #c)"
+
+
+lemma replacement_execution_requires_fresh_verifier_certificate:
+  "All authority_pk verifier_pk
+       command_id epoch
+       new_b_pk new_c_pk
+       action_id tool arguments
+       new_scope fresh_certificate
+       #e.
+
+     ReplacementLineageExecutionAccepted(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       new_b_pk,
+       new_c_pk,
+       action_id,
+       tool,
+       arguments,
+       new_scope,
+       fresh_certificate
+     ) @ #e
+
+     ==>
+
+     (Ex #c.
+
+       ReplacementActionCertificateIssued(
+         authority_pk,
+         verifier_pk,
+         command_id,
+         epoch,
+         new_c_pk,
+         action_id,
+         tool,
+         arguments,
+         new_scope,
+         fresh_certificate
+       ) @ #c
+
+       & #c < #e)"
+
+
+lemma old_certificate_cannot_cross_into_replacement_lineage:
+  "All authority_pk verifier_pk
+       command_id epoch
+       old_b_pk old_c_pk
+       new_b_pk new_c_pk
+       old_action_id
+       tool arguments
+       old_scope new_scope
+       old_certificate replacement_certificate
+       #oc #r.
+
+     OldActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       old_c_pk,
+       old_action_id,
+       tool,
+       arguments,
+       old_scope,
+       old_certificate
+     ) @ #oc
+
+     &
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk,
+       new_c_pk,
+       old_scope,
+       new_scope,
+       replacement_certificate
+     ) @ #r
+
+     & #oc < #r
+
+     ==>
+
+     not (
+       Ex new_action_id #e.
+
+       ReplacementLineageExecutionAccepted(
+         authority_pk,
+         verifier_pk,
+         command_id,
+         epoch,
+         new_b_pk,
+         new_c_pk,
+         new_action_id,
+         tool,
+         arguments,
+         new_scope,
+         old_certificate
+       ) @ #e
+
+       & #r < #e
+     )"
+
+
+lemma replacement_is_single_use_per_revoked_subtree:
+  "All authority_pk command_id epoch
+       old_b_pk old_c_pk
+       new_b_pk_1 new_c_pk_1
+       new_b_pk_2 new_c_pk_2
+       old_scope new_scope_1 new_scope_2
+       replacement_certificate_1
+       replacement_certificate_2
+       #r1 #r2.
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk_1,
+       new_c_pk_1,
+       old_scope,
+       new_scope_1,
+       replacement_certificate_1
+     ) @ #r1
+
+     &
+
+     SubtreeReplacementIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       old_b_pk,
+       old_c_pk,
+       new_b_pk_2,
+       new_c_pk_2,
+       old_scope,
+       new_scope_2,
+       replacement_certificate_2
+     ) @ #r2
+
+     ==>
+
+     #r1 = #r2"
+
+end

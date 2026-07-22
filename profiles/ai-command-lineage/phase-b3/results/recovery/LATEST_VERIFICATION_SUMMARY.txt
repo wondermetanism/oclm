@@ -1,0 +1,17 @@
+OCLM AI Command Lineage Phase AI-B3 — Subtree Recovery
+Model SHA-256: 5cab36db352b597ade8ed49692f541e131dd409e327467bae0408aa393857aba
+Tamarin: 1.12.0
+Maude: 3.5.1
+Per-lemma timeout: 180s
+
+compromised_revoked_subtree_can_be_replaced_and_execute — VERIFIED
+replacement_requires_prior_matching_revocation — VERIFIED
+replacement_uses_fresh_agent_identities — VERIFIED
+fresh_certificate_requires_authority_reauthorization — VERIFIED
+replacement_execution_requires_fresh_verifier_certificate — VERIFIED
+old_certificate_cannot_cross_into_replacement_lineage — VERIFIED
+replacement_is_single_use_per_revoked_subtree — VERIFIED
+
+Verified lemma count: 7/7
+
+OCLM_AI_B3_RECOVERY_7_OF_7_VERIFIED

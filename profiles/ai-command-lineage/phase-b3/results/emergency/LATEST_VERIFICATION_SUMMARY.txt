@@ -1,0 +1,24 @@
+OCLM AI Command Lineage Phase AI-B3 — Emergency Stop
+Model SHA-256: 6424cd2a485e49fe506b8fedc619f7f2201617a3f4b1be665ca7efb05e6affcf
+Tamarin: 1.12.0
+Maude: 3.5.1
+Per-lemma timeout: 180s
+
+executable_honest_current_epoch_action — VERIFIED
+emergency_stop_after_certificate_is_reachable — VERIFIED
+compromised_leaf_can_be_stopped — VERIFIED
+stopped_command_can_restart_only_under_new_epoch — VERIFIED
+emergency_stop_blocks_later_execution — VERIFIED
+certified_stop_blocks_issued_certificate_execution — VERIFIED
+restart_requires_prior_emergency_stop — VERIFIED
+stale_certificate_cannot_execute_after_restart — VERIFIED
+action_certificate_requires_authority_authorized_action — VERIFIED
+compromised_leaf_certificate_still_requires_authorized_action — VERIFIED
+execution_requires_verifier_action_certificate — VERIFIED
+action_certificate_single_use_under_compromise — VERIFIED
+restarted_epoch_can_execute_fresh_certificate — VERIFIED
+action_certificate_cannot_cross_epoch — VERIFIED
+
+Verified lemma count: 14/14
+
+OCLM_AI_B3_EMERGENCY_14_OF_14_VERIFIED

@@ -1,0 +1,46 @@
+{
+  "diagnostic_monolith": {
+    "path": "results/diagnostics/oclm_ai_b3_monolith_experimental_6010ca962d388bf7.spthy",
+    "proof_basis": false,
+    "sha256": "6010ca962d388bf709c8723809036fec222752e4d062a4e861bdaf2f17d81c33"
+  },
+  "maude": "3.5.1",
+  "models": [
+    {
+      "path": "model/tamarin/oclm_ai_b3_emergency_stop_core.spthy",
+      "role": "emergency_stop_core",
+      "sha256": "6424cd2a485e49fe506b8fedc619f7f2201617a3f4b1be665ca7efb05e6affcf",
+      "verified_lemmas": 14
+    },
+    {
+      "path": "model/tamarin/oclm_ai_b3_subtree_revocation_core.spthy",
+      "role": "subtree_revocation_core",
+      "sha256": "cc3bd2e5b4344aa86b709ee4bf4ad314c42d13dd78fbf72129d5487922f27964",
+      "verified_lemmas": 5
+    },
+    {
+      "path": "model/tamarin/oclm_ai_b3_subtree_recovery_core.spthy",
+      "role": "subtree_recovery_core",
+      "sha256": "5cab36db352b597ade8ed49692f541e131dd409e327467bae0408aa393857aba",
+      "verified_lemmas": 7
+    }
+  ],
+  "phase": "AI-B3",
+  "profile": "OCLM AI Command Lineage",
+  "proof_model": "decomposed-composition-bundle",
+  "proof_scope_documents": [
+    "EMERGENCY_PROOF_SCOPE.md",
+    "SUBTREE_PROOF_SCOPE.md",
+    "RECOVERY_PROOF_SCOPE.md",
+    "FINAL_STATEMENT.md"
+  ],
+  "tamarin": "1.12.0",
+  "verification_scripts": [
+    "scripts/verify-phase-ai-b3-emergency.sh",
+    "scripts/verify-phase-ai-b3-subtree.sh",
+    "scripts/verify-phase-ai-b3-recovery.sh",
+    "scripts/audit-phase-ai-b3.sh"
+  ],
+  "verified_lemma_total": 26,
+  "version": "0.4.0-ai-b3"
+}

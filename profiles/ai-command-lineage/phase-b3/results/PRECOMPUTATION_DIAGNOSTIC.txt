@@ -1,0 +1,9 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_AI_B3_Revocation_Compromise_Core] Theory loaded
+[Theory OCLM_AI_B3_Revocation_Compromise_Core] Theory translated
+[Theory OCLM_AI_B3_Revocation_Compromise_Core] Derivation checks started
+[Theory OCLM_AI_B3_Revocation_Compromise_Core] Derivation checks ended
+[Theory OCLM_AI_B3_Revocation_Compromise_Core] Theory closed
+[Open Chains] Too many chain constraints, stopping precomputation. Open Chains limits (can be changed with -c=): 10

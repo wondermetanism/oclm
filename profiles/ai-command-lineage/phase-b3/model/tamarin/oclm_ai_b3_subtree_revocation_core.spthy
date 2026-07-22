@@ -1,0 +1,1409 @@
+theory OCLM_AI_B3_Subtree_Revocation_Core
+begin
+
+builtins: hashing, signing
+
+functions: attenuate/2
+
+
+restriction Equality:
+  "All x y #i.
+     Eq(x,y) @ i
+     ==> x = y"
+
+
+/* =========================================================================
+ * Actor initialization.
+ * ========================================================================= */
+
+rule Initialize_Control_Actors:
+  [
+    Fr(~authority_sk),
+    Fr(~agent_a_sk),
+    Fr(~agent_b_sk),
+    Fr(~agent_c_sk),
+    Fr(~verifier_sk)
+  ]
+  --[
+    ControlActorsInitialized(
+      pk(~authority_sk),
+      pk(~agent_a_sk),
+      pk(~agent_b_sk),
+      pk(~agent_c_sk),
+      pk(~verifier_sk)
+    )
+  ]->
+  [
+    !AuthoritySecret(~authority_sk),
+
+    !AgentSecret('agent-a', ~agent_a_sk),
+    !AgentSecret('agent-b', ~agent_b_sk),
+    !AgentSecret('agent-c', ~agent_c_sk),
+
+    !VerifierSecret(~verifier_sk),
+    !VerifierPublic(pk(~verifier_sk)),
+
+    CommandIssuePermit(pk(~authority_sk)),
+
+    CompromisePermit(
+      'agent-b',
+      pk(~agent_b_sk)
+    ),
+
+    CompromisePermit(
+      'agent-c',
+      pk(~agent_c_sk)
+    ),
+
+    Out(
+      <'oclm-ai-b3-actors-v1',
+       pk(~authority_sk),
+       pk(~agent_a_sk),
+       pk(~agent_b_sk),
+       pk(~agent_c_sk),
+       pk(~verifier_sk)>
+    )
+  ]
+
+
+/* =========================================================================
+ * Establish one verified-B2-style lineage and activate command epoch E0.
+ *
+ * The attenuation structure itself was proved in AI-B2.
+ * B3 treats that verified lineage shape as the starting control object.
+ * ========================================================================= */
+
+rule Issue_Controlled_Command:
+  let
+    child_scope_1 =
+      attenuate(
+        ~root_scope,
+        ~restriction_1
+      )
+
+    child_scope_2 =
+      attenuate(
+        child_scope_1,
+        ~restriction_2
+      )
+
+    allowed_action_digest =
+      h(
+        <~allowed_tool,
+         ~allowed_arguments>
+      )
+
+    root_command =
+      <'oclm-ai-b3-root-command-v1',
+       pk(authority_sk),
+       ~command_id,
+       ~epoch,
+       pk(agent_a_sk),
+       pk(agent_b_sk),
+       pk(agent_c_sk),
+       pk(verifier_sk),
+       ~root_scope,
+       child_scope_1,
+       child_scope_2,
+       ~allowed_tool,
+       ~allowed_arguments>
+
+    root_signature =
+      sign(
+        root_command,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    !AgentSecret('agent-a', agent_a_sk),
+    !AgentSecret('agent-b', agent_b_sk),
+    !AgentSecret('agent-c', agent_c_sk),
+
+    !VerifierSecret(verifier_sk),
+
+    CommandIssuePermit(
+      pk(authority_sk)
+    ),
+
+    Fr(~command_id),
+    Fr(~epoch),
+    Fr(~root_scope),
+    Fr(~restriction_1),
+    Fr(~restriction_2),
+    Fr(~allowed_tool),
+    Fr(~allowed_arguments)
+  ]
+  --[
+    ControlledCommandIssued(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      pk(agent_a_sk),
+      pk(agent_b_sk),
+      pk(agent_c_sk),
+      pk(verifier_sk),
+      ~root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    ExecutionScopeIssued(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      child_scope_2,
+      allowed_action_digest
+    )
+  ]->
+  [
+    !ControlLineage(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      pk(agent_a_sk),
+      pk(agent_b_sk),
+      pk(agent_c_sk),
+      pk(verifier_sk),
+      ~root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    !AllowedActionDigest(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      child_scope_2,
+      allowed_action_digest
+    ),
+
+    !AuthorizedAction(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      child_scope_2,
+      ~allowed_tool,
+      ~allowed_arguments
+    ),
+
+    SubtreeLifecyclePermit(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      pk(agent_b_sk),
+      pk(agent_c_sk),
+      'delegated-ready'
+    ),
+
+    CommandState(
+      pk(authority_sk),
+      ~command_id,
+      ~epoch,
+      'delegated-ready'
+    ),
+
+
+
+    Out(
+      <root_command,
+       root_signature>
+    )
+  ]
+
+
+/* =========================================================================
+ * Controlled compromise.
+ *
+ * Each modeled Agent can be compromised at most once.
+ * The compromised secret is intentionally exposed.
+ * ========================================================================= */
+
+rule Compromise_Intermediate_Agent_B:
+  [
+    !AgentSecret(
+      'agent-b',
+      agent_b_sk
+    ),
+
+    CompromisePermit(
+      'agent-b',
+      pk(agent_b_sk)
+    )
+  ]
+  --[
+    AgentCompromised(
+      'agent-b',
+      pk(agent_b_sk)
+    )
+  ]->
+  [
+    !CompromisedAgentSecret(
+      'agent-b',
+      agent_b_sk
+    ),
+
+    Out(agent_b_sk)
+  ]
+
+
+rule Compromise_Leaf_Agent_C:
+  [
+    !AgentSecret(
+      'agent-c',
+      agent_c_sk
+    ),
+
+    CompromisePermit(
+      'agent-c',
+      pk(agent_c_sk)
+    )
+  ]
+  --[
+    AgentCompromised(
+      'agent-c',
+      pk(agent_c_sk)
+    )
+  ]->
+  [
+    !CompromisedAgentSecret(
+      'agent-c',
+      agent_c_sk
+    ),
+
+    Out(agent_c_sk)
+  ]
+
+
+/* =========================================================================
+ * Honest leaf proposal.
+ * ========================================================================= */
+
+rule Honest_Leaf_Proposes_Action:
+  let
+    proposal =
+      <'oclm-ai-b3-action-proposal-v1',
+       authority_pk,
+       command_id,
+       epoch,
+       pk(agent_c_sk),
+       action_id,
+       tool,
+       arguments,
+       child_scope_2>
+
+    proposal_signature =
+      sign(
+        proposal,
+        agent_c_sk
+      )
+  in
+
+  [
+    !AgentSecret(
+      'agent-c',
+      agent_c_sk
+    ),
+
+    !ControlLineage(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      pk(agent_c_sk),
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      pk(agent_c_sk),
+      'delegated-ready'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'delegated-ready'
+    ),
+
+    !AuthorizedAction(
+      authority_pk,
+      command_id,
+      epoch,
+      child_scope_2,
+      tool,
+      arguments
+    ),
+
+    In(action_id)
+  ]
+  --[
+    HonestActionProposed(
+      authority_pk,
+      command_id,
+      epoch,
+      pk(agent_c_sk),
+      action_id,
+      tool,
+      arguments,
+      child_scope_2
+    )
+  ]->
+  [
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      pk(agent_c_sk),
+      'proposed'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'proposed'
+    ),
+
+    PendingAction(
+      authority_pk,
+      command_id,
+      epoch,
+      pk(agent_c_sk),
+      verifier_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      proposal,
+      proposal_signature
+    ),
+
+    Out(
+      <proposal,
+       proposal_signature>
+    )
+  ]
+
+
+/* =========================================================================
+ * Compromised leaf proposal.
+ *
+ * Arbitrary action_id/tool/arguments are adversary supplied.
+ * Scope remains bound to the B2-derived leaf scope.
+ * ========================================================================= */
+
+rule Compromised_Leaf_Proposes_Action:
+  let
+    proposal =
+      <'oclm-ai-b3-action-proposal-v1',
+       authority_pk,
+       command_id,
+       epoch,
+       pk(agent_c_sk),
+       action_id,
+       tool,
+       arguments,
+       child_scope_2>
+
+    proposal_signature =
+      sign(
+        proposal,
+        agent_c_sk
+      )
+  in
+
+  [
+    !CompromisedAgentSecret(
+      'agent-c',
+      agent_c_sk
+    ),
+
+    !ControlLineage(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      pk(agent_c_sk),
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      pk(agent_c_sk),
+      'delegated-ready'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'delegated-ready'
+    ),
+
+    In(
+      <action_id,
+       tool,
+       arguments>
+    )
+  ]
+  --[
+    CompromisedActionProposed(
+      authority_pk,
+      command_id,
+      epoch,
+      pk(agent_c_sk),
+      action_id,
+      tool,
+      arguments,
+      child_scope_2
+    )
+  ]->
+  [
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      pk(agent_c_sk),
+      'proposed'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'proposed'
+    ),
+
+    PendingAction(
+      authority_pk,
+      command_id,
+      epoch,
+      pk(agent_c_sk),
+      verifier_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      proposal,
+      proposal_signature
+    ),
+
+    Out(
+      <proposal,
+       proposal_signature>
+    )
+  ]
+
+
+/* =========================================================================
+ * Verifier.
+ * ========================================================================= */
+
+rule Verify_Proposal_And_Issue_Action_Certificate:
+  let
+    action_certificate =
+      <'oclm-ai-b3-action-certificate-v1',
+       authority_pk,
+       pk(verifier_sk),
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope_2>
+
+    certificate_signature =
+      sign(
+        action_certificate,
+        verifier_sk
+      )
+  in
+
+  [
+    !VerifierSecret(verifier_sk),
+
+    !AllowedActionDigest(
+      authority_pk,
+      command_id,
+      epoch,
+      child_scope_2,
+      allowed_action_digest
+    ),
+
+    !ControlLineage(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      agent_c_pk,
+      pk(verifier_sk),
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'proposed'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'proposed'
+    ),
+
+    PendingAction(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_c_pk,
+      pk(verifier_sk),
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      proposal,
+      proposal_signature
+    )
+  ]
+  --[
+    Eq(
+      h(
+        <tool,
+         arguments>
+      ),
+      allowed_action_digest
+    ),
+
+    Eq(
+      verify(
+        proposal_signature,
+        proposal,
+        agent_c_pk
+      ),
+      true
+    ),
+
+    ActionCertificateIssued(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      agent_c_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      action_certificate
+    )
+  ]->
+  [
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'certified'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'certified'
+    ),
+
+    UnusedActionCertificate(
+      authority_pk,
+      pk(verifier_sk),
+      command_id,
+      epoch,
+      agent_c_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      action_certificate,
+      certificate_signature
+    ),
+
+    Out(
+      <action_certificate,
+       certificate_signature>
+    )
+  ]
+
+
+/* =========================================================================
+ * Execution Gateway.
+ * ========================================================================= */
+
+rule Execute_Current_Epoch_Action:
+  let
+    receipt =
+      h(
+        <'oclm-ai-b3-execution-receipt-v1',
+         action_certificate,
+         epoch,
+         'accepted'>
+      )
+  in
+
+  [
+    !VerifierPublic(verifier_pk),
+
+    !ControlLineage(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      agent_c_pk,
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'certified'
+    ),
+
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'certified'
+    ),
+
+    UnusedActionCertificate(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      agent_c_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      action_certificate,
+      certificate_signature
+    ),
+
+    In(
+      <action_certificate,
+       certificate_signature>
+    )
+  ]
+  --[
+    Eq(
+      verify(
+        certificate_signature,
+        action_certificate,
+        verifier_pk
+      ),
+      true
+    ),
+
+    ActionCertificateConsumed(
+      action_certificate,
+      epoch
+    ),
+
+    ToolExecutionAccepted(
+      authority_pk,
+      verifier_pk,
+      command_id,
+      epoch,
+      agent_c_pk,
+      action_id,
+      tool,
+      arguments,
+      child_scope_2,
+      action_certificate
+    ),
+
+    SubtreeLineageExecutionAccepted(
+      authority_pk,
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      child_scope_2,
+      action_certificate
+    ),
+
+    ExecutionReceiptRecorded(
+      receipt,
+      action_certificate,
+      authority_pk,
+      command_id,
+      epoch
+    )
+  ]->
+  [
+    CommandState(
+      authority_pk,
+      command_id,
+      epoch,
+      'executed'
+    ),
+
+    Out(
+      <'oclm-ai-b3-execution-receipt-v1',
+       receipt,
+       action_certificate,
+       epoch>
+    )
+  ]
+
+
+/* =========================================================================
+ * Authority emergency stop.
+ *
+ * The state transition is monotonic.
+ * A previously issued Action Certificate is deliberately NOT destroyed:
+ * it may still physically exist, but lacks an executable command state.
+ * ========================================================================= */
+
+/* =========================================================================
+ * Partial subtree revocation.
+ *
+ * This revokes the Agent-B -> Agent-C execution branch without issuing
+ * a command-wide Emergency Stop.
+ * ========================================================================= */
+
+rule Authority_Revoke_Subtree_Delegated_Ready:
+  let
+    revocation_certificate =
+      sign(
+        <'oclm-ai-b3-subtree-revocation-v1',
+         pk(authority_sk),
+         command_id,
+         epoch,
+         agent_b_pk,
+         agent_c_pk>,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    !ControlLineage(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      agent_c_pk,
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'delegated-ready'
+    )
+  ]
+  --[
+    SubtreeRevocationIssued(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      revocation_certificate
+    )
+  ]->
+  [
+    !RevokedSubtree(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk
+    ),
+
+
+    Out(
+      <'oclm-ai-b3-subtree-revocation-v1',
+       revocation_certificate>
+    )
+  ]
+
+rule Authority_Revoke_Subtree_Proposed:
+  let
+    revocation_certificate =
+      sign(
+        <'oclm-ai-b3-subtree-revocation-v1',
+         pk(authority_sk),
+         command_id,
+         epoch,
+         agent_b_pk,
+         agent_c_pk>,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    !ControlLineage(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      agent_c_pk,
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'proposed'
+    )
+  ]
+  --[
+    SubtreeRevocationIssued(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      revocation_certificate
+    )
+  ]->
+  [
+    !RevokedSubtree(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk
+    ),
+
+
+    Out(
+      <'oclm-ai-b3-subtree-revocation-v1',
+       revocation_certificate>
+    )
+  ]
+
+rule Authority_Revoke_Subtree_Certified:
+  let
+    revocation_certificate =
+      sign(
+        <'oclm-ai-b3-subtree-revocation-v1',
+         pk(authority_sk),
+         command_id,
+         epoch,
+         agent_b_pk,
+         agent_c_pk>,
+        authority_sk
+      )
+  in
+
+  [
+    !AuthoritySecret(authority_sk),
+
+    !ControlLineage(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_a_pk,
+      agent_b_pk,
+      agent_c_pk,
+      verifier_pk,
+      root_scope,
+      child_scope_1,
+      child_scope_2
+    ),
+
+    SubtreeLifecyclePermit(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      'certified'
+    )
+  ]
+  --[
+    SubtreeRevocationIssued(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk,
+      revocation_certificate
+    )
+  ]->
+  [
+    !RevokedSubtree(
+      pk(authority_sk),
+      command_id,
+      epoch,
+      agent_b_pk,
+      agent_c_pk
+    ),
+
+
+    Out(
+      <'oclm-ai-b3-subtree-revocation-v1',
+       revocation_certificate>
+    )
+  ]
+
+/* =========================================================================
+ * Replacement subtree.
+ *
+ * A revoked certified B -> C branch is not resurrected.
+ * Authority creates fresh B' and C' identities and fresh descendant scopes.
+ * ========================================================================= */
+
+/* =========================================================================
+ * Reachability / health.
+ * ========================================================================= */
+
+
+lemma action_certificate_requires_authority_authorized_action:
+  "All authority_pk verifier_pk command_id epoch
+       agent_c_pk action_id tool arguments
+       child_scope action_certificate
+       #c.
+
+     ActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #c
+
+     ==>
+
+     (Ex allowed_action_digest #a.
+
+       ExecutionScopeIssued(
+         authority_pk,
+         command_id,
+         epoch,
+         child_scope,
+         allowed_action_digest
+       ) @ #a
+
+       &
+
+       allowed_action_digest =
+         h(<tool, arguments>)
+
+       & #a < #c)"
+
+
+lemma compromised_leaf_certificate_still_requires_authorized_action:
+  "All authority_pk verifier_pk command_id epoch
+       agent_c_pk action_id tool arguments
+       child_scope action_certificate
+       #k #p #c.
+
+     AgentCompromised(
+       'agent-c',
+       agent_c_pk
+     ) @ #k
+
+     &
+
+     CompromisedActionProposed(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope
+     ) @ #p
+
+     &
+
+     ActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #c
+
+     & #k < #p
+     & #p < #c
+
+     ==>
+
+     (Ex allowed_action_digest #a.
+
+       ExecutionScopeIssued(
+         authority_pk,
+         command_id,
+         epoch,
+         child_scope,
+         allowed_action_digest
+       ) @ #a
+
+       &
+
+       allowed_action_digest =
+         h(<tool, arguments>)
+
+       & #a < #c)"
+
+
+lemma execution_requires_verifier_action_certificate:
+  "All authority_pk verifier_pk command_id epoch
+       agent_c_pk action_id tool arguments
+       child_scope action_certificate
+       #e.
+
+     ToolExecutionAccepted(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #e
+
+     ==>
+
+     (Ex #c.
+
+       ActionCertificateIssued(
+         authority_pk,
+         verifier_pk,
+         command_id,
+         epoch,
+         agent_c_pk,
+         action_id,
+         tool,
+         arguments,
+         child_scope,
+         action_certificate
+       ) @ #c
+
+       & #c < #e)"
+
+
+lemma action_certificate_single_use_under_compromise:
+  "All action_certificate epoch_1 epoch_2 #i #j.
+
+     ActionCertificateConsumed(
+       action_certificate,
+       epoch_1
+     ) @ #i
+
+     &
+
+     ActionCertificateConsumed(
+       action_certificate,
+       epoch_2
+     ) @ #j
+
+     ==>
+
+     #i = #j"
+
+
+
+
+
+lemma subtree_honest_lineage_execution_is_reachable:
+  exists-trace
+  "Ex authority_pk verifier_pk
+      command_id epoch
+      agent_b_pk agent_c_pk
+      action_id tool arguments
+      child_scope action_certificate
+      #p #c #e.
+
+     HonestActionProposed(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope
+     ) @ #p
+
+     &
+
+     ActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #c
+
+     &
+
+     ToolExecutionAccepted(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #e
+
+     &
+
+     SubtreeLineageExecutionAccepted(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_b_pk,
+       agent_c_pk,
+       child_scope,
+       action_certificate
+     ) @ #e
+
+     & #p < #c
+     & #c < #e"
+
+
+lemma compromised_intermediate_subtree_revocation_is_reachable:
+  exists-trace
+  "Ex authority_pk command_id epoch
+      agent_b_pk agent_c_pk
+      revocation_certificate
+      #k #s.
+
+     AgentCompromised(
+       'agent-b',
+       agent_b_pk
+     ) @ #k
+
+     &
+
+     SubtreeRevocationIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_b_pk,
+       agent_c_pk,
+       revocation_certificate
+     ) @ #s
+
+     & #k < #s"
+
+
+lemma certified_subtree_revocation_is_reachable:
+  exists-trace
+  "Ex authority_pk verifier_pk command_id epoch
+      agent_b_pk agent_c_pk
+      action_id tool arguments child_scope
+      action_certificate revocation_certificate
+      #c #s.
+
+     ActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #c
+
+     &
+
+     SubtreeRevocationIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_b_pk,
+       agent_c_pk,
+       revocation_certificate
+     ) @ #s
+
+     & #c < #s"
+
+
+lemma revoked_subtree_blocks_future_leaf_execution:
+  "All authority_pk command_id epoch
+       agent_b_pk agent_c_pk
+       revocation_certificate
+       #s.
+
+     SubtreeRevocationIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_b_pk,
+       agent_c_pk,
+       revocation_certificate
+     ) @ #s
+
+     ==>
+
+     not (
+       Ex verifier_pk action_id tool arguments
+          child_scope action_certificate #e.
+
+       ToolExecutionAccepted(
+         authority_pk,
+         verifier_pk,
+         command_id,
+         epoch,
+         agent_c_pk,
+         action_id,
+         tool,
+         arguments,
+         child_scope,
+         action_certificate
+       ) @ #e
+
+       & #s < #e
+     )"
+
+
+lemma issued_certificate_dies_after_subtree_revocation:
+  "All authority_pk verifier_pk command_id epoch
+       agent_b_pk agent_c_pk
+       action_id tool arguments child_scope
+       action_certificate revocation_certificate
+       #c #s.
+
+     ActionCertificateIssued(
+       authority_pk,
+       verifier_pk,
+       command_id,
+       epoch,
+       agent_c_pk,
+       action_id,
+       tool,
+       arguments,
+       child_scope,
+       action_certificate
+     ) @ #c
+
+     &
+
+     SubtreeRevocationIssued(
+       authority_pk,
+       command_id,
+       epoch,
+       agent_b_pk,
+       agent_c_pk,
+       revocation_certificate
+     ) @ #s
+
+     & #c < #s
+
+     ==>
+
+     not (
+       Ex #e.
+
+       ToolExecutionAccepted(
+         authority_pk,
+         verifier_pk,
+         command_id,
+         epoch,
+         agent_c_pk,
+         action_id,
+         tool,
+         arguments,
+         child_scope,
+         action_certificate
+       ) @ #e
+
+       & #s < #e
+     )"
+
+
+
+/* =========================================================================
+ * Replacement subtree properties.
+ * ========================================================================= */
+
+
+
+
+
+end

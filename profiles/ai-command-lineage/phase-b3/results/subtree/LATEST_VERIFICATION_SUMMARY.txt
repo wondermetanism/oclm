@@ -1,0 +1,15 @@
+OCLM AI Command Lineage Phase AI-B3 — Subtree Revocation
+Model SHA-256: cc3bd2e5b4344aa86b709ee4bf4ad314c42d13dd78fbf72129d5487922f27964
+Tamarin: 1.12.0
+Maude: 3.5.1
+Per-lemma timeout: 180s
+
+subtree_honest_lineage_execution_is_reachable — VERIFIED
+compromised_intermediate_subtree_revocation_is_reachable — VERIFIED
+certified_subtree_revocation_is_reachable — VERIFIED
+revoked_subtree_blocks_future_leaf_execution — VERIFIED
+issued_certificate_dies_after_subtree_revocation — VERIFIED
+
+Verified lemma count: 5/5
+
+OCLM_AI_B3_SUBTREE_5_OF_5_VERIFIED
