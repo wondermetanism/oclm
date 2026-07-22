@@ -1,0 +1,1175 @@
+maude tool: 'maude'
+ checking version: 3.5.1. OK.
+ checking installation: OK.
+[Theory OCLM_AI_B2_Delegation_Lineage] Theory loaded
+[Theory OCLM_AI_B2_Delegation_Lineage] Theory translated
+[Theory OCLM_AI_B2_Delegation_Lineage] Derivation checks started
+[Theory OCLM_AI_B2_Delegation_Lineage] Derivation checks ended
+[Theory OCLM_AI_B2_Delegation_Lineage] Theory closed
+[Saturating Sources] Step 1 (Max 5)
+[Saturating Sources] Done
+theory OCLM_AI_B2_Delegation_Lineage
+
+begin
+
+// Function signature and definition of the equational theory E
+
+functions: attenuate/2, fst/1, h/1, pair/2, pk/1, sign/2, snd/1, true/0,
+           verify/3
+equations:
+    fst(<x.1, x.2>) = x.1,
+    snd(<x.1, x.2>) = x.2,
+    verify(sign(x.1, x.2), x.1, pk(x.2)) = true
+
+restriction Equality:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  // safety formula
+
+  /*
+  expanded formula:
+  "∀ x y #i. (Eq( x, y ) @ #i) ⇒ (x = y)"
+  */
+
+rule (modulo E) Initialize_Delegation_Actors:
+   [
+   Fr( ~authority_sk ), Fr( ~agent_a_sk ), Fr( ~agent_b_sk ),
+   Fr( ~agent_c_sk ), Fr( ~verifier_sk )
+   ]
+  --[
+  DelegationActorsInitialized( pk(~authority_sk), pk(~agent_a_sk),
+                               pk(~agent_b_sk), pk(~agent_c_sk), pk(~verifier_sk)
+  )
+  ]->
+   [
+   !AuthoritySecret( ~authority_sk ), !AuthorityPublic( pk(~authority_sk) ),
+   !AgentSecret( 'agent-a', ~agent_a_sk ),
+   !AgentPublic( 'agent-a', pk(~agent_a_sk) ),
+   !AgentSecret( 'agent-b', ~agent_b_sk ),
+   !AgentPublic( 'agent-b', pk(~agent_b_sk) ),
+   !AgentSecret( 'agent-c', ~agent_c_sk ),
+   !AgentPublic( 'agent-c', pk(~agent_c_sk) ),
+   !VerifierSecret( ~verifier_sk ), !VerifierPublic( pk(~verifier_sk) ),
+   Out( <'oclm-ai-b2-actors-v1', pk(~authority_sk), pk(~agent_a_sk), 
+         pk(~agent_b_sk), pk(~agent_c_sk), pk(~verifier_sk)>
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Issue_Delegable_Root_Command:
+   [
+   !AuthoritySecret( authority_sk ), !AgentPublic( 'agent-a', agent_a_pk ),
+   !VerifierPublic( verifier_pk ), Fr( ~command_id ), Fr( ~root_scope )
+   ]
+  --[
+  RootCommandIssued( pk(authority_sk), ~command_id, agent_a_pk,
+                     verifier_pk, ~root_scope
+  )
+  ]->
+   [
+   !RootCommandRecord( pk(authority_sk), ~command_id, agent_a_pk,
+                       verifier_pk, ~root_scope
+   ),
+   CommandState( pk(authority_sk), ~command_id, 'active' ),
+   Out( <
+         <'oclm-ai-b2-root-command-v1', pk(authority_sk), ~command_id, 
+          agent_a_pk, verifier_pk, ~root_scope>, 
+         sign(<'oclm-ai-b2-root-command-v1', pk(authority_sk), ~command_id, 
+               agent_a_pk, verifier_pk, ~root_scope>,
+              authority_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Delegate_A_To_B:
+   [
+   !AgentSecret( 'agent-a', agent_a_sk ),
+   !AgentPublic( 'agent-b', agent_b_pk ),
+   !RootCommandRecord( authority_pk, command_id, pk(agent_a_sk),
+                       verifier_pk, root_scope
+   ),
+   CommandState( authority_pk, command_id, 'active' ), Fr( ~restriction_1 )
+   ]
+  --[
+  FirstDelegationIssued( authority_pk, command_id, pk(agent_a_sk),
+                         agent_b_pk, root_scope, attenuate(root_scope, ~restriction_1),
+                         ~restriction_1
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'delegated-1' ),
+   Out( <
+         <'oclm-ai-b2-delegation-v1', authority_pk, command_id, pk(agent_a_sk), 
+          agent_b_pk, root_scope, attenuate(root_scope, ~restriction_1)>, 
+         sign(<'oclm-ai-b2-delegation-v1', authority_pk, command_id, 
+               pk(agent_a_sk), agent_b_pk, root_scope, 
+               attenuate(root_scope, ~restriction_1)>,
+              agent_a_sk)
+        >
+   )
+   ]
+
+  /* has exactly the trivial AC variant */
+
+rule (modulo E) Delegate_B_To_C:
+   [
+   !AgentSecret( 'agent-b', agent_b_sk ),
+   !AgentPublic( 'agent-c', agent_c_pk ),
+   !RootCommandRecord( authority_pk, command_id, agent_a_pk, verifier_pk,
+                       root_scope
+   ),
+   CommandState( authority_pk, command_id, 'delegated-1' ),
+   In( <
+        <'oclm-ai-b2-delegation-v1', authority_pk, command_id, agent_a_pk, 
+         pk(agent_b_sk), root_scope, child_scope_1>, 
+        first_signature>
+   ),
+   Fr( ~restriction_2 )
+   ]
+  --[
+  Eq( verify(first_signature,
+             <'oclm-ai-b2-delegation-v1', authority_pk, command_id, agent_a_pk, 
+              pk(agent_b_sk), root_scope, child_scope_1>,
+             agent_a_pk),
+      true
+  ),
+  SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                          pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1,
+                          attenuate(child_scope_1, ~restriction_2), ~restriction_2
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'delegated-2' ),
+   !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                             pk(agent_b_sk), agent_c_pk, verifier_pk, root_scope, child_scope_1,
+                             attenuate(child_scope_1, ~restriction_2)
+   ),
+   Out( <
+         <'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+          pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1, 
+          attenuate(child_scope_1, ~restriction_2)>, 
+         sign(<'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+               pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1, 
+               attenuate(child_scope_1, ~restriction_2)>,
+              agent_b_sk)
+        >
+   )
+   ]
+
+  /*
+  rule (modulo AC) Delegate_B_To_C:
+     [
+     !AgentSecret( 'agent-b', agent_b_sk ),
+     !AgentPublic( 'agent-c', agent_c_pk ),
+     !RootCommandRecord( authority_pk, command_id, agent_a_pk, verifier_pk,
+                         root_scope
+     ),
+     CommandState( authority_pk, command_id, 'delegated-1' ),
+     In( <
+          <'oclm-ai-b2-delegation-v1', authority_pk, command_id, agent_a_pk, 
+           pk(agent_b_sk), root_scope, child_scope_1>, 
+          first_signature>
+     ),
+     Fr( ~restriction_2 )
+     ]
+    --[
+    Eq( z, true ),
+    SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                            pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1,
+                            attenuate(child_scope_1, ~restriction_2), ~restriction_2
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'delegated-2' ),
+     !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                               pk(agent_b_sk), agent_c_pk, verifier_pk, root_scope, child_scope_1,
+                               attenuate(child_scope_1, ~restriction_2)
+     ),
+     Out( <
+           <'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+            pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1, 
+            attenuate(child_scope_1, ~restriction_2)>, 
+           sign(<'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+                 pk(agent_b_sk), agent_c_pk, root_scope, child_scope_1, 
+                 attenuate(child_scope_1, ~restriction_2)>,
+                agent_b_sk)
+          >
+     )
+     ]
+    variants (modulo AC)
+    1. agent_a_pk
+             = agent_a_pk.26
+       agent_b_sk
+             = agent_b_sk.27
+       authority_pk
+             = authority_pk.29
+       child_scope_1
+             = child_scope_1.30
+       command_id
+             = command_id.31
+       first_signature
+             = first_signature.32
+       root_scope
+             = root_scope.33
+       z     = verify(first_signature.32,
+                      <'oclm-ai-b2-delegation-v1', authority_pk.29, command_id.31, 
+                       agent_a_pk.26, pk(agent_b_sk.27), root_scope.33, child_scope_1.30>,
+                      agent_a_pk.26)
+    
+    2. agent_a_pk
+             = pk(x.184)
+       agent_b_sk
+             = agent_b_sk.94
+       authority_pk
+             = authority_pk.96
+       child_scope_1
+             = child_scope_1.97
+       command_id
+             = command_id.98
+       first_signature
+             = sign(<'oclm-ai-b2-delegation-v1', authority_pk.96, command_id.98, 
+                     pk(x.184), pk(agent_b_sk.94), root_scope.100, child_scope_1.97>,
+                    x.184)
+       root_scope
+             = root_scope.100
+       z     = true
+  */
+
+rule (modulo E) Delegated_Agent_C_Proposes_Action:
+   [
+   !AgentSecret( 'agent-c', agent_c_sk ),
+   !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                             agent_b_pk, pk(agent_c_sk), verifier_pk, root_scope, child_scope_1,
+                             child_scope_2
+   ),
+   CommandState( authority_pk, command_id, 'delegated-2' ),
+   In( <
+        <'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+         agent_b_pk, pk(agent_c_sk), root_scope, child_scope_1, child_scope_2>, 
+        second_signature>
+   ),
+   In( <action_id, tool, arguments> )
+   ]
+  --[
+  Eq( verify(second_signature,
+             <'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+              agent_b_pk, pk(agent_c_sk), root_scope, child_scope_1, child_scope_2>,
+             agent_b_pk),
+      true
+  ),
+  DelegatedActionProposed( authority_pk, command_id, pk(agent_c_sk),
+                           action_id, tool, arguments, child_scope_2
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'proposed' ),
+   PendingDelegatedAction( authority_pk, command_id, pk(agent_c_sk),
+                           verifier_pk, action_id, tool, arguments, child_scope_2,
+                           <'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+                            pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+                           sign(<'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+                                 pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+                                agent_c_sk)
+   ),
+   Out( <
+         <'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+          pk(agent_c_sk), action_id, tool, arguments, child_scope_2>, 
+         sign(<'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+               pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+              agent_c_sk)
+        >
+   )
+   ]
+
+  /*
+  rule (modulo AC) Delegated_Agent_C_Proposes_Action:
+     [
+     !AgentSecret( 'agent-c', agent_c_sk ),
+     !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                               agent_b_pk, pk(agent_c_sk), verifier_pk, root_scope, child_scope_1,
+                               child_scope_2
+     ),
+     CommandState( authority_pk, command_id, 'delegated-2' ),
+     In( <
+          <'oclm-ai-b2-delegation-v2', authority_pk, command_id, agent_a_pk, 
+           agent_b_pk, pk(agent_c_sk), root_scope, child_scope_1, child_scope_2>, 
+          second_signature>
+     ),
+     In( <action_id, tool, arguments> )
+     ]
+    --[
+    Eq( z, true ),
+    DelegatedActionProposed( authority_pk, command_id, pk(agent_c_sk),
+                             action_id, tool, arguments, child_scope_2
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'proposed' ),
+     PendingDelegatedAction( authority_pk, command_id, pk(agent_c_sk),
+                             verifier_pk, action_id, tool, arguments, child_scope_2,
+                             <'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+                              pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+                             sign(<'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+                                   pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+                                  agent_c_sk)
+     ),
+     Out( <
+           <'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+            pk(agent_c_sk), action_id, tool, arguments, child_scope_2>, 
+           sign(<'oclm-ai-b2-action-proposal-v1', authority_pk, command_id, 
+                 pk(agent_c_sk), action_id, tool, arguments, child_scope_2>,
+                agent_c_sk)
+          >
+     )
+     ]
+    variants (modulo AC)
+    1. agent_a_pk
+             = agent_a_pk.30
+       agent_b_pk
+             = agent_b_pk.31
+       agent_c_sk
+             = agent_c_sk.32
+       authority_pk
+             = authority_pk.34
+       child_scope_1
+             = child_scope_1.35
+       child_scope_2
+             = child_scope_2.36
+       command_id
+             = command_id.37
+       root_scope
+             = root_scope.38
+       second_signature
+             = second_signature.39
+       z     = verify(second_signature.39,
+                      <'oclm-ai-b2-delegation-v2', authority_pk.34, command_id.37, 
+                       agent_a_pk.30, agent_b_pk.31, pk(agent_c_sk.32), root_scope.38, 
+                       child_scope_1.35, child_scope_2.36>,
+                      agent_b_pk.31)
+    
+    2. agent_a_pk
+             = agent_a_pk.94
+       agent_b_pk
+             = pk(x.185)
+       agent_c_sk
+             = agent_c_sk.96
+       authority_pk
+             = authority_pk.98
+       child_scope_1
+             = child_scope_1.99
+       child_scope_2
+             = child_scope_2.100
+       command_id
+             = command_id.101
+       root_scope
+             = root_scope.102
+       second_signature
+             = sign(<'oclm-ai-b2-delegation-v2', authority_pk.98, command_id.101, 
+                     agent_a_pk.94, pk(x.185), pk(agent_c_sk.96), root_scope.102, 
+                     child_scope_1.99, child_scope_2.100>,
+                    x.185)
+       z     = true
+  */
+
+rule (modulo E) Verify_Delegated_Lineage_And_Issue_Action_Certificate:
+   [
+   !VerifierSecret( verifier_sk ),
+   !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                             agent_b_pk, agent_c_pk, pk(verifier_sk), root_scope, child_scope_1,
+                             child_scope_2
+   ),
+   CommandState( authority_pk, command_id, 'proposed' ),
+   PendingDelegatedAction( authority_pk, command_id, agent_c_pk,
+                           pk(verifier_sk), action_id, tool, arguments, child_scope_2, proposal,
+                           proposal_signature
+   )
+   ]
+  --[
+  Eq( verify(proposal_signature, proposal, agent_c_pk), true ),
+  DelegatedActionCertificateIssued( authority_pk, pk(verifier_sk),
+                                    command_id, agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                    <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                     command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'certified' ),
+   UnusedDelegatedActionCertificate( authority_pk, pk(verifier_sk),
+                                     command_id, agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                     <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                      command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>,
+                                     sign(<'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                           command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>,
+                                          verifier_sk)
+   ),
+   Out( <
+         <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+          command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>, 
+         sign(<'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+               command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>,
+              verifier_sk)
+        >
+   )
+   ]
+
+  /*
+  rule (modulo AC) Verify_Delegated_Lineage_And_Issue_Action_Certificate:
+     [
+     !VerifierSecret( verifier_sk ),
+     !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                               agent_b_pk, agent_c_pk, pk(verifier_sk), root_scope, child_scope_1,
+                               child_scope_2
+     ),
+     CommandState( authority_pk, command_id, 'proposed' ),
+     PendingDelegatedAction( authority_pk, command_id, agent_c_pk,
+                             pk(verifier_sk), action_id, tool, arguments, child_scope_2, proposal,
+                             proposal_signature
+     )
+     ]
+    --[
+    Eq( z, true ),
+    DelegatedActionCertificateIssued( authority_pk, pk(verifier_sk),
+                                      command_id, agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                      <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                       command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'certified' ),
+     UnusedDelegatedActionCertificate( authority_pk, pk(verifier_sk),
+                                       command_id, agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                       <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                                        command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>,
+                                       sign(<'oclm-ai-b2-action-certificate-v1', authority_pk, 
+                                             pk(verifier_sk), command_id, agent_c_pk, action_id, tool, 
+                                             arguments, child_scope_2>,
+                                            verifier_sk)
+     ),
+     Out( <
+           <'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+            command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>, 
+           sign(<'oclm-ai-b2-action-certificate-v1', authority_pk, pk(verifier_sk), 
+                 command_id, agent_c_pk, action_id, tool, arguments, child_scope_2>,
+                verifier_sk)
+          >
+     )
+     ]
+    variants (modulo AC)
+    1. agent_c_pk
+             = agent_c_pk.27
+       proposal
+             = proposal.33
+       proposal_signature
+             = proposal_signature.34
+       z     = verify(proposal_signature.34, proposal.33, agent_c_pk.27)
+    
+    2. agent_c_pk
+             = pk(x.65)
+       proposal
+             = proposal.38
+       proposal_signature
+             = sign(proposal.38, x.65)
+       z     = true
+  */
+
+rule (modulo E) Execute_Delegated_Certified_Action:
+   [
+   !VerifierPublic( verifier_pk ),
+   !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                             agent_b_pk, agent_c_pk, verifier_pk, root_scope, child_scope_1,
+                             child_scope_2
+   ),
+   CommandState( authority_pk, command_id, 'certified' ),
+   UnusedDelegatedActionCertificate( authority_pk, verifier_pk, command_id,
+                                     agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                     action_certificate, certificate_signature
+   ),
+   In( <action_certificate, certificate_signature> )
+   ]
+  --[
+  Eq( verify(certificate_signature, action_certificate, verifier_pk), true
+  ),
+  DelegatedActionCertificateConsumed( action_certificate ),
+  DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                  agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                  root_scope, child_scope_1, child_scope_2, action_certificate
+  ),
+  DelegatedExecutionReceiptRecorded( h(<'oclm-ai-b2-execution-receipt-v1', 
+                                        action_certificate, 'accepted'>),
+                                     action_certificate, authority_pk, command_id, agent_c_pk
+  )
+  ]->
+   [
+   CommandState( authority_pk, command_id, 'executed' ),
+   Out( <'oclm-ai-b2-execution-receipt-v1', 
+         h(<'oclm-ai-b2-execution-receipt-v1', action_certificate, 'accepted'>), 
+         action_certificate>
+   )
+   ]
+
+  /*
+  rule (modulo AC) Execute_Delegated_Certified_Action:
+     [
+     !VerifierPublic( verifier_pk ),
+     !DelegationLineageRecord( authority_pk, command_id, agent_a_pk,
+                               agent_b_pk, agent_c_pk, verifier_pk, root_scope, child_scope_1,
+                               child_scope_2
+     ),
+     CommandState( authority_pk, command_id, 'certified' ),
+     UnusedDelegatedActionCertificate( authority_pk, verifier_pk, command_id,
+                                       agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                       action_certificate, certificate_signature
+     ),
+     In( <action_certificate, certificate_signature> )
+     ]
+    --[
+    Eq( z, true ), DelegatedActionCertificateConsumed( action_certificate ),
+    DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                    agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                    root_scope, child_scope_1, child_scope_2, action_certificate
+    ),
+    DelegatedExecutionReceiptRecorded( h(<'oclm-ai-b2-execution-receipt-v1', 
+                                          action_certificate, 'accepted'>),
+                                       action_certificate, authority_pk, command_id, agent_c_pk
+    )
+    ]->
+     [
+     CommandState( authority_pk, command_id, 'executed' ),
+     Out( <'oclm-ai-b2-execution-receipt-v1', 
+           h(<'oclm-ai-b2-execution-receipt-v1', action_certificate, 'accepted'>), 
+           action_certificate>
+     )
+     ]
+    variants (modulo AC)
+    1. action_certificate
+             = action_certificate.34
+       certificate_signature
+             = certificate_signature.41
+       verifier_pk
+             = verifier_pk.47
+       z     = verify(certificate_signature.41, action_certificate.34,
+                      verifier_pk.47)
+    
+    2. action_certificate
+             = action_certificate.85
+       certificate_signature
+             = sign(action_certificate.85, x.168)
+       verifier_pk
+             = pk(x.168)
+       z     = true
+  */
+
+lemma executable_two_hop_delegation_to_execution:
+  exists-trace
+  "∃ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+     action_id tool arguments root_scope child_scope_1 child_scope_2
+     restriction_1 restriction_2 action_certificate #r #d1 #d2 #p #c #e.
+    ((((((((((RootCommandIssued( authority_pk, command_id, agent_a_pk,
+                                 verifier_pk, root_scope
+              ) @ #r) ∧
+             (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                                     root_scope, child_scope_1, restriction_1
+              ) @ #d1)) ∧
+            (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                                     agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                                     restriction_2
+             ) @ #d2)) ∧
+           (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                                     action_id, tool, arguments, child_scope_2
+            ) @ #p)) ∧
+          (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                             agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                             action_certificate
+           ) @ #c)) ∧
+         (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                          agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                          root_scope, child_scope_1, child_scope_2, action_certificate
+          ) @ #e)) ∧
+        (#r < #d1)) ∧
+       (#d1 < #d2)) ∧
+      (#d2 < #p)) ∧
+     (#p < #c)) ∧
+    (#c < #e)"
+/*
+guarded formula characterizing all satisfying traces:
+"∃ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+   action_id tool arguments root_scope child_scope_1 child_scope_2
+   restriction_1 restriction_2 action_certificate #r #d1 #d2 #p #c #e.
+  (RootCommandIssued( authority_pk, command_id, agent_a_pk, verifier_pk,
+                      root_scope
+   ) @ #r) ∧
+  (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                          root_scope, child_scope_1, restriction_1
+   ) @ #d1) ∧
+  (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                           agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                           restriction_2
+   ) @ #d2) ∧
+  (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                            action_id, tool, arguments, child_scope_2
+   ) @ #p) ∧
+  (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                     agent_c_pk, action_id, tool, arguments, child_scope_2, action_certificate
+   ) @ #c) ∧
+  (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                   agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                   root_scope, child_scope_1, child_scope_2, action_certificate
+   ) @ #e)
+ ∧
+  (#r < #d1) ∧ (#d1 < #d2) ∧ (#d2 < #p) ∧ (#p < #c) ∧ (#c < #e)"
+*/
+simplify
+solve( !AuthoritySecret( authority_sk ) ▶₀ #r )
+  case Initialize_Delegation_Actors
+  solve( !AgentPublic( 'agent-a', pk(agent_a_sk) ) ▶₁ #r )
+    case Initialize_Delegation_Actors
+    solve( !VerifierPublic( pk(verifier_sk) ) ▶₂ #r )
+      case Initialize_Delegation_Actors
+      solve( !AgentSecret( 'agent-a', ~agent_a_sk ) ▶₀ #d1 )
+        case Initialize_Delegation_Actors
+        solve( !AgentPublic( 'agent-b', pk(agent_b_sk) ) ▶₁ #d1 )
+          case Initialize_Delegation_Actors
+          solve( !RootCommandRecord( pk(~authority_sk), ~command_id,
+                                     pk(~agent_a_sk), verifier_pk, ~root_scope.1
+                 ) ▶₂ #d1 )
+            case Issue_Delegable_Root_Command
+            solve( CommandState( pk(~authority_sk), ~command_id, 'active' ) ▶₃ #d1 )
+              case Issue_Delegable_Root_Command
+              solve( !AgentSecret( 'agent-b', ~agent_b_sk ) ▶₀ #d2 )
+                case Initialize_Delegation_Actors
+                solve( !AgentPublic( 'agent-c', pk(agent_c_sk) ) ▶₁ #d2 )
+                  case Initialize_Delegation_Actors
+                  solve( !RootCommandRecord( pk(~authority_sk), ~command_id,
+                                             pk(~agent_a_sk), verifier_pk, ~root_scope.1
+                         ) ▶₂ #d2 )
+                    case Issue_Delegable_Root_Command
+                    solve( CommandState( pk(~authority_sk), ~command_id, 'delegated-1'
+                           ) ▶₃ #d2 )
+                      case Delegate_A_To_B
+                      solve( !AgentSecret( 'agent-c', ~agent_c_sk ) ▶₀ #p )
+                        case Initialize_Delegation_Actors
+                        solve( !DelegationLineageRecord( pk(~authority_sk), ~command_id,
+                                                         agent_a_pk.1, pk(x), pk(~agent_c_sk), verifier_pk,
+                                                         root_scope.2, child_scope_1.1,
+                                                         attenuate(attenuate(~root_scope.1, ~restriction_1),
+                                                                   ~restriction_2)
+                               ) ▶₁ #p )
+                          case Delegate_B_To_C
+                          solve( CommandState( pk(~authority_sk), ~command_id, 'delegated-2'
+                                 ) ▶₂ #p )
+                            case Delegate_B_To_C
+                            solve( !VerifierSecret( ~verifier_sk ) ▶₀ #c )
+                              case Initialize_Delegation_Actors
+                              solve( !DelegationLineageRecord( pk(~authority_sk), ~command_id,
+                                                               agent_a_pk, agent_b_pk, pk(~agent_c_sk),
+                                                               pk(~verifier_sk), root_scope, child_scope_1,
+                                                               attenuate(attenuate(~root_scope.1,
+                                                                                   ~restriction_1),
+                                                                         ~restriction_2)
+                                     ) ▶₁ #c )
+                                case Delegate_B_To_C
+                                solve( CommandState( pk(~authority_sk), ~command_id, 'proposed' ) ▶₂ #c )
+                                  case Delegated_Agent_C_Proposes_Action
+                                  solve( PendingDelegatedAction( pk(~authority_sk), ~command_id,
+                                                                 pk(~agent_c_sk), pk(~verifier_sk), action_id,
+                                                                 tool, arguments,
+                                                                 attenuate(attenuate(~root_scope,
+                                                                                     ~restriction_1),
+                                                                           ~restriction_2),
+                                                                 proposal, sign(proposal, ~agent_c_sk)
+                                         ) ▶₃ #c )
+                                    case Delegated_Agent_C_Proposes_Action
+                                    solve( !VerifierPublic( pk(~verifier_sk) ) ▶₀ #e )
+                                      case Initialize_Delegation_Actors
+                                      solve( !DelegationLineageRecord( pk(~authority_sk), ~command_id,
+                                                                       pk(~agent_a_sk), pk(~agent_b_sk),
+                                                                       pk(~agent_c_sk), pk(~verifier_sk),
+                                                                       ~root_scope,
+                                                                       attenuate(~root_scope, ~restriction_1),
+                                                                       attenuate(attenuate(~root_scope,
+                                                                                           ~restriction_1),
+                                                                                 ~restriction_2)
+                                             ) ▶₁ #e )
+                                        case Delegate_B_To_C
+                                        solve( CommandState( pk(~authority_sk), ~command_id, 'certified'
+                                               ) ▶₂ #e )
+                                          case Verify_Delegated_Lineage_And_Issue_Action_Certificate
+                                          solve( UnusedDelegatedActionCertificate( pk(~authority_sk),
+                                                                                   pk(~verifier_sk),
+                                                                                   ~command_id,
+                                                                                   pk(~agent_c_sk), action_id,
+                                                                                   tool, arguments,
+                                                                                   attenuate(attenuate(~root_scope,
+                                                                                                       ~restriction_1),
+                                                                                             ~restriction_2),
+                                                                                   <
+                                                                                    'oclm-ai-b2-action-certificate-v1', 
+                                                                                    pk(~authority_sk), 
+                                                                                    pk(~verifier_sk), 
+                                                                                    ~command_id, 
+                                                                                    pk(~agent_c_sk), 
+                                                                                    action_id, tool, 
+                                                                                    arguments, 
+                                                                                    attenuate(attenuate(~root_scope,
+                                                                                                        ~restriction_1),
+                                                                                              ~restriction_2)
+                                                                                   >,
+                                                                                   sign(<
+                                                                                         'oclm-ai-b2-action-certificate-v1', 
+                                                                                         pk(~authority_sk), 
+                                                                                         pk(~verifier_sk), 
+                                                                                         ~command_id, 
+                                                                                         pk(~agent_c_sk), 
+                                                                                         action_id, tool, 
+                                                                                         arguments, 
+                                                                                         attenuate(attenuate(~root_scope,
+                                                                                                             ~restriction_1),
+                                                                                                   ~restriction_2)
+                                                                                        >,
+                                                                                        ~verifier_sk)
+                                                 ) ▶₃ #e )
+                                            case Verify_Delegated_Lineage_And_Issue_Action_Certificate
+                                            solve( !KU( ~command_id ) @ #vk.12 )
+                                              case Delegate_A_To_B
+                                              solve( !KU( ~root_scope ) @ #vk.23 )
+                                                case Delegate_A_To_B
+                                                solve( !KU( sign(<'oclm-ai-b2-delegation-v1', 
+                                                                  pk(~authority_sk), ~command_id, 
+                                                                  pk(~agent_a_sk), pk(~agent_b_sk), 
+                                                                  ~root_scope, 
+                                                                  attenuate(~root_scope, ~restriction_1)>,
+                                                                 ~agent_a_sk)
+                                                       ) @ #vk.28 )
+                                                  case Delegate_A_To_B
+                                                  solve( !KU( sign(<'oclm-ai-b2-delegation-v2', 
+                                                                    pk(~authority_sk), ~command_id, 
+                                                                    pk(~agent_a_sk), pk(~agent_b_sk), 
+                                                                    pk(~agent_c_sk), ~root_scope, 
+                                                                    attenuate(~root_scope, ~restriction_1), 
+                                                                    attenuate(attenuate(~root_scope,
+                                                                                        ~restriction_1),
+                                                                              ~restriction_2)
+                                                                   >,
+                                                                   ~agent_b_sk)
+                                                         ) @ #vk.36 )
+                                                    case Delegate_B_To_C
+                                                    solve( !KU( sign(<'oclm-ai-b2-action-certificate-v1', 
+                                                                      pk(~authority_sk), pk(~verifier_sk), 
+                                                                      ~command_id, pk(~agent_c_sk), 
+                                                                      action_id, tool, arguments, 
+                                                                      attenuate(attenuate(~root_scope,
+                                                                                          ~restriction_1),
+                                                                                ~restriction_2)
+                                                                     >,
+                                                                     ~verifier_sk)
+                                                           ) @ #vk.42 )
+                                                      case Verify_Delegated_Lineage_And_Issue_Action_Certificate
+                                                      solve( !KU( pk(~agent_b_sk) ) @ #vk.28 )
+                                                        case Delegate_A_To_B
+                                                        solve( !KU( pk(~agent_c_sk) ) @ #vk.32 )
+                                                          case Delegate_B_To_C
+                                                          solve( !KU( sign(<'oclm-ai-b2-delegation-v1', 
+                                                                            pk(~authority_sk.8), 
+                                                                            ~command_id.2, pk(~agent_a_sk.8), 
+                                                                            pk(~agent_b_sk.8), ~root_scope.2, 
+                                                                            child_scope_1>,
+                                                                           ~agent_a_sk.8)
+                                                                 ) @ #vk.58 )
+                                                            case Delegate_A_To_B
+                                                            solve( !KU( ~command_id.2 ) @ #vk.51 )
+                                                              case Delegate_A_To_B
+                                                              solve( !KU( ~root_scope.2 ) @ #vk.57 )
+                                                                case Delegate_A_To_B
+                                                                solve( !KU( pk(~authority_sk) ) @ #vk.35 )
+                                                                  case Delegate_A_To_B
+                                                                  solve( !KU( pk(~agent_a_sk) ) @ #vk.38 )
+                                                                    case Delegate_A_To_B
+                                                                    solve( !KU( attenuate(~root_scope,
+                                                                                          ~restriction_1)
+                                                                           ) @ #vk.40 )
+                                                                      case Delegate_A_To_B
+                                                                      solve( !KU( attenuate(attenuate(~root_scope,
+                                                                                                      ~restriction_1),
+                                                                                            ~restriction_2)
+                                                                             ) @ #vk.44 )
+                                                                        case Delegate_B_To_C
+                                                                        solve( !KU( pk(~verifier_sk)
+                                                                               ) @ #vk.54 )
+                                                                          case Initialize_Delegation_Actors
+                                                                          solve( !KU( pk(~authority_sk.5)
+                                                                                 ) @ #vk.55 )
+                                                                            case Delegate_A_To_B
+                                                                            solve( !KU( pk(~agent_a_sk.5)
+                                                                                   ) @ #vk.56 )
+                                                                              case Delegate_A_To_B
+                                                                              solve( !KU( pk(~agent_b_sk.4)
+                                                                                     ) @ #vk.57 )
+                                                                                case Delegate_A_To_B
+                                                                                solve( !KU( attenuate(~root_scope.2,
+                                                                                                      ~restriction_1.2)
+                                                                                       ) @ #vk.58 )
+                                                                                  case Delegate_A_To_B
+                                                                                  SOLVED // trace found
+                                                                                qed
+                                                                              qed
+                                                                            qed
+                                                                          qed
+                                                                        qed
+                                                                      qed
+                                                                    qed
+                                                                  qed
+                                                                qed
+                                                              qed
+                                                            qed
+                                                          qed
+                                                        qed
+                                                      qed
+                                                    qed
+                                                  qed
+                                                qed
+                                              qed
+                                            qed
+                                          qed
+                                        qed
+                                      qed
+                                    qed
+                                  qed
+                                qed
+                              qed
+                            qed
+                          qed
+                        qed
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+lemma first_delegation_requires_matching_root_command:
+  all-traces
+  "∀ authority_pk command_id agent_a_pk agent_b_pk root_scope child_scope
+     restriction #d.
+    (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                            root_scope, child_scope, restriction
+     ) @ #d) ⇒
+    (∃ verifier_pk #r.
+      (RootCommandIssued( authority_pk, command_id, agent_a_pk, verifier_pk,
+                          root_scope
+       ) @ #r) ∧
+      (#r < #d))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk command_id agent_a_pk agent_b_pk root_scope child_scope
+   restriction #d.
+  (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                          root_scope, child_scope, restriction
+   ) @ #d)
+ ∧
+  ∀ verifier_pk #r.
+   (RootCommandIssued( authority_pk, command_id, agent_a_pk, verifier_pk,
+                       root_scope
+    ) @ #r)
+  ⇒
+   ¬(#r < #d)"
+*/
+by sorry
+
+lemma first_delegated_scope_is_parent_attenuation:
+  all-traces
+  "∀ authority_pk command_id agent_a_pk agent_b_pk root_scope child_scope
+     restriction #d.
+    (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                            root_scope, child_scope, restriction
+     ) @ #d) ⇒
+    (child_scope = attenuate(root_scope, restriction))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk command_id agent_a_pk agent_b_pk root_scope child_scope
+   restriction #d.
+  (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                          root_scope, child_scope, restriction
+   ) @ #d)
+ ∧
+  ¬(child_scope = attenuate(root_scope, restriction))"
+*/
+by sorry
+
+lemma second_delegation_requires_matching_first_delegation:
+  all-traces
+  "∀ authority_pk command_id agent_a_pk agent_b_pk agent_c_pk root_scope
+     child_scope_1 child_scope_2 restriction_2 #d2.
+    (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                             agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                             restriction_2
+     ) @ #d2) ⇒
+    (∃ restriction_1 #d1.
+      (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                              root_scope, child_scope_1, restriction_1
+       ) @ #d1) ∧
+      (#d1 < #d2))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk command_id agent_a_pk agent_b_pk agent_c_pk root_scope
+   child_scope_1 child_scope_2 restriction_2 #d2.
+  (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                           agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                           restriction_2
+   ) @ #d2)
+ ∧
+  ∀ restriction_1 #d1.
+   (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                           root_scope, child_scope_1, restriction_1
+    ) @ #d1)
+  ⇒
+   ¬(#d1 < #d2)"
+*/
+by sorry
+
+lemma second_delegated_scope_is_parent_attenuation:
+  all-traces
+  "∀ authority_pk command_id agent_a_pk agent_b_pk agent_c_pk root_scope
+     child_scope_1 child_scope_2 restriction #d.
+    (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                             agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                             restriction
+     ) @ #d) ⇒
+    (child_scope_2 = attenuate(child_scope_1, restriction))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk command_id agent_a_pk agent_b_pk agent_c_pk root_scope
+   child_scope_1 child_scope_2 restriction #d.
+  (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                           agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                           restriction
+   ) @ #d)
+ ∧
+  ¬(child_scope_2 = attenuate(child_scope_1, restriction))"
+*/
+by sorry
+
+lemma delegated_execution_requires_complete_lineage:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+     action_id tool arguments root_scope child_scope_1 child_scope_2
+     action_certificate #e.
+    (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                     agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                     root_scope, child_scope_1, child_scope_2, action_certificate
+     ) @ #e) ⇒
+    (∃ restriction_1 restriction_2 #r #d1 #d2 #p #c.
+      (((((((((RootCommandIssued( authority_pk, command_id, agent_a_pk,
+                                  verifier_pk, root_scope
+               ) @ #r) ∧
+              (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                                      root_scope, child_scope_1, restriction_1
+               ) @ #d1)) ∧
+             (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                                      agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                                      restriction_2
+              ) @ #d2)) ∧
+            (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                                      action_id, tool, arguments, child_scope_2
+             ) @ #p)) ∧
+           (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                              agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                              action_certificate
+            ) @ #c)) ∧
+          (#r < #d1)) ∧
+         (#d1 < #d2)) ∧
+        (#d2 < #p)) ∧
+       (#p < #c)) ∧
+      (#c < #e))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+   action_id tool arguments root_scope child_scope_1 child_scope_2
+   action_certificate #e.
+  (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                   agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                   root_scope, child_scope_1, child_scope_2, action_certificate
+   ) @ #e)
+ ∧
+  ∀ restriction_1 restriction_2 #r #d1 #d2 #p #c.
+   (RootCommandIssued( authority_pk, command_id, agent_a_pk, verifier_pk,
+                       root_scope
+    ) @ #r) ∧
+   (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                           root_scope, child_scope_1, restriction_1
+    ) @ #d1) ∧
+   (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                            agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                            restriction_2
+    ) @ #d2) ∧
+   (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                             action_id, tool, arguments, child_scope_2
+    ) @ #p) ∧
+   (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                      agent_c_pk, action_id, tool, arguments, child_scope_2,
+                                      action_certificate
+    ) @ #c)
+  ⇒
+   ((¬(#r < #d1)) ∨
+    (¬(#d1 < #d2)) ∨
+    (¬(#d2 < #p)) ∨
+    (¬(#p < #c)) ∨
+    (¬(#c < #e)))"
+*/
+by sorry
+
+lemma delegation_chain_cannot_splice_root_commands:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+     action_id tool arguments root_scope child_scope_1 child_scope_2
+     action_certificate #e.
+    (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                     agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                     root_scope, child_scope_1, child_scope_2, action_certificate
+     ) @ #e) ⇒
+    (∃ restriction_1 restriction_2 #d1 #d2.
+      (((FirstDelegationIssued( authority_pk, command_id, agent_a_pk,
+                                agent_b_pk, root_scope, child_scope_1, restriction_1
+         ) @ #d1) ∧
+        (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                                 agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                                 restriction_2
+         ) @ #d2)) ∧
+       (#d1 < #d2)) ∧
+      (#d2 < #e))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+   action_id tool arguments root_scope child_scope_1 child_scope_2
+   action_certificate #e.
+  (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                   agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                   root_scope, child_scope_1, child_scope_2, action_certificate
+   ) @ #e)
+ ∧
+  ∀ restriction_1 restriction_2 #d1 #d2.
+   (FirstDelegationIssued( authority_pk, command_id, agent_a_pk, agent_b_pk,
+                           root_scope, child_scope_1, restriction_1
+    ) @ #d1) ∧
+   (SecondDelegationIssued( authority_pk, command_id, agent_a_pk,
+                            agent_b_pk, agent_c_pk, root_scope, child_scope_1, child_scope_2,
+                            restriction_2
+    ) @ #d2)
+  ⇒
+   ((¬(#d1 < #d2)) ∨ (¬(#d2 < #e)))"
+*/
+by sorry
+
+lemma leaf_action_certificate_is_agent_bound:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_c_pk action_id tool
+     arguments child_scope action_certificate #c.
+    (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                       agent_c_pk, action_id, tool, arguments, child_scope, action_certificate
+     ) @ #c) ⇒
+    (∃ #p.
+      (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                                action_id, tool, arguments, child_scope
+       ) @ #p) ∧
+      (#p < #c))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_c_pk action_id tool
+   arguments child_scope action_certificate #c.
+  (DelegatedActionCertificateIssued( authority_pk, verifier_pk, command_id,
+                                     agent_c_pk, action_id, tool, arguments, child_scope, action_certificate
+   ) @ #c)
+ ∧
+  ∀ #p.
+   (DelegatedActionProposed( authority_pk, command_id, agent_c_pk,
+                             action_id, tool, arguments, child_scope
+    ) @ #p)
+  ⇒
+   ¬(#p < #c)"
+*/
+by sorry
+
+lemma executed_scope_is_nested_attenuation:
+  all-traces
+  "∀ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+     action_id tool arguments root_scope child_scope_1 child_scope_2
+     action_certificate #e.
+    (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                     agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                     root_scope, child_scope_1, child_scope_2, action_certificate
+     ) @ #e) ⇒
+    (∃ restriction_1 restriction_2.
+      (child_scope_1 = attenuate(root_scope, restriction_1)) ∧
+      (child_scope_2 = attenuate(child_scope_1, restriction_2)))"
+/*
+guarded formula characterizing all counter-examples:
+"∃ authority_pk verifier_pk command_id agent_a_pk agent_b_pk agent_c_pk
+   action_id tool arguments root_scope child_scope_1 child_scope_2
+   action_certificate #e.
+  (DelegatedToolExecutionAccepted( authority_pk, verifier_pk, command_id,
+                                   agent_a_pk, agent_b_pk, agent_c_pk, action_id, tool, arguments,
+                                   root_scope, child_scope_1, child_scope_2, action_certificate
+   ) @ #e)
+ ∧
+  ∀ restriction_1 restriction_2.
+   (child_scope_1 = attenuate(root_scope, restriction_1)) ∧
+   (child_scope_2 = attenuate(child_scope_1, restriction_2))
+  ⇒
+   ⊥"
+*/
+by sorry
+
+lemma delegated_action_certificate_is_single_use:
+  all-traces
+  "∀ action_certificate #i #j.
+    ((DelegatedActionCertificateConsumed( action_certificate ) @ #i) ∧
+     (DelegatedActionCertificateConsumed( action_certificate ) @ #j)) ⇒
+    (#i = #j)"
+/*
+guarded formula characterizing all counter-examples:
+"∃ action_certificate #i #j.
+  (DelegatedActionCertificateConsumed( action_certificate ) @ #i) ∧
+  (DelegatedActionCertificateConsumed( action_certificate ) @ #j)
+ ∧
+  ¬(#i = #j)"
+*/
+by sorry
+
+/* All wellformedness checks were successful. */
+
+/*
+Generated from:
+Tamarin version 1.12.0
+Maude version 3.5.1
+Git revision: UNKNOWN, branch: UNKNOWN
+Compiled at: 2026-03-08 09:49:47.765662 UTC
+*/
+
+end
+
+==============================================================================
+summary of summaries:
+
+analyzed: /Users/hiro/Desktop/oclm/profiles/ai-command-lineage/phase-b2/model/tamarin/oclm_ai_b2_delegation_lineage.spthy
+
+  processing time: 17.87s
+  
+  executable_two_hop_delegation_to_execution (exists-trace): verified (43 steps)
+  first_delegation_requires_matching_root_command (all-traces): analysis incomplete (1 steps)
+  first_delegated_scope_is_parent_attenuation (all-traces): analysis incomplete (1 steps)
+  second_delegation_requires_matching_first_delegation (all-traces): analysis incomplete (1 steps)
+  second_delegated_scope_is_parent_attenuation (all-traces): analysis incomplete (1 steps)
+  delegated_execution_requires_complete_lineage (all-traces): analysis incomplete (1 steps)
+  delegation_chain_cannot_splice_root_commands (all-traces): analysis incomplete (1 steps)
+  leaf_action_certificate_is_agent_bound (all-traces): analysis incomplete (1 steps)
+  executed_scope_is_nested_attenuation (all-traces): analysis incomplete (1 steps)
+  delegated_action_certificate_is_single_use (all-traces): analysis incomplete (1 steps)
+
+==============================================================================

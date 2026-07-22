@@ -1,0 +1,19 @@
+OCLM AI Command Lineage Phase AI-B2
+Generated UTC: 20260722T060045Z
+Model SHA-256: 022d896e751d5a3db5930d1769790eb2b4bb08572c8d2f207906e04d6e4fb8c9
+Tamarin: 1.12.0
+Maude: 3.5.1
+Per-lemma timeout: 180s
+
+executable_two_hop_delegation_to_execution — VERIFIED
+first_delegation_requires_matching_root_command — VERIFIED
+first_delegated_scope_is_parent_attenuation — VERIFIED
+second_delegation_requires_matching_first_delegation — VERIFIED
+second_delegated_scope_is_parent_attenuation — VERIFIED
+delegated_execution_requires_complete_lineage — VERIFIED
+delegation_chain_cannot_splice_root_commands — VERIFIED
+leaf_action_certificate_is_agent_bound — VERIFIED
+executed_scope_is_nested_attenuation — VERIFIED
+delegated_action_certificate_is_single_use — VERIFIED
+
+Verified lemma count: 10/10
