@@ -1,0 +1,73 @@
+{
+  "name": "OCLM AI Command Lineage Profile",
+  "phase": "AI-A",
+  "status": "design-freeze candidate; not yet a verified AI Tamarin profile",
+  "core_objective": "bind every accepted agent action to a valid non-revoked command lineage",
+  "actors": [
+    "human or institutional authority",
+    "agent",
+    "sub-agent",
+    "OCLM verifier",
+    "execution gateway",
+    "tool or resource",
+    "independent witness"
+  ],
+  "artifacts": [
+    "RootCommandCertificate",
+    "DelegationCertificate",
+    "ActionProposal",
+    "ActionCertificate",
+    "ToolExecutionReceipt",
+    "RevocationCertificate",
+    "AbortCertificate",
+    "CompromiseEvidence"
+  ],
+  "bindings": [
+    "authority",
+    "root command",
+    "parent command or action",
+    "delegation",
+    "agent identity",
+    "target",
+    "space",
+    "time",
+    "capability",
+    "resource",
+    "context",
+    "continuity",
+    "revocation state",
+    "witness evidence"
+  ],
+  "required_invariants": [
+    "command-origin binding",
+    "parent binding",
+    "agent-identity binding",
+    "non-amplifying delegation",
+    "target binding",
+    "space binding",
+    "time-window binding",
+    "capability binding",
+    "resource and credential binding",
+    "context binding",
+    "action-certificate uniqueness",
+    "replay resistance",
+    "monotonic revocation",
+    "receipt-to-action binding",
+    "explicit compromise handling",
+    "no execution bypass"
+  ],
+  "planned_formalization": {
+    "phase": "AI-B",
+    "tool": "Tamarin Prover",
+    "first_target": "no accepted tool execution without a valid non-revoked action certificate derived from an authorized command lineage"
+  },
+  "not_claimed_in_phase_ai_a": [
+    "AI safety has been formally verified",
+    "natural-language intent is interpreted correctly",
+    "the model is aligned or benevolent",
+    "all tools and runtimes are free of implementation vulnerabilities",
+    "all physical or external observations are true",
+    "covert channels and side channels are eliminated",
+    "availability is guaranteed"
+  ]
+}

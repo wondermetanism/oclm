@@ -1,0 +1,72 @@
+{
+  "phase": "OCLM AI Command Lineage Profile Phase AI-A",
+  "status": "formal-boundary definition; AI-specific proofs not yet complete",
+  "assumptions": [
+    {
+      "id": "AI-A-SYM",
+      "name": "symbolic cryptographic abstraction",
+      "implementation_obligation": "select concrete primitives, signatures, hashes, encodings, and domain separation that preserve the symbolic distinctions"
+    },
+    {
+      "id": "AI-A-AUTH",
+      "name": "root authorities and compromise events are explicitly modeled",
+      "implementation_obligation": "inventory human, institutional, agent, verifier, gateway, tool, and witness authority keys and compromise paths"
+    },
+    {
+      "id": "AI-A-SCOPE",
+      "name": "scope inclusion predicates correctly represent target, space, time, capability, resource, and context restrictions",
+      "implementation_obligation": "define canonical machine-readable scope semantics and reject ambiguous widening"
+    },
+    {
+      "id": "AI-A-GATE",
+      "name": "the execution gateway deterministically enforces Action Certificates",
+      "implementation_obligation": "ensure tools, credentials, networks, filesystems, APIs, and resources cannot be reached through an ungoverned bypass"
+    },
+    {
+      "id": "AI-A-TIME",
+      "name": "security-relevant event order and time-window state are preserved",
+      "implementation_obligation": "provide monotonic ordering, trusted clocks or epochs, and stale-certificate rejection"
+    },
+    {
+      "id": "AI-A-REVOKE",
+      "name": "revocation state is monotonic except under explicitly modeled compromise",
+      "implementation_obligation": "propagate revocation to gateways and invalidate active or cached certificates according to a declared policy"
+    },
+    {
+      "id": "AI-A-WITNESS",
+      "name": "required external observations satisfy the modeled witness predicates",
+      "implementation_obligation": "define and audit network, runtime, tool, resource, and execution evidence sources"
+    },
+    {
+      "id": "AI-A-REFINE",
+      "name": "implementation events faithfully refine model events",
+      "implementation_obligation": "prove or audit serialization, event mapping, state transitions, certificate checks, argument binding, receipt generation, and bypass absence"
+    }
+  ],
+  "initial_attack_classes": 16,
+  "initial_health_and_reachability_properties": 5,
+  "future_obligations": [
+    "Phase AI-B executable Tamarin core",
+    "bounded delegation model",
+    "revocation and in-flight action model",
+    "multi-agent and sub-agent composition",
+    "tool and credential profiles",
+    "implementation refinement",
+    "concrete cryptographic profile",
+    "independent witness and transparency profile",
+    "recovery and governance model"
+  ],
+  "not_established": [
+    "correct interpretation of natural-language commands",
+    "AI alignment, morality, or benevolence",
+    "absence of unauthorized action proposals",
+    "absence of zero-day vulnerabilities",
+    "security of every implementation",
+    "truth of every physical or external observation",
+    "elimination of covert channels and side channels",
+    "privacy and unlinkability",
+    "availability and denial-of-service resistance",
+    "economic and governance security",
+    "exhaustion of every possible AI-agent attack"
+  ]
+}

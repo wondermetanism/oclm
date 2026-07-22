@@ -1,0 +1,9 @@
+0fd5b8b79f1e64ee80a037ddd942cad023e0d9779eebed5f14719e896e31f8b1  profiles/ai-command-lineage/phase-a/architecture/COMMAND_LINEAGE_ARCHITECTURE.md
+b72c90ae163b0318af5aad86248b915e4a07fad789ffacb34f46c6b67722ea2e  profiles/ai-command-lineage/phase-a/architecture/COMMAND_LINEAGE_PROFILE.json
+2ffdb93be1e1102d9b36c70e8dcdb247e84611e2b21190277166fcebcdf885f5  profiles/ai-command-lineage/phase-a/catalog/INITIAL_ATTACK_CATALOG.md
+c441eacd2573b461c28f3aa08673ab8565e52d0aeae39383a2c6f5b97770b41b  profiles/ai-command-lineage/phase-a/formal-boundary/ASSUMPTIONS_AND_LIMITS.json
+30ee94b1bac036d28739b9895043d38628987091e7084cdb9c30943159e7276e  profiles/ai-command-lineage/phase-a/formal-boundary/CLAIMS_MATRIX.md
+99e2ea8b13cd1efbab82cd171a06aee5922979659199662b514d52650a364018  profiles/ai-command-lineage/phase-a/formal-boundary/FORMAL_BOUNDARY.md
+bbab297bff043272484b150b67e9be042e8fb6cad6dcd09ef2d59b99b8397b83  profiles/ai-command-lineage/phase-a/README.md
+9bd084aff3967729c409a5e07d35c95d5f590a0ad432dc5d53ad6928b9fe0c0b  profiles/ai-command-lineage/phase-a/scripts/audit-phase-ai-a.sh
+3bf604534855098c4147f181f73f4ad33b3c662f1bacc55608e35de0e1d13435  profiles/ai-command-lineage/phase-a/VERSION
